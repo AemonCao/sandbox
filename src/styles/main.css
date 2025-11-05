@@ -1,0 +1,27 @@
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+@font-face {
+  font-family: 'ALiMaMaShuHeiTi';
+  src: url('../assets/fonts/阿里妈妈数黑体.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'PangMenZhengDao';
+  src: url('../assets/fonts/PangMenZhengDaoBiaoTiTiMianFeiBan.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}

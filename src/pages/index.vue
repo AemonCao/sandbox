@@ -10,7 +10,7 @@ defineOptions({
       <!-- 页面标题 -->
       <div mb-12 text-center>
         <h1 text-4xl text-gray-900 font-bold mb-4 dark:text-white>
-          数字孪生管理平台
+          沙盘
         </h1>
         <p text-lg text-gray-600 dark:text-gray-400>
           一站式设备监控与智能分析解决方案

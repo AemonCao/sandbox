@@ -2,91 +2,93 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Development Commands
+## Project Overview
 
-This is a Vitesse Lite Vue 3 project using pnpm as the package manager.
+This is a Vue 3 digital twin management platform built with modern tooling. The project serves as a sandbox environment for testing and development of device monitoring, energy management, and smart analysis features.
 
-- `pnpm dev` - Start development server on port 3333 and open browser
-- `pnpm build` - Build for production using Vite
-- `pnpm build:prod` - Build for production environment
-- `pnpm build:staging` - Build for staging environment
-- `pnpm preview` - Preview production build
-- `pnpm lint` - Run ESLint
-- `pnpm typecheck` - Run TypeScript type checking with vue-tsc
-- `pnpm test` - Run Vitest tests
-- `pnpm up` - Update dependencies with taze
+## Common Development Commands
 
-## Project Architecture
+### Package Management
+- Install dependencies: `pnpm install`
+- Update dependencies: `pnpm up` (uses taze for dependency updates)
+- Run post-install hooks: `npx simple-git-hooks`
 
-### Framework & Tooling
+### Development
+- Start development server: `pnpm dev` (port 3333)
+- Build for production: `pnpm build`
+- Build for specific environments: `pnpm build:prod` or `pnpm build:staging`
+- Preview production build: `pnpm preview`
 
-- **Vue 3** with Composition API and `<script setup>` syntax
-- **Vite** as build tool with hot module replacement
-- **TypeScript** with strict configuration
-- **UnoCSS** for atomic CSS with predefined shortcuts and presets
-- **File-based routing** via `unplugin-vue-router`
-- **Naive UI** as component library with Chinese localization
-- **ECharts** for data visualization and charts
-- **Pinia** for state management
-- **VueUse** for utility composition functions
+### Code Quality
+- Linting: `pnpm lint` (ESLint with @antfu/eslint-config)
+- Type checking: `pnpm typecheck` (vue-tsc)
+- Testing: `pnpm test` (Vitest with jsdom environment)
 
-### Auto-import System
+### Git Hooks
+- Pre-commit hooks automatically run lint-staged
+- ESLint auto-fix on staged files
 
-- **Components**: Auto-imported from `src/components/` (no manual imports needed)
-- **Composables**: Auto-imported from `src/composables/`
-- **Vue APIs**: Auto-imported (ref, computed, watch, etc.)
-- **Vue Router**: Auto-imported (useRouter, useRoute, etc.)
-- **VueUse**: Auto-imported utilities
-- **Naive UI**: Auto-imported utilities (useDialog, useMessage, useNotification, useLoadingBar)
-- **Pinia**: Auto-imported (defineStore, storeToRefs)
+## Architecture & Structure
 
-### Key Configuration Files
+### Tech Stack
+- **Framework**: Vue 3 with Composition API and `<script setup>` syntax
+- **Build Tool**: Vite with hot module replacement
+- **Styling**: UnoCSS for atomic CSS with presetWind4 and presetIcons
+- **State Management**: Pinia
+- **Routing**: File-based routing via unplugin-vue-router
+- **UI Library**: Naive UI with auto-import resolvers
+- **Data Visualization**: ECharts and ECharts-GL
+- **Head Management**: @unhead/vue for meta tags
 
-- `vite.config.ts` - Vite configuration with UnoCSS and auto-import plugins
-- `uno.config.ts` - UnoCSS configuration with presets and shortcuts
-- `eslint.config.js` - ESLint configuration using @antfu/eslint-config
-- `tsconfig.json` - TypeScript configuration with path alias `~/` for `src/`
+### Auto-Import System
+- Components auto-imported from `src/components/`
+- Composables auto-imported from `src/composables/`
+- Vue APIs, Vue Router, VueUse, and Naive UI utilities automatically imported
+- Type definitions generated automatically
+- No manual imports needed for common utilities
 
-### Project Structure
+### Key Directories
+- `src/pages/` - File-based routing (pages become routes automatically)
+- `src/layouts/` - Layout components for page structure
+- `src/composables/` - Vue composables for reusable logic
+- `src/router/` - Router configuration and guards
+- `src/styles/` - Global styles and theme configuration
+- `src/assets/` - Static assets (fonts, images)
 
-- `src/pages/` - File-based routes (each .vue file becomes a route)
-- `src/components/` - Reusable Vue components (auto-imported)
-- `src/composables/` - Vue composition functions (auto-imported)
-- `src/styles/` - Global CSS styles
-- `public/` - Static assets
+### Routing System
+- Uses file-based routing with `unplugin-vue-router`
+- Routes automatically generated from Vue files in `src/pages/`
+- Layout system via `vite-plugin-vue-layouts`
+- Hash-based routing for deployment flexibility
+- Route meta configuration in `<route>` blocks
 
-### Development Features
+### Theme System
+- Dark/light theme support with `useDark()` composable
+- Naive UI theme customization in `src/styles/customTheme.ts`
+- View transitions for theme switching when supported
+- Type-safe theme variables with `src/naive-ui.d.ts`
 
-- **Git hooks** with simple-git-hooks for pre-commit linting
-- **VS Code** configuration with recommended extensions and ESLint integration
-- **Netlify** deployment configuration in `netlify.toml`
-- **Testing** with Vitest and Vue Test Utils
+### Build Configuration
+- Path alias: `~/` points to `src/` directory
+- Environment-specific builds (development, staging, production)
+- TypeScript strict mode enabled
+- Vue DevTools integration with VS Code launch support
 
-When working with components, use the `~/` alias for imports from the `src/` directory. Components and composables are automatically imported, so explicit imports are not needed.
+## Development Guidelines
 
-## Digital Twin Platform Features
+### Catalog-based Dependency Management
+- Uses pnpm workspace with catalog-based dependency management
+- Dependencies organized in catalogs: `build`, `dev`, `frontend`
+- Centralized version management across dependencies
 
-This is a digital twin management platform with the following core modules:
+## Important Notes
 
-- **Device Monitoring** (`/device-monitor`) - Building equipment monitoring and management
-- **Energy Management** (`/energy-management`) - Energy consumption analysis and optimization
-- **Maintenance** (`/maintenance`) - Equipment maintenance and scheduling
-- **Smart Analysis** (`/smart-analysis`) - Data analytics and insights
-
-### ECharts Integration
-
-The platform includes a custom `useEcharts` composable for data visualization:
-
-- Located in `src/composables/useEcharts.ts`
-- Automatically handles theme switching (light/dark mode)
-- Responsive chart resizing
-- Proper cleanup on component unmount
-
-### UI Framework
-
-- **Naive UI** with Chinese localization (`zhCN`)
-- Dark theme support via `isDark` composable
-- Responsive design with UnoCSS utilities
+- Development server runs on port 3333
+- File-based routing means pages in `src/pages/` automatically become routes
+- Auto-import system eliminates need for manual imports in most cases
+- Git hooks enforce code quality standards
+- Environment variables configured in `.env.*` files
+- Project uses modern Vue 3 ecosystem with latest tooling patterns
 
 ## Git Commit Guidelines
 

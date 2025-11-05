@@ -8,14 +8,6 @@ import type { GlobalThemeOverrides } from 'naive-ui'
 export const lightThemeOverrides: GlobalThemeOverrides = {
   common: {
   },
-  DataTable: {
-    thColor: '#004B97',
-    thTextColor: '#FFFFFF',
-    tdColorStriped: '#08365D',
-    tdColor: '#04233D',
-    tdTextColor: '#FFFFFF',
-    tdColorHover: '#0A4A78',
-  },
 }
 
 export const darkThemeOverrides: GlobalThemeOverrides = {

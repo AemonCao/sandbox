@@ -9,28 +9,33 @@ This is a Vue 3 digital twin management platform built with modern tooling. The 
 ## Common Development Commands
 
 ### Package Management
+
 - Install dependencies: `pnpm install`
 - Update dependencies: `pnpm up` (uses taze for dependency updates)
 - Run post-install hooks: `npx simple-git-hooks`
 
 ### Development
+
 - Start development server: `pnpm dev` (port 3333)
 - Build for production: `pnpm build`
 - Build for specific environments: `pnpm build:prod` or `pnpm build:staging`
 - Preview production build: `pnpm preview`
 
 ### Code Quality
+
 - Linting: `pnpm lint` (ESLint with @antfu/eslint-config)
 - Type checking: `pnpm typecheck` (vue-tsc)
 - Testing: `pnpm test` (Vitest with jsdom environment)
 
 ### Git Hooks
+
 - Pre-commit hooks automatically run lint-staged
 - ESLint auto-fix on staged files
 
 ## Architecture & Structure
 
 ### Tech Stack
+
 - **Framework**: Vue 3 with Composition API and `<script setup>` syntax
 - **Build Tool**: Vite with hot module replacement
 - **Styling**: UnoCSS for atomic CSS with presetWind4 and presetIcons
@@ -41,6 +46,7 @@ This is a Vue 3 digital twin management platform built with modern tooling. The 
 - **Head Management**: @unhead/vue for meta tags
 
 ### Auto-Import System
+
 - Components auto-imported from `src/components/`
 - Composables auto-imported from `src/composables/`
 - Vue APIs, Vue Router, VueUse, and Naive UI utilities automatically imported
@@ -48,6 +54,7 @@ This is a Vue 3 digital twin management platform built with modern tooling. The 
 - No manual imports needed for common utilities
 
 ### Key Directories
+
 - `src/pages/` - File-based routing (pages become routes automatically)
 - `src/layouts/` - Layout components for page structure
 - `src/composables/` - Vue composables for reusable logic
@@ -56,6 +63,7 @@ This is a Vue 3 digital twin management platform built with modern tooling. The 
 - `src/assets/` - Static assets (fonts, images)
 
 ### Routing System
+
 - Uses file-based routing with `unplugin-vue-router`
 - Routes automatically generated from Vue files in `src/pages/`
 - Layout system via `vite-plugin-vue-layouts`
@@ -63,12 +71,14 @@ This is a Vue 3 digital twin management platform built with modern tooling. The 
 - Route meta configuration in `<route>` blocks
 
 ### Theme System
+
 - Dark/light theme support with `useDark()` composable
 - Naive UI theme customization in `src/styles/customTheme.ts`
 - View transitions for theme switching when supported
 - Type-safe theme variables with `src/naive-ui.d.ts`
 
 ### Build Configuration
+
 - Path alias: `~/` points to `src/` directory
 - Environment-specific builds (development, staging, production)
 - TypeScript strict mode enabled
@@ -77,6 +87,7 @@ This is a Vue 3 digital twin management platform built with modern tooling. The 
 ## Development Guidelines
 
 ### Catalog-based Dependency Management
+
 - Uses pnpm workspace with catalog-based dependency management
 - Dependencies organized in catalogs: `build`, `dev`, `frontend`
 - Centralized version management across dependencies

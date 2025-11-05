@@ -20,12 +20,5 @@ declare module 'vue-router/auto-routes' {
   export interface RouteNamedMap {
     '/': RouteRecordInfo<'/', '/', Record<never, never>, Record<never, never>>,
     '/[...all]': RouteRecordInfo<'/[...all]', '/:all(.*)', { all: ParamValue<true> }, { all: ParamValue<false> }>,
-    '/device-monitor/': RouteRecordInfo<'/device-monitor/', '/device-monitor', Record<never, never>, Record<never, never>>,
-    '/energy-management/': RouteRecordInfo<'/energy-management/', '/energy-management', Record<never, never>, Record<never, never>>,
-    '/maintenance/': RouteRecordInfo<'/maintenance/', '/maintenance', Record<never, never>, Record<never, never>>,
-    '/maintenance/components/TheStatsCard': RouteRecordInfo<'/maintenance/components/TheStatsCard', '/maintenance/components/TheStatsCard', Record<never, never>, Record<never, never>>,
-    '/maintenance/components/TheWorkOrderItem': RouteRecordInfo<'/maintenance/components/TheWorkOrderItem', '/maintenance/components/TheWorkOrderItem', Record<never, never>, Record<never, never>>,
-    '/smart-analysis/': RouteRecordInfo<'/smart-analysis/', '/smart-analysis', Record<never, never>, Record<never, never>>,
-    '/smart-analysis/components/TheWorkOrderCard': RouteRecordInfo<'/smart-analysis/components/TheWorkOrderCard', '/smart-analysis/components/TheWorkOrderCard', Record<never, never>, Record<never, never>>,
   }
 }

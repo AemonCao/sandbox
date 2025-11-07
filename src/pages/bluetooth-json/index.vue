@@ -5,6 +5,51 @@ import { computed, ref } from 'vue'
 const inputText = ref('')
 const packets = ref<string[]>([])
 
+// AD结构接口
+interface ADStructure {
+  length: number
+  type: string
+  data: string
+  description: string
+}
+
+// 广播包内容解析结果接口
+interface ParsedContent {
+  // AD结构列表
+  adStructures: ADStructure[]
+
+  // Flags AD结构 (AD Struct 1)
+  flags: {
+    length: number
+    type: string
+    data: string
+    description: string
+    supportsLEOnlyDiscoverable: boolean
+    supportsGeneralDiscoverable: boolean
+    supportsBR_EDRNotSupported: boolean
+    supportsLEAndBR_EDRController: boolean
+    supportsLEAndBR_EDRHost: boolean
+  }
+
+  // iBeacon AD结构 (AD Struct 2)
+  iBeacon: {
+    length: number
+    type: string
+    companyId: string
+    subtype: string
+    iBeaconType: string
+    proximityUUID: string
+    major: string
+    minor: string
+    measuredPower: string
+    description: string
+  }
+
+  // 整体解析状态
+  hasError: boolean
+  errorMessage?: string
+}
+
 // 解析结果接口
 interface ParsedPacket {
   original: string
@@ -12,6 +57,7 @@ interface ParsedPacket {
   macAddress: string
   rssi: number
   content: string
+  parsedContent?: ParsedContent
   valid: boolean
   error?: string
 }
@@ -63,12 +109,16 @@ function parsePacket(hexString: string): ParsedPacket {
       rssi = rssi - 256
     }
 
+    // 解析广播包内容
+    const parsedContent = parsePacketContent(content)
+
     return {
       original: hexString,
       type,
       macAddress,
       rssi,
       content,
+      parsedContent,
       valid: true,
     }
   }
@@ -83,6 +133,179 @@ function parsePacket(hexString: string): ParsedPacket {
       error: '解析过程中发生错误',
     }
   }
+}
+
+// AD类型描述
+const adTypeDescriptions: Record<string, string> = {
+  '01': 'Flags',
+  '02': 'Incomplete List of 16-bit Service Class UUIDs',
+  '03': 'Complete List of 16-bit Service Class UUIDs',
+  '04': 'Incomplete List of 32-bit Service Class UUIDs',
+  '05': 'Complete List of 32-bit Service Class UUIDs',
+  '06': 'Incomplete List of 128-bit Service Class UUIDs',
+  '07': 'Complete List of 128-bit Service Class UUIDs',
+  '08': 'Shortened Local Name',
+  '09': 'Complete Local Name',
+  '0a': 'Tx Power Level',
+  '0d': 'Class of Device',
+  '0e': 'Simple Pairing Hash C',
+  '0f': 'Simple Pairing Randomizer R',
+  '10': 'Security Manager TK Value',
+  '11': 'Security Manager Out of Band Flags',
+  '12': 'Slave Connection Interval Range',
+  '14': 'List of 16-bit Service Solicitation UUIDs',
+  '15': 'List of 128-bit Service Solicitation UUIDs',
+  '16': 'Service Data',
+  '17': 'Public Target Address',
+  '18': 'Random Target Address',
+  '19': 'Appearance',
+  '1a': 'Advertising Interval',
+  '1b': 'LE Bluetooth Device Address',
+  '1c': 'LE Role',
+  '1d': 'Simple Pairing Hash C-256',
+  '1e': 'Simple Pairing Randomizer R-256',
+  '1f': 'List of 32-bit Service Solicitation UUIDs',
+  '20': 'Service Data - 32-bit UUID',
+  '21': 'Service Data - 128-bit UUID',
+  '22': 'LE Secure Connections Confirmation Value',
+  '23': 'LE Secure Connections Random Value',
+  '24': 'URI',
+  '25': 'Advertising Interval - Large',
+  '26': 'Mesh Message',
+  '27': 'Mesh Beacon',
+  '3d': '3D Information Data',
+  'ff': 'Manufacturer Specific Data',
+}
+
+// 解析广播包内容
+function parsePacketContent(content: string): ParsedContent {
+  const parsed: ParsedContent = {
+    adStructures: [],
+    flags: {
+      length: 0,
+      type: '',
+      data: '',
+      description: '',
+      supportsLEOnlyDiscoverable: false,
+      supportsGeneralDiscoverable: false,
+      supportsBR_EDRNotSupported: false,
+      supportsLEAndBR_EDRController: false,
+      supportsLEAndBR_EDRHost: false,
+    },
+    iBeacon: {
+      length: 0,
+      type: '',
+      companyId: '',
+      subtype: '',
+      iBeaconType: '',
+      proximityUUID: '',
+      major: '',
+      minor: '',
+      measuredPower: '',
+      description: '',
+    },
+    hasError: false,
+  }
+
+  try {
+    let offset = 0
+    const adStructures: ADStructure[] = []
+
+    // 解析所有AD结构
+    while (offset < content.length) {
+      if (offset + 1 >= content.length)
+        break // 至少需要Length和Type
+
+      const length = Number.parseInt(content.substring(offset, offset + 2), 16)
+      if (length === 0 || offset + 2 + length * 2 > content.length)
+        break
+
+      const typeHex = content.substring(offset + 2, offset + 4).toLowerCase()
+      const data = content.substring(offset + 4, offset + 4 + length * 2)
+      const description = adTypeDescriptions[typeHex] || 'Unknown Type'
+
+      const adStruct: ADStructure = {
+        length,
+        type: typeHex,
+        data,
+        description,
+      }
+      adStructures.push(adStruct)
+
+      // 解析Flags AD结构 (Type: 0x01)
+      if (typeHex === '01' && length >= 1) {
+        const flagsByte = Number.parseInt(data.substring(0, 2), 16)
+        parsed.flags = {
+          length,
+          type: typeHex,
+          data,
+          description,
+          supportsLEOnlyDiscoverable: !!(flagsByte & 0x01),
+          supportsGeneralDiscoverable: !!(flagsByte & 0x02),
+          supportsBR_EDRNotSupported: !!(flagsByte & 0x04),
+          supportsLEAndBR_EDRController: !!(flagsByte & 0x08),
+          supportsLEAndBR_EDRHost: !!(flagsByte & 0x10),
+        }
+      }
+
+      // 解析iBeacon AD结构 (Type: 0xFF, Manufacturer Specific Data)
+      if (typeHex === 'ff' && length >= 25) { // 至少需要25字节: Company ID(2) + Subtype(1) + Type(1) + UUID(16) + Major(2) + Minor(2) + TxPower(1)
+        const companyId = `${data.substring(2, 4)}${data.substring(0, 2)}` // 大端序
+        const subtype = data.substring(4, 6)
+        const iBeaconType = data.substring(6, 8)
+
+        // 检查是否为Apple公司的iBeacon
+        if (companyId.toLowerCase() === '004c' && subtype === '02' && iBeaconType === '15') {
+          const uuidBytes = data.substring(8, 40)
+          const majorBytes = data.substring(40, 44)
+          const minorBytes = data.substring(44, 48)
+          const measuredPowerByte = data.substring(48, 50)
+
+          // 格式化UUID
+          const proximityUUID = `${uuidBytes.substring(0, 8)}-${uuidBytes.substring(8, 12)}-${uuidBytes.substring(12, 16)}-${uuidBytes.substring(16, 20)}-${uuidBytes.substring(20, 32)}`.toUpperCase()
+
+          // 解析Major和Minor (大端序)
+          const major = Number.parseInt(`${majorBytes.substring(0, 2)}${majorBytes.substring(2, 4)}`, 16).toString()
+          const minor = Number.parseInt(`${minorBytes.substring(0, 2)}${minorBytes.substring(2, 4)}`, 16).toString()
+
+          // 解析Measured Power
+          let measuredPower = Number.parseInt(measuredPowerByte, 16)
+          if (measuredPower > 127) {
+            measuredPower = measuredPower - 256
+          }
+
+          parsed.iBeacon = {
+            length,
+            type: typeHex,
+            companyId,
+            subtype,
+            iBeaconType,
+            proximityUUID,
+            major,
+            minor,
+            measuredPower: `${measuredPower} dBm`,
+            description: 'Apple iBeacon',
+          }
+        }
+      }
+
+      offset += 2 + length * 2
+    }
+
+    parsed.adStructures = adStructures
+
+    // 检查是否成功解析到iBeacon
+    parsed.hasError = !parsed.iBeacon.proximityUUID
+    if (parsed.hasError) {
+      parsed.errorMessage = '未找到有效的iBeacon数据结构'
+    }
+  }
+  catch (error) {
+    parsed.hasError = true
+    parsed.errorMessage = error instanceof Error ? error.message : '解析过程中发生未知错误'
+  }
+
+  return parsed
 }
 
 // 解析结果
@@ -271,6 +494,143 @@ function getTypeDescription(type: string): string {
                 <div text-xs text-gray-800 font-mono mt-1 p-2 rounded bg-gray-100 break-all>
                   {{ result.content.toUpperCase() }}
                 </div>
+
+                <!-- AD结构详细解析 -->
+                <div v-if="result.parsedContent && result.parsedContent.adStructures.length > 0" mt-4>
+                  <h4 text-sm text-gray-700 font-medium mb-3 flex gap-2 items-center>
+                    <div rounded bg-orange-500 h-4 w-2 />
+                    <span v-if="result.parsedContent.iBeacon.proximityUUID" flex gap-2 items-center>
+                      🍎 iBeacon 数据解析
+                      <span text-xs text-blue-800 px-2 py-1 rounded-full bg-blue-100>{{ result.parsedContent.iBeacon.description }}</span>
+                    </span>
+                    <span v-else>
+                      广播数据解析
+                      <span text-xs text-gray-800 ml-2 px-2 py-1 rounded-full bg-gray-100>{{ result.parsedContent.adStructures.length }} 个AD结构</span>
+                    </span>
+                  </h4>
+
+                  <!-- AD结构概览 -->
+                  <div v-if="result.parsedContent.adStructures.length > 0" mb-3 p-3 border border-blue-200 rounded-lg bg-blue-50>
+                    <div text-xs text-blue-700 font-medium mb-2>
+                      📋 AD结构概览
+                    </div>
+                    <div text-xs space-y-1>
+                      <div
+                        v-for="(adStruct, adStructIndex) in result.parsedContent.adStructures"
+                        :key="adStructIndex"
+                        flex gap-2 items-center
+                      >
+                        <span text-gray-500 font-mono>#{{ adStructIndex + 1 }}</span>
+                        <span text-gray-600 font-mono>Length: {{ adStruct.length }}</span>
+                        <span text-gray-600 font-mono>Type: 0x{{ adStruct.type.toUpperCase() }}</span>
+                        <span text-gray-700>{{ adStruct.description }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Flags AD结构详情 -->
+                  <div v-if="result.parsedContent.flags.data" mb-3 p-3 border border-green-200 rounded-lg bg-green-50>
+                    <div text-xs text-green-700 font-medium mb-2>
+                      🚩 Flags AD结构 (Type: 0x01)
+                    </div>
+                    <div text-xs space-y-2>
+                      <div>
+                        <span text-gray-600 font-medium>Flags数据：</span>
+                        <span font-mono>0x{{ result.parsedContent.flags.data.toUpperCase() }}</span>
+                      </div>
+                      <div text-xs gap-2 grid grid-cols-1>
+                        <div v-if="result.parsedContent.flags.supportsLEOnlyDiscoverable">
+                          <span text-green-600>✓ LE Only Discoverable</span>
+                        </div>
+                        <div v-if="result.parsedContent.flags.supportsGeneralDiscoverable">
+                          <span text-green-600>✓ General Discoverable</span>
+                        </div>
+                        <div v-if="result.parsedContent.flags.supportsBR_EDRNotSupported">
+                          <span text-green-600>✓ BR/EDR Not Supported (LE Only)</span>
+                        </div>
+                        <div v-if="result.parsedContent.flags.supportsLEAndBR_EDRController">
+                          <span text-green-600>✓ LE and BR/EDR Controller (Simultaneous)</span>
+                        </div>
+                        <div v-if="result.parsedContent.flags.supportsLEAndBR_EDRHost">
+                          <span text-green-600>✓ LE and BR/EDR Host (Simultaneous)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- iBeacon AD结构详情 -->
+                  <div v-if="result.parsedContent.iBeacon.proximityUUID" space-y-3>
+                    <!-- 厂商信息 -->
+                    <div p-3 border border-purple-200 rounded-lg bg-purple-50>
+                      <div text-xs text-purple-700 font-medium mb-2>
+                        🏢 厂商信息
+                      </div>
+                      <div text-xs space-y-1>
+                        <div>
+                          <span text-gray-600 font-medium>Company ID：</span>
+                          <span font-mono>0x{{ result.parsedContent.iBeacon.companyId.toUpperCase() }}</span>
+                          <span text-gray-500 ml-2>{{ result.parsedContent.iBeacon.companyId.toLowerCase() === '004c' ? '(Apple Inc.)' : '(其他厂商)' }}</span>
+                        </div>
+                        <div>
+                          <span text-gray-600 font-medium>Subtype：</span>
+                          <span font-mono>0x{{ result.parsedContent.iBeacon.subtype.toUpperCase() }}</span>
+                          <span text-gray-500 ml-2>(数据子类型)</span>
+                        </div>
+                        <div>
+                          <span text-gray-600 font-medium>iBeacon Type：</span>
+                          <span font-mono>0x{{ result.parsedContent.iBeacon.iBeaconType.toUpperCase() }}</span>
+                          <span text-gray-500 ml-2>(iBeacon数据类型)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 标识信息 -->
+                    <div p-3 border border-green-200 rounded-lg bg-green-50>
+                      <div text-xs text-green-700 font-medium mb-2>
+                        🏷️ 标识信息
+                      </div>
+                      <div text-xs space-y-2>
+                        <div>
+                          <span text-gray-600 font-medium>Proximity UUID：</span>
+                          <span font-mono break-all>{{ result.parsedContent.iBeacon.proximityUUID }}</span>
+                        </div>
+                        <div text-xs gap-4 grid grid-cols-2>
+                          <div>
+                            <span text-gray-600 font-medium>Major：</span>
+                            <span font-mono>{{ result.parsedContent.iBeacon.major }}</span>
+                          </div>
+                          <div>
+                            <span text-gray-600 font-medium>Minor：</span>
+                            <span font-mono>{{ result.parsedContent.iBeacon.minor }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 信号信息 -->
+                    <div p-3 border border-yellow-200 rounded-lg bg-yellow-50>
+                      <div text-xs text-yellow-700 font-medium mb-2>
+                        📶 信号信息
+                      </div>
+                      <div text-xs>
+                        <span text-gray-600 font-medium>Measured Power：</span>
+                        <span font-mono>{{ result.parsedContent.iBeacon.measuredPower }}</span>
+                        <span text-xs text-gray-500 ml-2>(1米距离处的信号强度)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 解析错误提示 -->
+                  <div v-if="result.parsedContent.hasError" text-sm text-orange-600>
+                    <div mb-2 flex gap-2 items-center>
+                      <span>⚠️</span>
+                      <span font-medium>解析警告</span>
+                    </div>
+                    <p text-xs text-orange-500>
+                      {{ result.parsedContent.errorMessage || '无法完全解析iBeacon数据' }}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -353,7 +713,111 @@ function getTypeDescription(type: string): string {
                   BLE信标的广播包内容
                 </td>
                 <td text-xs font-mono px-4 py-2 border border-gray-200 max-w-xs break-all>
-                  02 01 06 1a ff 4c 00 02 15 fd a5...
+                  1aff4c000215fda50693a4e24fb1afcfc6eb07647825271128a6b5
+                </td>
+              </tr>
+              <tr bg-blue-50 hover:bg-gray-50>
+                <td font-mono px-4 py-2 border border-gray-200 colspan="3">
+                  <strong>iBeacon 内容解析 (当 Type=0xFF 时)</strong>
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td text-xs font-mono px-4 py-2 border border-gray-200>
+                  9
+                </td>
+                <td text-xs px-4 py-2 border border-gray-200>
+                  Length - 数据长度
+                </td>
+                <td text-xs font-mono px-4 py-2 border border-gray-200>
+                  1A (26字节)
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td text-xs font-mono px-4 py-2 border border-gray-200>
+                  10
+                </td>
+                <td text-xs px-4 py-2 border border-gray-200>
+                  Type - 数据类型
+                </td>
+                <td text-xs font-mono px-4 py-2 border border-gray-200>
+                  FF (厂商自定义)
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td text-xs font-mono px-4 py-2 border border-gray-200>
+                  11-12
+                </td>
+                <td text-xs px-4 py-2 border border-gray-200>
+                  Company ID - 厂商ID
+                </td>
+                <td text-xs font-mono px-4 py-2 border border-gray-200>
+                  4C00 (Apple)
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td text-xs font-mono px-4 py-2 border border-gray-200>
+                  13
+                </td>
+                <td text-xs px-4 py-2 border border-gray-200>
+                  Beacon Type
+                </td>
+                <td text-xs font-mono px-4 py-2 border border-gray-200>
+                  02 (iBeacon)
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td text-xs font-mono px-4 py-2 border border-gray-200>
+                  14
+                </td>
+                <td text-xs px-4 py-2 border border-gray-200>
+                  Beacon Length
+                </td>
+                <td text-xs font-mono px-4 py-2 border border-gray-200>
+                  15 (21字节)
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td text-xs font-mono px-4 py-2 border border-gray-200>
+                  15-30
+                </td>
+                <td text-xs px-4 py-2 border border-gray-200>
+                  Proximity UUID (16字节)
+                </td>
+                <td text-xs font-mono px-4 py-2 border border-gray-200 break-all>
+                  FDA50693-A4E2-4FB1-AFCF-C6EB07647825
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td text-xs font-mono px-4 py-2 border border-gray-200>
+                  31-32
+                </td>
+                <td text-xs px-4 py-2 border border-gray-200>
+                  Major (2字节)
+                </td>
+                <td text-xs font-mono px-4 py-2 border border-gray-200>
+                  2711
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td text-xs font-mono px-4 py-2 border border-gray-200>
+                  33-34
+                </td>
+                <td text-xs px-4 py-2 border border-gray-200>
+                  Minor (2字节)
+                </td>
+                <td text-xs font-mono px-4 py-2 border border-gray-200>
+                  28A6
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td text-xs font-mono px-4 py-2 border border-gray-200>
+                  35
+                </td>
+                <td text-xs px-4 py-2 border border-gray-200>
+                  Tx Power (1字节)
+                </td>
+                <td text-xs font-mono px-4 py-2 border border-gray-200>
+                  B5 (-75 dBm)
                 </td>
               </tr>
             </tbody>

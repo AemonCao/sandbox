@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Vue 3 digital twin management platform built with modern tooling. The project serves as a sandbox environment for testing and development of device monitoring, energy management, and smart analysis features.
+This is a Vue 3 frontend sandbox project used for running demo code and debugging new components. The project provides a minimal but modern development environment for rapid prototyping and testing.
 
 ## Common Development Commands
 
@@ -56,11 +56,12 @@ This is a Vue 3 digital twin management platform built with modern tooling. The 
 ### Key Directories
 
 - `src/pages/` - File-based routing (pages become routes automatically)
+  - `index.vue` - Main homepage showing available routes
+  - `bluetooth-json/index.vue` - Bluetooth JSON data parsing demo
+  - `[...all].vue` - Catch-all route for 404 handling
 - `src/layouts/` - Layout components for page structure
-- `src/composables/` - Vue composables for reusable logic
-- `src/router/` - Router configuration and guards
-- `src/styles/` - Global styles and theme configuration
-- `src/assets/` - Static assets (fonts, images)
+  - `default.vue` - Default layout with dynamic title management
+- `src/composables/` - Vue composables for reusable logic (auto-imported)
 
 ### Routing System
 
@@ -92,14 +93,181 @@ This is a Vue 3 digital twin management platform built with modern tooling. The 
 - Dependencies organized in catalogs: `build`, `dev`, `frontend`
 - Centralized version management across dependencies
 
+## Project Structure & Development Patterns
+
+### Page Creation Workflow
+
+- New pages are created in `src/pages/` and automatically become routes
+- Each page should include a `<route>` block with YAML metadata for layout and title
+- Use `bluetooth-json/index.vue` as a template for new demo pages
+- The homepage (`index.vue`) displays available routes using `vue-router/auto-routes`
+
+### Component Development
+
+- Components should be created in `src/components/` (auto-imported)
+- Use Naive UI components with auto-import resolvers
+- Styling with UnoCSS atomic classes using attributify mode
+- Vue 3 Composition API with `<script setup>` syntax
+
+### UnoCSS Styling Guidelines
+
+**核心特性：**
+
+- **即时按需生成**：采用预设扫描和即时生成方式，按需生成样式，无需打包未使用的样式
+- **完全可定制**：无核心工具类，所有功能通过预设提供，支持自定义规则、快捷方式、变体等
+- **高性能**：基于 Rust 的编译时优势，带来更快的运行速度和更小的文件体积
+- **完全兼容 Tailwind CSS**：预设 `@unocss/preset-uno` 提供与 Tailwind CSS v3 兼容的工具类
+
+**预设配置 (Presets)：**
+
+- `@unocss/preset-uno`：默认预设，提供与 Tailwind CSS 兼容的工具类
+- `@unocss/preset-attributify`：属性化模式，支持将属性作为原子化 CSS 使用
+- `@unocss/preset-icons`：图标预设，支持超过 10 万个图标集
+- `@unocss/preset-typography`：排版预设，提供优雅的默认排版样式
+- `@unocss/preset-web-fonts`：网络字体预设，轻松使用 Google Fonts 等网络字体
+
+**属性化模式 (Attributify Mode)：**
+
+- 使用属性语法：`<div flex items-center justify-center>`
+- 等价于：`<div class="flex items-center justify-center">`
+- 支持自定义属性值：`<div text="[#667eea]" border="[2px]">`
+- 简化复杂样式的书写：`<div grid grid-cols="[1fr,2fr,1fr]">`
+
+**基础工具类：**
+
+- **间距**：`m-4` (margin), `p-2` (padding), `gap-3` (gap between items)
+- **布局**：`flex`, `grid`, `block`, `inline-block`, `hidden`
+- **定位**：`relative`, `absolute`, `fixed`, `sticky`, `static`
+- **尺寸**：`w-full` (width), `h-screen` (height), `max-w-md` (max-width), `min-h-[200px]`
+- **颜色**：`bg-white`, `text-gray-600`, `border-blue-500`, `text-[#667eea]`
+- **排版**：`text-sm`, `font-bold`, `leading-tight`, `tracking-wide`
+- **边框**：`border`, `rounded-lg`, `border-none`, `ring-2`, `shadow-lg`
+- **阴影**：`shadow-lg`, `shadow-[0_2px_8px_rgba(0,_0,_0,_0.15)]`, `shadow-blue-500/20`
+- **渐变**：`bg-gradient-to-r`, `bg-gradient-to-br`, `from-blue-500 to-purple-600`
+- **过渡**：`transition-all`, `duration-300`, `ease-in-out`, `transform`
+
+**响应式设计：**
+
+- 断点前缀：`sm:` (640px+), `md:` (768px+), `lg:` (1024px+), `xl:` (1280px+), `2xl:` (1536px+)
+- 示例：`<div grid cols-1 md:cols-2 lg:cols-3>`
+- 移动优先：默认样式应用于移动端，通过前缀扩展到更大屏幕
+
+**状态和变体 (States & Variants)：**
+
+- **交互状态**：`hover:bg-blue-500`, `focus:outline-none`, `active:scale-95`
+- **组合变体**：`hover:scale-105 transition-transform`
+- **暗色模式**：`dark:bg-gray-800` (自动跟随系统主题)
+- **条件应用**：`sm:text-lg` (在小屏幕上应用)
+- **子元素选择**：`child-hover:scale-110`
+
+**高级功能：**
+
+- **自定义 CSS 属性**：使用 `@property` 支持属性类型检查、设定默认值
+- **CSS 变量**：`--custom-color: #667eea; bg-[var(--custom-color)]`
+- **计算值**：`w-[calc(100%-2rem)]`, `h-[50vh]`
+- **任意值**：`text-[14px]`, `m-[1.5rem]`, `bg-[#hexcode]`
+- **组合选择器**：`[&>*]:m-2`, `group-hover:bg-blue-500`
+
+**与 Naive UI 集成：**
+
+- 使用 Naive UI 语义化属性：`bg="n-color-modal"`, `text="n-color-text"`
+- 主题感知样式自动适配暗色/亮色模式切换
+- CSS 变量继承：`border="n-border-color"`, `bg-hover="n-color-hover"`
+
+**渐变和视觉效果：**
+
+- **线性渐变**：`bg-gradient-to-r from-blue-500 to-purple-600`
+- **径向渐变**：`bg-gradient-radial from-blue-400 to-purple-600`
+- **自定义颜色**：`bg-gradient-to-br from-[#667eea] to-[#764ba2]`
+- **多站渐变**：`bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500`
+- **锥形渐变**：`bg-gradient-conic from-blue-400 to-purple-600`
+- **重复渐变**：`bg-gradient-to-r from-blue-500 to-purple-600 bg-[length:200%_100%]`
+
+**动画和变换：**
+
+- **基础动画**：`animate-pulse`, `animate-bounce`, `animate-spin`
+- **自定义动画**：使用 `@keyframes` 定义并通过 `animate-[custom]` 调用
+- **变换**：`scale-105`, `rotate-45`, `translate-x-4`, `skew-y-3`
+- **3D 变换**：`perspective-1000`, `rotate-y-180`, `translate-z-20`
+
+### Demo Page Template
+
+```vue
+<script setup lang="ts">
+// 在这里开始你的开发
+</script>
+
+<template>
+  <div p-4 min-h-screen from-blue-50 to-indigo-100 bg-gradient-to-br>
+    <!-- 在这里开始编写你的页面 -->
+    <div flex items-center justify-center>
+      <h1 text-2xl font-bold text-center>
+        标题
+      </h1>
+    </div>
+
+    <!-- 渐变按钮示例 -->
+    <div mt-8 flex gap-4 justify-center>
+      <button bg-gradient-to-r="from-blue-500 to-purple-600" text-white font-medium px-6 py-3 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105>
+        渐变按钮
+      </button>
+
+      <button bg-gradient-to-br="from-[#667eea] to-[#764ba2]" text-white font-medium px-6 py-3 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105>
+        自定义渐变
+      </button>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+/* 仅在需要特殊 CSS 变量或复杂样式时使用 */
+/* 优先使用 UnoCSS 属性化模式 */
+</style>
+
+<route lang="yaml">
+meta:
+  layout: default
+  title: '新页面'
+</route>
+```
+
+## Available MCP Services
+
+This project has access to several Model Context Protocol (MCP) services that extend functionality:
+
+### web-search-prime
+
+- **Status**: ✓ Connected
+- **Purpose**: Web search and information retrieval
+- **Usage**: Search for current information beyond knowledge cutoff
+- **Features**: Returns structured results with titles, URLs, summaries, website metadata
+
+### zai-mcp-server
+
+- **Status**: ✓ Connected
+- **Purpose**: AI-powered visual analysis
+- **Usage**: Analyze images and videos for content understanding
+- **Features**:
+  - Image analysis (PNG, JPG, JPEG, max 5MB)
+  - Video analysis (MP4, MOV, M4V, max 8MB)
+  - Support for local files and remote URLs
+
+### chrome-devtools
+
+- **Status**: ✓ Connected
+- **Purpose**: Browser automation and web development tools
+- **Usage**: Automated testing, web scraping, performance analysis
+- **Features**: Page navigation, screenshots, element interaction, network monitoring
+
 ## Important Notes
 
-- Development server runs on port 3333
+- **Purpose**: This is a sandbox project for demo development and component debugging
+- Development server runs on port 3333 with auto-open
 - File-based routing means pages in `src/pages/` automatically become routes
 - Auto-import system eliminates need for manual imports in most cases
 - Git hooks enforce code quality standards
-- Environment variables configured in `.env.*` files
-- Project uses modern Vue 3 ecosystem with latest tooling patterns
+- MCP services available for enhanced capabilities (web search, visual analysis, browser automation)
+- Create new demo pages by copying the template structure from `bluetooth-json/index.vue`
 
 ## Git Commit Guidelines
 

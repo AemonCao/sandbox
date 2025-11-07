@@ -1,7 +1,7 @@
 {
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.12.1",
+  "packageManager": "pnpm@10.20.0",
   "scripts": {
     "build": "vite build",
     "build:prod": "vite build --mode production",
@@ -33,6 +33,7 @@
     "@types/lodash": "catalog:dev",
     "@types/node": "catalog:dev",
     "@unocss/eslint-plugin": "catalog:dev",
+    "@unocss/preset-wind4": "catalog:dev",
     "@vitejs/plugin-vue": "catalog:build",
     "@vue-macros/volar": "catalog:dev",
     "@vue/test-utils": "catalog:dev",

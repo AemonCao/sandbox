@@ -10,6 +10,25 @@ html.dark {
   color-scheme: dark;
 }
 
+/* 样式切换动画 */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 9999;
+}
+.dark::view-transition-old(root) {
+  z-index: 9999;
+}
+.dark::view-transition-new(root) {
+  z-index: 1;
+}
+
 @font-face {
   font-family: 'ALiMaMaShuHeiTi';
   src: url('../assets/fonts/阿里妈妈数黑体.ttf') format('truetype');

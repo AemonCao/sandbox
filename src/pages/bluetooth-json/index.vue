@@ -15,5 +15,5 @@
 <route lang="yaml">
 meta:
   layout: default
-  title: '新页面'
+  title: '蓝牙信标解析'
 </route>

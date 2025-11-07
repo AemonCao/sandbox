@@ -82,9 +82,9 @@ export default defineConfig({
       launchEditor: 'code',
     }),
   ],
-
-  // https://github.com/vitest-dev/vitest
-  test: {
-    environment: 'jsdom',
-  },
 })
+
+// https://github.com/vitest-dev/vitest
+export const testConfig = {
+  environment: 'jsdom' as const,
+}

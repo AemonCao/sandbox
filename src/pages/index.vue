@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { RouteRecordRaw } from 'vue-router'
 import { NButton, NCard, NGi, NGrid, NSpace } from 'naive-ui'
 import { routes } from 'vue-router/auto-routes'
 
@@ -10,15 +11,21 @@ interface RouteInfo {
   path: string
   name: string
   meta: {
-    title: string
+    title?: string
     layout?: string
+    menu?: {
+      title?: string
+      navSort?: number
+      icon?: string
+      isBig?: boolean
+    }
   }
 }
 
 // 扁平化路由，获取所有有效的页面路由
 const pageRoutes: RouteInfo[] = []
 
-function extractRoutes(routeList: any[]) {
+function extractRoutes(routeList: readonly RouteRecordRaw[]) {
   routeList.forEach((route: any) => {
     // 处理有children的路由（通常是布局路由）
     if (route.children) {
@@ -64,16 +71,17 @@ pageRoutes.sort((a, b) => {
 
 <template>
   <div
-    class="from-blue-500 to-purple-600 bg-gradient-to-r"
+    from-blue-500 to-purple-600 bg-gradient-to-r
+    dark:from-blue-800 dark:to-purple-900
     p="24px" min-h="100vh"
     sm:p="16px"
   >
     <div text="center" mb="40px">
       <h1 text="2.5rem" font="600" mb="12px" sm:text="2rem">
-        数字孪生管理平台
+        Vue 3 前端沙盒
       </h1>
-      <p text="1.2rem" opacity="90" m="0" sm:text="1rem">
-        选择功能模块进入相应页面
+      <p text="1.2rem" opacity-90 m="0" sm:text="1rem">
+        用于运行演示代码和调试新组件
       </p>
     </div>
     <NSpace vertical size="large">
@@ -111,10 +119,10 @@ pageRoutes.sort((a, b) => {
             @click="$router.push(route.path)"
           >
             <div p="8px 0">
-              <h3 text="1.2rem" font="600" color="#333" m="0 0 8px 0" sm:text="1.1rem">
+              <h3 text="1.2rem" font="600" text-gray-800 mb-2px dark:text-gray-100 sm:text="1.1rem">
                 {{ route.meta?.title || route.name }}
               </h3>
-              <p text="0.9rem" color="#666" font="mono" bg="#f5f5f5" p="4px 8px" rounded="4px" inline-block sm:text="0.8rem">
+              <p text="0.9rem" font="mono" p="4px 8px" rounded="4px" text-gray-600 bg-gray-100 inline-block dark:text-gray-300 dark:bg-gray-800 sm:text="0.8rem">
                 {{ route.path }}
               </p>
             </div>

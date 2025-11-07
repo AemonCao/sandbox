@@ -3,7 +3,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import { routes } from 'vue-router/auto-routes'
 
 const router = createRouter({
-  routes: setupLayouts(routes),
+  routes: setupLayouts([...routes]),
   history: createWebHashHistory(import.meta.env.BASE_URL),
 })
 

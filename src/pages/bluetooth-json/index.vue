@@ -315,12 +315,27 @@ const parsedResults = computed(() => {
 
 // 添加广播包
 function addPackets() {
-  const lines = inputText.value.split('\n').filter(line => line.trim())
+  let dataArray: string[] = []
 
-  lines.forEach((line) => {
-    const trimmedLine = line.trim()
-    if (trimmedLine && !packets.value.includes(trimmedLine)) {
-      packets.value.push(trimmedLine)
+  try {
+    // 尝试解析为数组格式
+    const parsed = JSON.parse(inputText.value)
+    if (Array.isArray(parsed)) {
+      dataArray = parsed
+    }
+    else {
+      throw new TypeError('不是数组格式')
+    }
+  }
+  catch {
+    // 如果不是JSON数组，按原来的方式处理（按行分割）
+    dataArray = inputText.value.split('\n').filter(line => line.trim())
+  }
+
+  dataArray.forEach((item) => {
+    const trimmedItem = item.trim()
+    if (trimmedItem && !packets.value.includes(trimmedItem)) {
+      packets.value.push(trimmedItem)
     }
   })
 
@@ -336,6 +351,22 @@ function removePacket(index: number) {
 function clearAll() {
   packets.value = []
   inputText.value = ''
+}
+
+// 滚动到指定广播包
+function scrollToPacket(index: number) {
+  const element = document.getElementById(`packet-${index}`)
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
+
+// 滚动到顶部
+function scrollToTop() {
+  const container = document.querySelector('.overflow-y-auto')
+  if (container) {
+    container.scrollTop = 0
+  }
 }
 
 // Advertising Type Code 代码表
@@ -365,9 +396,12 @@ function getTypeDescription(type: string): string {
       </p>
     </div>
 
-    <div mx-auto gap-6 grid grid-cols-1 max-w-7xl lg:grid-cols-2>
+    <div mx-auto gap-6 grid grid-cols-1 max-w-full lg:px-4 lg:grid-cols-2>
       <!-- 左侧输入区域 -->
-      <div p-6 rounded-lg bg-white shadow-lg>
+      <div
+        p-6 rounded-lg bg-white shadow-lg lg:h-fit lg:max-h-screen lg:top-4 lg:sticky lg:overflow-y-auto
+        style="max-height: calc(100vh - 120px)"
+      >
         <h2 text-xl text-gray-800 font-semibold mb-4 flex gap-2 items-center>
           <div rounded bg-blue-500 h-6 w-2 />
           输入广播包数据
@@ -375,11 +409,11 @@ function getTypeDescription(type: string): string {
 
         <div mb-4>
           <label text-sm text-gray-700 font-medium mb-2 block>
-            请输入广播包数据（每行一个，支持批量粘贴）
+            请输入广播包数据（支持每行一个或JSON数组格式）
           </label>
           <textarea
             v-model="inputText"
-            placeholder="示例：00aea273f4f8deaa0201061aff4c000215ab8190d5d11e4941acc442f30510b40827473bd4b5"
+            placeholder="格式1（每行一个）：&#10;00aea273f4f8deaa0201061aff4c000215ab8190d5d11e4941acc442f30510b40827473bd4b5&#10;00b059763f23acb60201061aff4c000215ab8190d5d11e4941acc442f30510b408277049f6c5&#10;&#10;格式2（JSON数组）：&#10;[&quot;00aea273f4f8deaa020106...&quot;, &quot;00b059763f23acb6020106...&quot;]"
             text-sm font-mono px-3 py-2 border border-gray-300 rounded-md h-32 w-full resize-none
             focus:border-blue-500 focus:ring-2 focus:ring-blue-500
             rows="6"
@@ -407,25 +441,45 @@ function getTypeDescription(type: string): string {
 
         <!-- 已添加的广播包列表 -->
         <div v-if="packets.length > 0" mt-6>
-          <h3 text-sm text-gray-700 font-medium mb-3>
-            已添加的广播包 ({{ packets.length }})
-          </h3>
+          <div mb-3 flex items-center justify-between>
+            <h3 text-sm text-gray-700 font-medium>
+              已添加的广播包 ({{ packets.length }})
+            </h3>
+            <button
+              v-if="packets.length > 10"
+              text-xs text-blue-600 transition-colors hover:text-blue-800
+              @click="scrollToTop"
+            >
+              ↑ 回到顶部
+            </button>
+          </div>
           <div border border-gray-200 rounded-md max-h-48 overflow-y-auto>
             <div
               v-for="(packet, index) in packets"
               :key="index"
-              p-2 border-b border-gray-100 flex items-center justify-between last:border-b-0
-              hover:bg-gray-50
+
+              group p-2 border-b border-gray-100 flex items-center justify-between last:border-b-0 hover:bg-gray-50
             >
-              <span text-xs text-gray-600 font-mono flex-1 truncate>
-                {{ packet }}
-              </span>
               <button
-                class="text-sm text-red-500 ml-2 hover:text-red-700"
-                @click="removePacket(index)"
+                text-xs text-blue-600 font-mono text-left flex-1 truncate transition-colors hover:text-blue-800
+                @click="scrollToPacket(index)"
               >
-                删除
+                #{{ index + 1 }}: {{ packet }}
               </button>
+              <div flex gap-1>
+                <button
+                  text-xs text-gray-500 opacity-0 transition-opacity hover:text-blue-600 group-hover:opacity-100
+                  @click="scrollToPacket(index)"
+                >
+                  查看
+                </button>
+                <button
+                  class="text-sm text-red-500 ml-2 hover:text-red-700"
+                  @click="removePacket(index)"
+                >
+                  删除
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -433,9 +487,23 @@ function getTypeDescription(type: string): string {
 
       <!-- 右侧解析结果区域 -->
       <div p-6 rounded-lg bg-white shadow-lg>
-        <h2 text-xl text-gray-800 font-semibold mb-4 flex gap-2 items-center>
-          <div rounded bg-green-500 h-6 w-2 />
-          解析结果
+        <h2 text-xl text-gray-800 font-semibold mb-4 flex gap-2 items-center justify-between>
+          <div flex gap-2 items-center>
+            <div rounded bg-green-500 h-6 w-2 />
+            解析结果
+          </div>
+          <div flex gap-2 items-center>
+            <div text-sm text-gray-500 font-normal>
+              共 {{ parsedResults.length }} 个广播包
+            </div>
+            <button
+              v-if="parsedResults.length > 10"
+              text-xs text-blue-600 transition-colors hover:text-blue-800
+              @click="scrollToTop"
+            >
+              ↑ 回到顶部
+            </button>
+          </div>
         </h2>
 
         <div v-if="parsedResults.length === 0" text-gray-500 py-12 text-center>
@@ -445,11 +513,12 @@ function getTypeDescription(type: string): string {
           暂无解析结果，请在左侧输入广播包数据
         </div>
 
-        <div v-else max-h-96 overflow-y-auto space-y-4>
+        <div v-else max-h-screen overflow-y-auto space-y-4 style="max-height: calc(100vh - 200px);">
           <div
             v-for="(result, index) in parsedResults"
+            :id="`packet-${index}`"
             :key="index"
-            class="p-4 border rounded-lg"
+            class="p-4 border rounded-lg scroll-mt-4"
             :class="result.valid ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'"
           >
             <div mb-3 flex items-center justify-between>

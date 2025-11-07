@@ -20,7 +20,7 @@ useHead({
 
 <template>
   <NConfigProvider
-    h-full w-full select-none
+    h-full w-full
     tag="main"
     :theme="_theme"
     :theme-overrides="_themeOverrides"

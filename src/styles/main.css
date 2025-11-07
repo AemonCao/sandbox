@@ -6,6 +6,17 @@ body,
   padding: 0;
 }
 
+/* 确保页面可以滚动 */
+body {
+  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+html {
+  overflow-y: auto;
+}
+
 html.dark {
   color-scheme: dark;
 }

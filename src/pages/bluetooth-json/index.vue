@@ -648,180 +648,356 @@ function getTypeDescription(type: string): string {
       </div>
     </div>
 
-    <!-- 解析规则说明 -->
+    <!-- AD结构解析规则说明 -->
     <div mx-auto mt-8 max-w-7xl>
       <div p-6 rounded-lg bg-white shadow-lg>
         <h2 text-xl text-gray-800 font-semibold mb-4 flex gap-2 items-center>
           <div rounded bg-purple-500 h-6 w-2 />
-          解析规则说明
+          AD结构解析规则说明
         </h2>
+
+        <div mb-6 p-4 rounded-lg bg-blue-50>
+          <p text-sm text-blue-800>
+            <strong>蓝牙广播包采用AD (Advertising Data) 结构格式</strong>：每个AD结构由 [Length(1字节) + Type(1字节) + Data(Length字节)] 组成。
+            一个广播包可包含多个AD结构，按顺序解析。
+          </p>
+        </div>
 
         <div overflow-x-auto>
           <table text-sm w-full border-collapse>
             <thead>
               <tr bg-gray-50>
                 <th text-gray-700 font-medium px-4 py-2 text-left border border-gray-200>
-                  Bytes
+                  字节偏移
+                </th>
+                <th text-gray-700 font-medium px-4 py-2 text-left border border-gray-200>
+                  字段名称
+                </th>
+                <th text-gray-700 font-medium px-4 py-2 text-left border border-gray-200>
+                  数据类型
                 </th>
                 <th text-gray-700 font-medium px-4 py-2 text-left border border-gray-200>
                   说明
                 </th>
-                <th text-gray-700 font-medium px-4 py-2 text-left border border-gray-200>
-                  示例
-                </th>
               </tr>
             </thead>
             <tbody>
+              <!-- 基础广播包结构 -->
+              <tr bg-blue-50>
+                <td font-mono px-4 py-2 border border-gray-200 colspan="4">
+                  <strong>📡 基础广播包结构</strong>
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  0
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  Advertising Type
+                </td>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  uint8
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  广播包类型 (0x00=可连接无定向广播)
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  1-6
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  MAC Address
+                </td>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  uint8[6]
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  设备MAC地址 (6字节)
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  7
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  RSSI
+                </td>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  int8
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  信号强度指示 (有符号整数)
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  8+
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  Advertising Data
+                </td>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  bytes[]
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  广播数据内容 (多个AD结构)
+                </td>
+              </tr>
+
+              <!-- AD结构格式 -->
+              <tr bg-green-50>
+                <td font-mono px-4 py-2 border border-gray-200 colspan="4">
+                  <strong>📋 AD结构通用格式</strong>
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  0
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  Length
+                </td>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  uint8
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  数据长度，表示后续Data字段的字节数 (不包括Length和Type字段)
+                </td>
+              </tr>
               <tr hover:bg-gray-50>
                 <td font-mono px-4 py-2 border border-gray-200>
                   1
                 </td>
                 <td px-4 py-2 border border-gray-200>
-                  广播包类型
+                  Type
                 </td>
                 <td font-mono px-4 py-2 border border-gray-200>
-                  0 (Connectable undirected advertisement - 可连接的无定向广播)
-                </td>
-              </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
-                  2-7
+                  uint8
                 </td>
                 <td px-4 py-2 border border-gray-200>
-                  BLE信标的MAC地址
-                </td>
-                <td font-mono px-4 py-2 border border-gray-200>
-                  d2:5f:2d:ab:2e:d0
+                  AD类型 (0x01=Flags, 0xFF=厂商自定义数据等)
                 </td>
               </tr>
               <tr hover:bg-gray-50>
                 <td font-mono px-4 py-2 border border-gray-200>
-                  8
+                  2+
                 </td>
                 <td px-4 py-2 border border-gray-200>
-                  BLE信标的RSSI
+                  Data
                 </td>
                 <td font-mono px-4 py-2 border border-gray-200>
-                  ba (0xba - 256 = -70)
-                </td>
-              </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
-                  9-
+                  bytes[]
                 </td>
                 <td px-4 py-2 border border-gray-200>
-                  BLE信标的广播包内容
-                </td>
-                <td text-xs font-mono px-4 py-2 border border-gray-200 max-w-xs break-all>
-                  1aff4c000215fda50693a4e24fb1afcfc6eb07647825271128a6b5
+                  实际数据内容，长度由Length字段指定
                 </td>
               </tr>
-              <tr bg-blue-50 hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200 colspan="3">
-                  <strong>iBeacon 内容解析 (当 Type=0xFF 时)</strong>
-                </td>
-              </tr>
-              <tr hover:bg-gray-50>
-                <td text-xs font-mono px-4 py-2 border border-gray-200>
-                  9
-                </td>
-                <td text-xs px-4 py-2 border border-gray-200>
-                  Length - 数据长度
-                </td>
-                <td text-xs font-mono px-4 py-2 border border-gray-200>
-                  1A (26字节)
+
+              <!-- Flags AD结构 -->
+              <tr bg-yellow-50>
+                <td font-mono px-4 py-2 border border-gray-200 colspan="4">
+                  <strong>🚩 Flags AD结构 (Type: 0x01)</strong>
                 </td>
               </tr>
               <tr hover:bg-gray-50>
-                <td text-xs font-mono px-4 py-2 border border-gray-200>
-                  10
+                <td font-mono px-4 py-2 border border-gray-200>
+                  0
                 </td>
-                <td text-xs px-4 py-2 border border-gray-200>
-                  Type - 数据类型
+                <td px-4 py-2 border border-gray-200>
+                  Length
                 </td>
-                <td text-xs font-mono px-4 py-2 border border-gray-200>
-                  FF (厂商自定义)
+                <td font-mono px-4 py-2 border border-gray-200>
+                  0x02
                 </td>
-              </tr>
-              <tr hover:bg-gray-50>
-                <td text-xs font-mono px-4 py-2 border border-gray-200>
-                  11-12
-                </td>
-                <td text-xs px-4 py-2 border border-gray-200>
-                  Company ID - 厂商ID
-                </td>
-                <td text-xs font-mono px-4 py-2 border border-gray-200>
-                  4C00 (Apple)
+                <td px-4 py-2 border border-gray-200>
+                  固定长度2字节
                 </td>
               </tr>
               <tr hover:bg-gray-50>
-                <td text-xs font-mono px-4 py-2 border border-gray-200>
-                  13
+                <td font-mono px-4 py-2 border border-gray-200>
+                  1
                 </td>
-                <td text-xs px-4 py-2 border border-gray-200>
-                  Beacon Type
+                <td px-4 py-2 border border-gray-200>
+                  Type
                 </td>
-                <td text-xs font-mono px-4 py-2 border border-gray-200>
-                  02 (iBeacon)
+                <td font-mono px-4 py-2 border border-gray-200>
+                  0x01
                 </td>
-              </tr>
-              <tr hover:bg-gray-50>
-                <td text-xs font-mono px-4 py-2 border border-gray-200>
-                  14
-                </td>
-                <td text-xs px-4 py-2 border border-gray-200>
-                  Beacon Length
-                </td>
-                <td text-xs font-mono px-4 py-2 border border-gray-200>
-                  15 (21字节)
+                <td px-4 py-2 border border-gray-200>
+                  Flags类型标识
                 </td>
               </tr>
               <tr hover:bg-gray-50>
-                <td text-xs font-mono px-4 py-2 border border-gray-200>
-                  15-30
+                <td font-mono px-4 py-2 border border-gray-200>
+                  2
                 </td>
-                <td text-xs px-4 py-2 border border-gray-200>
-                  Proximity UUID (16字节)
+                <td px-4 py-2 border border-gray-200>
+                  Flags Data
                 </td>
-                <td text-xs font-mono px-4 py-2 border border-gray-200 break-all>
-                  FDA50693-A4E2-4FB1-AFCF-C6EB07647825
+                <td font-mono px-4 py-2 border border-gray-200>
+                  uint8
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  设备能力标志位：<br>
+                  • Bit 0: LE Only Discoverable<br>
+                  • Bit 1: General Discoverable<br>
+                  • Bit 2: BR/EDR Not Supported<br>
+                  • Bit 3: LE and BR/EDR Controller<br>
+                  • Bit 4: LE and BR/EDR Host
+                </td>
+              </tr>
+
+              <!-- iBeacon AD结构 -->
+              <tr bg-orange-50>
+                <td font-mono px-4 py-2 border border-gray-200 colspan="4">
+                  <strong>🍎 iBeacon AD结构 (Type: 0xFF, Apple Manufacturer)</strong>
                 </td>
               </tr>
               <tr hover:bg-gray-50>
-                <td text-xs font-mono px-4 py-2 border border-gray-200>
-                  31-32
+                <td font-mono px-4 py-2 border border-gray-200>
+                  0
                 </td>
-                <td text-xs px-4 py-2 border border-gray-200>
-                  Major (2字节)
+                <td px-4 py-2 border border-gray-200>
+                  Length
                 </td>
-                <td text-xs font-mono px-4 py-2 border border-gray-200>
-                  2711
+                <td font-mono px-4 py-2 border border-gray-200>
+                  0x1A
                 </td>
-              </tr>
-              <tr hover:bg-gray-50>
-                <td text-xs font-mono px-4 py-2 border border-gray-200>
-                  33-34
-                </td>
-                <td text-xs px-4 py-2 border border-gray-200>
-                  Minor (2字节)
-                </td>
-                <td text-xs font-mono px-4 py-2 border border-gray-200>
-                  28A6
+                <td px-4 py-2 border border-gray-200>
+                  固定长度26字节 (25字节数据 + 1字节Length)
                 </td>
               </tr>
               <tr hover:bg-gray-50>
-                <td text-xs font-mono px-4 py-2 border border-gray-200>
-                  35
+                <td font-mono px-4 py-2 border border-gray-200>
+                  1
                 </td>
-                <td text-xs px-4 py-2 border border-gray-200>
-                  Tx Power (1字节)
+                <td px-4 py-2 border border-gray-200>
+                  Type
                 </td>
-                <td text-xs font-mono px-4 py-2 border border-gray-200>
-                  B5 (-75 dBm)
+                <td font-mono px-4 py-2 border border-gray-200>
+                  0xFF
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  厂商自定义数据类型
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  2-3
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  Company ID
+                </td>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  uint16 (大端序)
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  厂商标识符，Apple为0x004C
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  4
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  Subtype
+                </td>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  0x02
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  iBeacon子类型标识
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  5
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  iBeacon Type
+                </td>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  0x15
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  iBeacon数据类型标识 (固定值21)
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  6-21
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  Proximity UUID
+                </td>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  uint8[16]
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  设备唯一标识符，格式为8-4-4-4-12的标准UUID
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  22-23
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  Major
+                </td>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  uint16 (大端序)
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  主要标识，用于分组管理 (如商场楼层)
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  24-25
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  Minor
+                </td>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  uint16 (大端序)
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  次要标识，用于细分定位 (如具体店铺)
+                </td>
+              </tr>
+              <tr hover:bg-gray-50>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  26
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  Measured Power
+                </td>
+                <td font-mono px-4 py-2 border border-gray-200>
+                  int8
+                </td>
+                <td px-4 py-2 border border-gray-200>
+                  1米距离处的信号强度，用于距离计算 (有符号整数)
                 </td>
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- 示例解析 -->
+        <div mt-6 p-4 rounded-lg bg-purple-50>
+          <h3 text-sm text-purple-800 font-semibold mb-2>
+            📝 示例解析
+          </h3>
+          <p text-xs text-purple-700 mb-2>
+            <strong>广播包数据:</strong> 00d25f2dab2ed0ba0201061aff4c000215fda50693a4e24fb1afcfc6eb07647825271128a6b5
+          </p>
+          <div text-xs text-purple-600 space-y-1>
+            <div>• <strong>基础部分:</strong> 00 d25f2dab2ed0 ba = Type(0x00) + MAC(d2:5f:2d:ab:2e:d0) + RSSI(-70dBm)</div>
+            <div>• <strong>AD结构1 (Flags):</strong> 020106 = Length(2) + Type(0x01) + Data(0x06)</div>
+            <div>• <strong>AD结构2 (iBeacon):</strong> 1aff4c000215fda50693a4e24fb1afcfc6eb07647825271128a6b5</div>
+            <div>  └─ Length(0x1A=26) + Type(0xFF) + Company ID(0x004C=Apple) + Subtype(0x02) + iBeacon Type(0x15) + UUID + Major + Minor + TxPower</div>
+          </div>
         </div>
       </div>
 

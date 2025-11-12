@@ -678,12 +678,12 @@ function getTypeDescription(type: string): string {
 </script>
 
 <template>
-  <div p-4 min-h-screen from-gray-50 to-blue-50 bg-gradient-to-br>
+  <div p-4 min-h-screen from-gray-50 to-blue-50 bg-gradient-to-br dark:from-gray-900 dark:to-blue-900>
     <div mb-6>
-      <h1 text-3xl text-gray-800 font-bold text-center>
+      <h1 text-3xl text-gray-800 font-bold text-center dark:text-white>
         蓝牙广播包解析器
       </h1>
-      <p text-gray-600 mt-2 text-center>
+      <p text-gray-600 mt-2 text-center dark:text-gray-300>
         支持同时解析多个蓝牙广播包和扫描返回包，支持批量输入
       </p>
     </div>
@@ -691,23 +691,23 @@ function getTypeDescription(type: string): string {
     <div mx-auto gap-6 grid grid-cols-1 max-w-full lg:px-4 lg:grid-cols-2>
       <!-- 左侧输入区域 -->
       <div
-        p-6 rounded-lg bg-white shadow-lg lg:h-fit lg:max-h-screen lg:top-4 lg:sticky lg:overflow-y-auto
+        p-6 rounded-lg bg-white shadow-lg dark:bg-gray-800 lg:h-fit lg:max-h-screen dark:shadow-gray-700 lg:top-4 lg:sticky lg:overflow-y-auto
         style="max-height: calc(100vh - 120px)"
       >
-        <h2 text-xl text-gray-800 font-semibold mb-4 flex gap-2 items-center>
+        <h2 text-xl text-gray-800 font-semibold mb-4 flex gap-2 items-center dark:text-white>
           <div rounded bg-blue-500 h-6 w-2 />
           输入广播包数据
         </h2>
 
         <div mb-4>
-          <label text-sm text-gray-700 font-medium mb-2 block>
+          <label text-sm text-gray-700 font-medium mb-2 block dark:text-gray-300>
             请输入广播包数据（支持每行一个或JSON数组格式）
           </label>
           <textarea
             v-model="inputText"
             placeholder="格式1（普通广播包）：&#10;00aea273f4f8deaa0201061aff4c000215ab8190d5d11e4941acc442f30510b40827473bd4b5&#10;&#10;格式2（扫描返回包 04开头）：&#10;046c3d20c67b90f00303f0ff0a094265654c696e6b65720a167825271436cd3401003401...&#10;&#10;格式3（JSON数组）：&#10;[&quot;00aea273f4f8deaa020106...&quot;, &quot;046c3d20c67b90f00303...&quot;]"
-            text-sm font-mono px-3 py-2 border border-gray-300 rounded-md h-32 w-full resize-none
-            focus:border-blue-500 focus:ring-2 focus:ring-blue-500
+
+            text-sm font-mono px-3 py-2 border border-gray-300 rounded-md h-32 w-full resize-none dark:text-gray-200 dark:border-gray-600 focus:border-blue-500 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500
             rows="6"
           />
         </div>
@@ -716,7 +716,7 @@ function getTypeDescription(type: string): string {
           <button
             :disabled="!inputText.trim()"
             text-white px-4 py-2 rounded-md bg-blue-500 flex-1 transition-colors
-            disabled:bg-gray-300 hover:bg-blue-600 disabled:cursor-not-allowed
+            disabled:bg-gray-300 hover:bg-blue-600 disabled:cursor-not-allowed dark:disabled:bg-gray-600
             @click="addPackets"
           >
             添加广播包
@@ -724,7 +724,7 @@ function getTypeDescription(type: string): string {
           <button
             :disabled="packets.length === 0"
             text-white px-4 py-2 rounded-md bg-red-500 flex-1 transition-colors
-            disabled:bg-gray-300 hover:bg-red-600 disabled:cursor-not-allowed
+            disabled:bg-gray-300 hover:bg-red-600 disabled:cursor-not-allowed dark:disabled:bg-gray-600
             @click="clearAll"
           >
             清空所有
@@ -734,39 +734,39 @@ function getTypeDescription(type: string): string {
         <!-- 已添加的广播包列表 -->
         <div v-if="packets.length > 0" mt-6>
           <div mb-3 flex items-center justify-between>
-            <h3 text-sm text-gray-700 font-medium>
+            <h3 text-sm text-gray-700 font-medium dark:text-gray-300>
               已添加的广播包 ({{ packets.length }})
             </h3>
             <button
               v-if="packets.length > 10"
-              text-xs text-blue-600 transition-colors hover:text-blue-800
+              text-xs text-blue-600 transition-colors dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300
               @click="scrollToTop"
             >
               ↑ 回到顶部
             </button>
           </div>
-          <div border border-gray-200 rounded-md max-h-48 overflow-y-auto>
+          <div border border-gray-200 rounded-md max-h-48 overflow-y-auto dark:border-gray-600 dark:bg-gray-700>
             <div
               v-for="(packet, index) in packets"
               :key="index"
 
-              group p-2 border-b border-gray-100 flex items-center justify-between last:border-b-0 hover:bg-gray-50
+              group p-2 border-b border-gray-100 flex items-center justify-between last:border-b-0 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600
             >
               <button
-                text-xs text-blue-600 font-mono text-left flex-1 truncate transition-colors hover:text-blue-800
+                text-xs text-blue-600 font-mono text-left flex-1 truncate transition-colors dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200
                 @click="scrollToPacket(index)"
               >
                 #{{ index + 1 }}: {{ packet }}
               </button>
               <div flex gap-1>
                 <button
-                  text-xs text-gray-500 opacity-0 transition-opacity hover:text-blue-600 group-hover:opacity-100
+                  text-xs text-gray-500 opacity-0 transition-opacity dark:text-gray-400 hover:text-blue-600 group-hover:opacity-100 dark:hover:text-blue-400
                   @click="scrollToPacket(index)"
                 >
                   查看
                 </button>
                 <button
-                  class="text-sm text-red-500 ml-2 hover:text-red-700"
+                  class="text-sm text-red-500 ml-2 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
                   @click="removePacket(index)"
                 >
                   删除
@@ -778,19 +778,19 @@ function getTypeDescription(type: string): string {
       </div>
 
       <!-- 右侧解析结果区域 -->
-      <div p-6 rounded-lg bg-white shadow-lg>
-        <h2 text-xl text-gray-800 font-semibold mb-4 flex gap-2 items-center justify-between>
+      <div p-6 rounded-lg bg-white shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
+        <h2 text-xl text-gray-800 font-semibold mb-4 flex gap-2 items-center justify-between dark:text-white>
           <div flex gap-2 items-center>
             <div rounded bg-green-500 h-6 w-2 />
             解析结果
           </div>
           <div flex gap-2 items-center>
-            <div text-sm text-gray-500 font-normal>
+            <div text-sm text-gray-500 font-normal dark:text-gray-400>
               共 {{ parsedResults.length }} 个广播包
             </div>
             <button
               v-if="parsedResults.length > 10"
-              text-xs text-blue-600 transition-colors hover:text-blue-800
+              text-xs text-blue-600 transition-colors dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300
               @click="scrollToTop"
             >
               ↑ 回到顶部
@@ -798,7 +798,7 @@ function getTypeDescription(type: string): string {
           </div>
         </h2>
 
-        <div v-if="parsedResults.length === 0" text-gray-500 py-12 text-center>
+        <div v-if="parsedResults.length === 0" text-gray-500 py-12 text-center dark:text-gray-400>
           <div text-6xl mb-4>
             📡
           </div>
@@ -811,15 +811,15 @@ function getTypeDescription(type: string): string {
             :id="`packet-${index}`"
             :key="index"
             class="p-4 border rounded-lg scroll-mt-4"
-            :class="result.valid ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'"
+            :class="result.valid ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20' : 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'"
           >
             <div mb-3 flex items-center justify-between>
-              <h3 text-sm text-gray-700 font-semibold>
+              <h3 text-sm text-gray-700 font-semibold dark:text-gray-200>
                 广播包 #{{ index + 1 }}
               </h3>
               <span
                 text-xs px-2 py-1 rounded-full
-                :class="result.valid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                :class="result.valid ? 'bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-300'"
               >
                 {{ result.valid ? '解析成功' : '解析失败' }}
               </span>
@@ -828,19 +828,19 @@ function getTypeDescription(type: string): string {
             <div v-if="result.valid" space-y-2>
               <div text-sm gap-4 grid grid-cols-2>
                 <div>
-                  <span text-gray-600 font-medium>原始数据：</span>
-                  <span text-xs text-gray-800 font-mono break-all>{{ result.original }}</span>
+                  <span text-gray-600 font-medium dark:text-gray-400>原始数据：</span>
+                  <span text-xs text-gray-800 font-mono break-all dark:text-gray-200>{{ result.original }}</span>
                 </div>
                 <div>
-                  <span text-gray-600 font-medium>广播包类型：</span>
-                  <span text-sm font-mono>{{ result.type.toUpperCase() }} ({{ getTypeDescription(result.type) }})</span>
+                  <span text-gray-600 font-medium dark:text-gray-400>广播包类型：</span>
+                  <span text-sm font-mono dark:text-gray-200>{{ result.type.toUpperCase() }} ({{ getTypeDescription(result.type) }})</span>
                 </div>
                 <div>
-                  <span text-gray-600 font-medium>MAC地址：</span>
+                  <span text-gray-600 font-medium dark:text-gray-400>MAC地址：</span>
                   <span text-sm text-blue-600 font-mono>{{ result.macAddress }}</span>
                 </div>
                 <div>
-                  <span text-gray-600 font-medium>RSSI：</span>
+                  <span text-gray-600 font-medium dark:text-gray-400>RSSI：</span>
                   <span
                     text-sm font-mono
                     :class="result.rssi < -70 ? 'text-red-600' : result.rssi < -60 ? 'text-yellow-600' : 'text-green-600'"
@@ -851,105 +851,108 @@ function getTypeDescription(type: string): string {
               </div>
 
               <div v-if="result.content">
-                <span text-sm text-gray-600 font-medium>广播包内容：</span>
-                <div text-xs text-gray-800 font-mono mt-1 p-2 rounded bg-gray-100 break-all>
+                <span text-sm text-gray-600 font-medium dark:text-gray-400>广播包内容：</span>
+                <div text-xs text-gray-800 font-mono mt-1 p-2 rounded bg-gray-100 break-all dark:text-gray-200 dark:bg-gray-700>
                   {{ result.content.toUpperCase() }}
                 </div>
 
                 <!-- 扫描返回包解析 -->
                 <div v-if="result.parsedContent && result.parsedContent.scanResponse" mt-4>
-                  <h4 text-sm text-gray-700 font-medium mb-3 flex gap-2 items-center>
+                  <h4 text-sm text-gray-700 font-medium mb-3 flex gap-2 items-center dark:text-gray-200>
                     <div rounded bg-cyan-500 h-4 w-2 />
                     🔍 扫描返回包解析
-                    <span text-xs text-cyan-800 px-2 py-1 rounded-full bg-cyan-100>类型: 0x04</span>
+                    <span text-xs text-cyan-800 px-2 py-1 rounded-full bg-cyan-100 dark:text-cyan-200 dark:bg-cyan-800>类型: 0x04</span>
                   </h4>
 
                   <!-- 扫描返回包基本信息 -->
-                  <div mb-3 p-3 border border-cyan-200 rounded-lg bg-cyan-50>
-                    <div text-xs text-cyan-700 font-medium mb-2>
+                  <div mb-3 p-3 border border-cyan-200 rounded-lg bg-cyan-50 dark:border-cyan-700 dark:bg-cyan-900>
+                    <div text-xs text-cyan-700 font-medium mb-2 dark:text-cyan-300>
                       📡 设备基本信息
                     </div>
                     <div text-xs space-y-2>
                       <div>
-                        <span text-gray-600 font-medium>设备MAC：</span>
+                        <span text-gray-600 font-medium dark:text-gray-400>设备MAC：</span>
                         <span text-blue-600 font-mono>{{ result.parsedContent.scanResponse.macAddress }}</span>
                       </div>
                       <div>
-                        <span text-gray-600 font-medium>信号强度：</span>
+                        <span text-gray-600 font-medium dark:text-gray-400>信号强度：</span>
                         <span font-mono :class="result.parsedContent.scanResponse.rssi < -70 ? 'text-red-600' : result.parsedContent.scanResponse.rssi < -60 ? 'text-yellow-600' : 'text-green-600'">
                           {{ result.parsedContent.scanResponse.rssi }} dBm
                         </span>
                       </div>
                       <div>
-                        <span text-gray-600 font-medium>广播标识头：</span>
-                        <span font-mono>{{ result.parsedContent.scanResponse.headerId }}</span>
-                        <span text-gray-500 ml-1>(固定值 0x0303)</span>
+                        <span text-gray-600 font-medium dark:text-gray-400>广播标识头：</span>
+                        <span font-mono dark:text-gray-200>{{ result.parsedContent.scanResponse.headerId }}</span>
+                        <span text-gray-500 ml-1 dark:text-gray-400>(固定值 0x0303)</span>
                       </div>
                       <div>
-                        <span text-gray-600 font-medium>厂商ID：</span>
-                        <span font-mono>{{ result.parsedContent.scanResponse.vendorId }}</span>
+                        <span text-gray-600 font-medium dark:text-gray-400>厂商ID：</span>
+                        <span font-mono dark:text-gray-200>{{ result.parsedContent.scanResponse.vendorId }}</span>
                       </div>
                       <div>
-                        <span text-gray-600 font-medium>数据长度：</span>
-                        <span font-mono>{{ result.parsedContent.scanResponse.dataLength }} 字节</span>
+                        <span text-gray-600 font-medium dark:text-gray-400>数据长度：</span>
+                        <span font-mono dark:text-gray-200>{{ result.parsedContent.scanResponse.dataLength }} 字节</span>
                       </div>
                       <div>
-                        <span text-gray-600 font-medium>数据类型：</span>
-                        <span font-mono>{{ result.parsedContent.scanResponse.dataType }}</span>
-                        <span text-gray-500 ml-1>{{ result.parsedContent.scanResponse.dataType === '0x09' ? '(完整名称)' : '(其他类型)' }}</span>
+                        <span text-gray-600 font-medium dark:text-gray-400>数据类型：</span>
+                        <span font-mono dark:text-gray-200>{{ result.parsedContent.scanResponse.dataType }}</span>
+                        <span text-gray-500 ml-1 dark:text-gray-400>{{ result.parsedContent.scanResponse.dataType === '0x09' ? '(完整名称)' : '(其他类型)' }}</span>
                       </div>
                     </div>
                   </div>
 
                   <!-- 设备名称 -->
-                  <div v-if="result.parsedContent.scanResponse.deviceName" mb-3 p-3 border border-green-200 rounded-lg bg-green-50>
-                    <div text-xs text-green-700 font-medium mb-2>
+                  <div
+                    v-if="result.parsedContent.scanResponse.deviceName"
+                    mb-3 p-3 border border-green-200 rounded-lg bg-green-50 dark:border-green-700 dark:bg-green-900
+                  >
+                    <div text-xs text-green-700 font-medium mb-2 dark:text-green-300>
                       🏷️ 设备名称
                     </div>
                     <div text-xs>
-                      <span text-green-800 font-mono>{{ result.parsedContent.scanResponse.deviceName }}</span>
+                      <span text-green-800 font-mono dark:text-green-200>{{ result.parsedContent.scanResponse.deviceName }}</span>
                     </div>
                   </div>
 
                   <!-- 自定义字段 -->
-                  <div v-if="result.parsedContent.scanResponse.customField" mb-3 p-3 border border-purple-200 rounded-lg bg-purple-50>
-                    <div text-xs text-purple-700 font-medium mb-2>
+                  <div v-if="result.parsedContent.scanResponse.customField" mb-3 p-3 border border-purple-200 rounded-lg bg-purple-50 dark:border-purple-700 dark:bg-purple-900>
+                    <div text-xs text-purple-700 font-medium mb-2 dark:text-purple-300>
                       🔧 自定义字段 / UUID
                     </div>
                     <div text-xs>
-                      <span text-purple-800 font-mono>{{ result.parsedContent.scanResponse.customField.toUpperCase() }}</span>
+                      <span text-purple-800 font-mono dark:text-purple-200>{{ result.parsedContent.scanResponse.customField.toUpperCase() }}</span>
                     </div>
                   </div>
 
                   <!-- 标识信息 (Major/Minor) -->
-                  <div v-if="result.parsedContent.scanResponse.major !== undefined || result.parsedContent.scanResponse.minor !== undefined" mb-3 p-3 border border-blue-200 rounded-lg bg-blue-50>
-                    <div text-xs text-blue-700 font-medium mb-2>
+                  <div v-if="result.parsedContent.scanResponse.major !== undefined || result.parsedContent.scanResponse.minor !== undefined" mb-3 p-3 border border-blue-200 rounded-lg bg-blue-50 dark:border-blue-700 dark:bg-blue-900>
+                    <div text-xs text-blue-700 font-medium mb-2 dark:text-blue-300>
                       📍 标识信息 (Major/Minor)
                     </div>
                     <div text-xs gap-4 grid grid-cols-2>
                       <div v-if="result.parsedContent.scanResponse.major !== undefined">
-                        <span text-gray-600 font-medium>Major：</span>
-                        <span text-blue-800 font-mono>{{ result.parsedContent.scanResponse.major }}</span>
+                        <span text-gray-600 font-medium dark:text-gray-400>Major：</span>
+                        <span text-blue-800 font-mono dark:text-blue-200>{{ result.parsedContent.scanResponse.major }}</span>
                       </div>
                       <div v-if="result.parsedContent.scanResponse.minor !== undefined">
-                        <span text-gray-600 font-medium>Minor：</span>
-                        <span text-blue-800 font-mono>{{ result.parsedContent.scanResponse.minor }}</span>
+                        <span text-gray-600 font-medium dark:text-gray-400>Minor：</span>
+                        <span text-blue-800 font-mono dark:text-blue-200>{{ result.parsedContent.scanResponse.minor }}</span>
                       </div>
                     </div>
                   </div>
 
                   <!-- 电压信息 -->
-                  <div v-if="result.parsedContent.scanResponse.voltage !== undefined" mb-3 p-3 border border-yellow-200 rounded-lg bg-yellow-50>
-                    <div text-xs text-yellow-700 font-medium mb-2>
+                  <div v-if="result.parsedContent.scanResponse.voltage !== undefined" mb-3 p-3 border border-yellow-200 rounded-lg bg-yellow-50 dark:border-yellow-700 dark:bg-yellow-900>
+                    <div text-xs text-yellow-700 font-medium mb-2 dark:text-yellow-300>
                       ⚡ 电压信息
                     </div>
                     <div text-xs space-y-2>
                       <!-- 电压计算详情 -->
                       <div v-if="result.parsedContent.errorMessage && result.parsedContent.errorMessage.includes('原始值')">
-                        <div text-xs text-gray-600 font-medium mb-1>
+                        <div text-xs text-gray-600 font-medium mb-1 dark:text-gray-400>
                           电压计算详情：
                         </div>
-                        <div text-xs text-gray-500 pl-2>
+                        <div text-xs text-gray-500 pl-2 dark:text-gray-400>
                           {{ result.parsedContent.errorMessage }}
                         </div>
                       </div>
@@ -984,7 +987,7 @@ function getTypeDescription(type: string): string {
                         </div>
                       </div>
 
-                      <div text-xs text-gray-500>
+                      <div text-xs text-gray-500 dark:text-gray-400>
                         电池有效工作电压范围: 2.6~3.65V
                       </div>
                     </div>
@@ -993,21 +996,21 @@ function getTypeDescription(type: string): string {
 
                 <!-- AD结构详细解析 -->
                 <div v-else-if="result.parsedContent && result.parsedContent.adStructures.length > 0" mt-4>
-                  <h4 text-sm text-gray-700 font-medium mb-3 flex gap-2 items-center>
+                  <h4 text-sm text-gray-700 font-medium mb-3 flex gap-2 items-center dark:text-gray-200>
                     <div rounded bg-orange-500 h-4 w-2 />
                     <span v-if="result.parsedContent.iBeacon.proximityUUID" flex gap-2 items-center>
                       🍎 iBeacon 数据解析
-                      <span text-xs text-blue-800 px-2 py-1 rounded-full bg-blue-100>{{ result.parsedContent.iBeacon.description }}</span>
+                      <span text-xs text-blue-800 px-2 py-1 rounded-full bg-blue-100 dark:text-blue-200 dark:bg-blue-800>{{ result.parsedContent.iBeacon.description }}</span>
                     </span>
                     <span v-else>
                       广播数据解析
-                      <span text-xs text-gray-800 ml-2 px-2 py-1 rounded-full bg-gray-100>{{ result.parsedContent.adStructures.length }} 个AD结构</span>
+                      <span text-xs text-gray-800 ml-2 px-2 py-1 rounded-full bg-gray-100 dark:text-gray-200 dark:bg-gray-700>{{ result.parsedContent.adStructures.length }} 个AD结构</span>
                     </span>
                   </h4>
 
                   <!-- AD结构概览 -->
-                  <div v-if="result.parsedContent.adStructures.length > 0" mb-3 p-3 border border-blue-200 rounded-lg bg-blue-50>
-                    <div text-xs text-blue-700 font-medium mb-2>
+                  <div v-if="result.parsedContent.adStructures.length > 0" mb-3 p-3 border border-blue-200 rounded-lg bg-blue-50 dark:border-blue-700 dark:bg-blue-900>
+                    <div text-xs text-blue-700 font-medium mb-2 dark:text-blue-300>
                       📋 AD结构概览
                     </div>
                     <div text-xs space-y-1>
@@ -1016,39 +1019,39 @@ function getTypeDescription(type: string): string {
                         :key="adStructIndex"
                         flex gap-2 items-center
                       >
-                        <span text-gray-500 font-mono>#{{ adStructIndex + 1 }}</span>
-                        <span text-gray-600 font-mono>Length: {{ adStruct.length }}</span>
-                        <span text-gray-600 font-mono>Type: 0x{{ adStruct.type.toUpperCase() }}</span>
-                        <span text-gray-700>{{ adStruct.description }}</span>
+                        <span text-gray-500 font-mono dark:text-gray-400>#{{ adStructIndex + 1 }}</span>
+                        <span text-gray-600 font-mono dark:text-gray-300>Length: {{ adStruct.length }}</span>
+                        <span text-gray-600 font-mono dark:text-gray-300>Type: 0x{{ adStruct.type.toUpperCase() }}</span>
+                        <span text-gray-700 dark:text-gray-200>{{ adStruct.description }}</span>
                       </div>
                     </div>
                   </div>
 
                   <!-- Flags AD结构详情 -->
-                  <div v-if="result.parsedContent.flags.data" mb-3 p-3 border border-green-200 rounded-lg bg-green-50>
-                    <div text-xs text-green-700 font-medium mb-2>
+                  <div v-if="result.parsedContent.flags.data" mb-3 p-3 border border-green-200 rounded-lg bg-green-50 dark:border-green-700 dark:bg-green-900>
+                    <div text-xs text-green-700 font-medium mb-2 dark:text-green-300>
                       🚩 Flags AD结构 (Type: 0x01)
                     </div>
                     <div text-xs space-y-2>
                       <div>
-                        <span text-gray-600 font-medium>Flags数据：</span>
-                        <span font-mono>0x{{ result.parsedContent.flags.data.toUpperCase() }}</span>
+                        <span text-gray-600 font-medium dark:text-gray-400>Flags数据：</span>
+                        <span font-mono dark:text-gray-200>0x{{ result.parsedContent.flags.data.toUpperCase() }}</span>
                       </div>
                       <div text-xs gap-2 grid grid-cols-1>
                         <div v-if="result.parsedContent.flags.supportsLEOnlyDiscoverable">
-                          <span text-green-600>✓ LE Only Discoverable</span>
+                          <span text-green-600 dark:text-green-400>✓ LE Only Discoverable</span>
                         </div>
                         <div v-if="result.parsedContent.flags.supportsGeneralDiscoverable">
-                          <span text-green-600>✓ General Discoverable</span>
+                          <span text-green-600 dark:text-green-400>✓ General Discoverable</span>
                         </div>
                         <div v-if="result.parsedContent.flags.supportsBR_EDRNotSupported">
-                          <span text-green-600>✓ BR/EDR Not Supported (LE Only)</span>
+                          <span text-green-600 dark:text-green-400>✓ BR/EDR Not Supported (LE Only)</span>
                         </div>
                         <div v-if="result.parsedContent.flags.supportsLEAndBR_EDRController">
-                          <span text-green-600>✓ LE and BR/EDR Controller (Simultaneous)</span>
+                          <span text-green-600 dark:text-green-400>✓ LE and BR/EDR Controller (Simultaneous)</span>
                         </div>
                         <div v-if="result.parsedContent.flags.supportsLEAndBR_EDRHost">
-                          <span text-green-600>✓ LE and BR/EDR Host (Simultaneous)</span>
+                          <span text-green-600 dark:text-green-400>✓ LE and BR/EDR Host (Simultaneous)</span>
                         </div>
                       </div>
                     </div>
@@ -1057,72 +1060,72 @@ function getTypeDescription(type: string): string {
                   <!-- iBeacon AD结构详情 -->
                   <div v-if="result.parsedContent.iBeacon.proximityUUID" space-y-3>
                     <!-- 厂商信息 -->
-                    <div p-3 border border-purple-200 rounded-lg bg-purple-50>
-                      <div text-xs text-purple-700 font-medium mb-2>
+                    <div p-3 border border-purple-200 rounded-lg bg-purple-50 dark:border-purple-700 dark:bg-purple-900>
+                      <div text-xs text-purple-700 font-medium mb-2 dark:text-purple-300>
                         🏢 厂商信息
                       </div>
                       <div text-xs space-y-1>
                         <div>
-                          <span text-gray-600 font-medium>Company ID：</span>
-                          <span font-mono>0x{{ result.parsedContent.iBeacon.companyId.toUpperCase() }}</span>
-                          <span text-gray-500 ml-2>{{ result.parsedContent.iBeacon.companyId.toLowerCase() === '004c' ? '(Apple Inc.)' : '(其他厂商)' }}</span>
+                          <span text-gray-600 font-medium dark:text-gray-400>Company ID：</span>
+                          <span font-mono dark:text-gray-200>0x{{ result.parsedContent.iBeacon.companyId.toUpperCase() }}</span>
+                          <span text-gray-500 ml-2 dark:text-gray-400>{{ result.parsedContent.iBeacon.companyId.toLowerCase() === '004c' ? '(Apple Inc.)' : '(其他厂商)' }}</span>
                         </div>
                         <div>
-                          <span text-gray-600 font-medium>Subtype：</span>
-                          <span font-mono>0x{{ result.parsedContent.iBeacon.subtype.toUpperCase() }}</span>
-                          <span text-gray-500 ml-2>(数据子类型)</span>
+                          <span text-gray-600 font-medium dark:text-gray-400>Subtype：</span>
+                          <span font-mono dark:text-gray-200>0x{{ result.parsedContent.iBeacon.subtype.toUpperCase() }}</span>
+                          <span text-gray-500 ml-2 dark:text-gray-400>(数据子类型)</span>
                         </div>
                         <div>
-                          <span text-gray-600 font-medium>iBeacon Type：</span>
-                          <span font-mono>0x{{ result.parsedContent.iBeacon.iBeaconType.toUpperCase() }}</span>
-                          <span text-gray-500 ml-2>(iBeacon数据类型)</span>
+                          <span text-gray-600 font-medium dark:text-gray-400>iBeacon Type：</span>
+                          <span font-mono dark:text-gray-200>0x{{ result.parsedContent.iBeacon.iBeaconType.toUpperCase() }}</span>
+                          <span text-gray-500 ml-2 dark:text-gray-400>(iBeacon数据类型)</span>
                         </div>
                       </div>
                     </div>
 
                     <!-- 标识信息 -->
-                    <div p-3 border border-green-200 rounded-lg bg-green-50>
-                      <div text-xs text-green-700 font-medium mb-2>
+                    <div p-3 border border-green-200 rounded-lg bg-green-50 dark:border-green-700 dark:bg-green-900>
+                      <div text-xs text-green-700 font-medium mb-2 dark:text-green-300>
                         🏷️ 标识信息
                       </div>
                       <div text-xs space-y-2>
                         <div>
-                          <span text-gray-600 font-medium>Proximity UUID：</span>
-                          <span font-mono break-all>{{ result.parsedContent.iBeacon.proximityUUID }}</span>
+                          <span text-gray-600 font-medium dark:text-gray-400>Proximity UUID：</span>
+                          <span font-mono break-all dark:text-gray-200>{{ result.parsedContent.iBeacon.proximityUUID }}</span>
                         </div>
                         <div text-xs gap-4 grid grid-cols-2>
                           <div>
-                            <span text-gray-600 font-medium>Major：</span>
-                            <span font-mono>{{ result.parsedContent.iBeacon.major }}</span>
+                            <span text-gray-600 font-medium dark:text-gray-400>Major：</span>
+                            <span font-mono dark:text-gray-200>{{ result.parsedContent.iBeacon.major }}</span>
                           </div>
                           <div>
-                            <span text-gray-600 font-medium>Minor：</span>
-                            <span font-mono>{{ result.parsedContent.iBeacon.minor }}</span>
+                            <span text-gray-600 font-medium dark:text-gray-400>Minor：</span>
+                            <span font-mono dark:text-gray-200>{{ result.parsedContent.iBeacon.minor }}</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
                     <!-- 信号信息 -->
-                    <div p-3 border border-yellow-200 rounded-lg bg-yellow-50>
-                      <div text-xs text-yellow-700 font-medium mb-2>
+                    <div p-3 border border-yellow-200 rounded-lg bg-yellow-50 dark:border-yellow-700 dark:bg-yellow-900>
+                      <div text-xs text-yellow-700 font-medium mb-2 dark:text-yellow-300>
                         📶 信号信息
                       </div>
                       <div text-xs>
-                        <span text-gray-600 font-medium>Measured Power：</span>
-                        <span font-mono>{{ result.parsedContent.iBeacon.measuredPower }}</span>
-                        <span text-xs text-gray-500 ml-2>(1米距离处的信号强度)</span>
+                        <span text-gray-600 font-medium dark:text-gray-400>Measured Power：</span>
+                        <span font-mono dark:text-gray-200>{{ result.parsedContent.iBeacon.measuredPower }}</span>
+                        <span text-xs text-gray-500 ml-2 dark:text-gray-400>(1米距离处的信号强度)</span>
                       </div>
                     </div>
                   </div>
 
                   <!-- 解析错误提示 -->
-                  <div v-if="result.parsedContent.hasError" text-sm text-orange-600>
+                  <div v-if="result.parsedContent.hasError" text-sm text-orange-600 dark:text-orange-400>
                     <div mb-2 flex gap-2 items-center>
                       <span>⚠️</span>
                       <span font-medium>解析警告</span>
                     </div>
-                    <p text-xs text-orange-500>
+                    <p text-xs text-orange-500 dark:text-orange-300>
                       {{ result.parsedContent.errorMessage || '无法完全解析iBeacon数据' }}
                     </p>
                   </div>
@@ -1130,12 +1133,12 @@ function getTypeDescription(type: string): string {
               </div>
             </div>
 
-            <div v-else text-sm text-red-600>
+            <div v-else text-sm text-red-600 dark:text-red-400>
               <div mb-2 flex gap-2 items-center>
                 <span>❌</span>
                 <span font-medium>解析错误</span>
               </div>
-              <p text-red-500>
+              <p text-red-500 dark:text-red-300>
                 {{ result.error }}
               </p>
             </div>
@@ -1146,14 +1149,14 @@ function getTypeDescription(type: string): string {
 
     <!-- AD结构解析规则说明 -->
     <div mx-auto mt-8 max-w-7xl>
-      <div p-6 rounded-lg bg-white shadow-lg>
-        <h2 text-xl text-gray-800 font-semibold mb-4 flex gap-2 items-center>
+      <div p-6 rounded-lg bg-white shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
+        <h2 text-xl text-gray-800 font-semibold mb-4 flex gap-2 items-center dark:text-white>
           <div rounded bg-purple-500 h-6 w-2 />
           AD结构解析规则说明
         </h2>
 
-        <div mb-6 p-4 rounded-lg bg-blue-50>
-          <p text-sm text-blue-800>
+        <div mb-6 p-4 rounded-lg bg-blue-50 dark:border dark:border-blue-800 dark:bg-blue-900>
+          <p text-sm text-blue-800 dark:text-blue-300>
             <strong>蓝牙广播包采用AD (Advertising Data) 结构格式</strong>：每个AD结构由 [Length(1字节) + Type(1字节) + Data(Length字节)] 组成。
             一个广播包可包含多个AD结构，按顺序解析。
           </p>
@@ -1162,179 +1165,179 @@ function getTypeDescription(type: string): string {
         <div overflow-x-auto>
           <table text-sm w-full border-collapse>
             <thead>
-              <tr bg-gray-50>
-                <th text-gray-700 font-medium px-4 py-2 text-left border border-gray-200>
+              <tr text-gray-700 font-medium px-4 py-2 text-left border border-gray-200 bg-gray-50 dark:text-gray-200 dark:border-gray-600 dark:bg-gray-700>
+                <th>
                   字节偏移
                 </th>
-                <th text-gray-700 font-medium px-4 py-2 text-left border border-gray-200>
+                <th>
                   字段名称
                 </th>
-                <th text-gray-700 font-medium px-4 py-2 text-left border border-gray-200>
+                <th>
                   数据类型
                 </th>
-                <th text-gray-700 font-medium px-4 py-2 text-left border border-gray-200>
+                <th>
                   说明
                 </th>
               </tr>
             </thead>
             <tbody>
               <!-- 基础广播包结构 -->
-              <tr bg-blue-50>
-                <td font-mono px-4 py-2 border border-gray-200 colspan="4">
+              <tr bg-blue-50 dark:bg-blue-900>
+                <td colspan="4" font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   <strong>📡 基础广播包结构</strong>
                 </td>
               </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
+              <tr hover:bg-gray-50 dark:hover:bg-gray-700>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   0
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   Advertising Type
                 </td>
-                <td font-mono px-4 py-2 border border-gray-200>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   uint8
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   广播包类型 (0x00=可连接无定向广播)
                 </td>
               </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
+              <tr hover:bg-gray-50 dark:hover:bg-gray-700>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   1-6
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   MAC Address
                 </td>
-                <td font-mono px-4 py-2 border border-gray-200>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   uint8[6]
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   设备MAC地址 (6字节)
                 </td>
               </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
+              <tr hover:bg-gray-50 dark:hover:bg-gray-700>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   7
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   RSSI
                 </td>
-                <td font-mono px-4 py-2 border border-gray-200>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   int8
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   信号强度指示 (有符号整数)
                 </td>
               </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
+              <tr hover:bg-gray-50 dark:hover:bg-gray-700>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   8+
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   Advertising Data
                 </td>
-                <td font-mono px-4 py-2 border border-gray-200>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   bytes[]
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   广播数据内容 (多个AD结构)
                 </td>
               </tr>
 
               <!-- AD结构格式 -->
-              <tr bg-green-50>
-                <td font-mono px-4 py-2 border border-gray-200 colspan="4">
+              <tr bg-green-50 dark:bg-green-900 dark:bg-opacity-30>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600 colspan="4">
                   <strong>📋 AD结构通用格式</strong>
                 </td>
               </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
+              <tr hover:bg-gray-50 dark:hover:bg-gray-700>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   0
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   Length
                 </td>
-                <td font-mono px-4 py-2 border border-gray-200>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   uint8
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   数据长度，表示后续Data字段的字节数 (不包括Length和Type字段)
                 </td>
               </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
+              <tr hover:bg-gray-50 dark:hover:bg-gray-700>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   1
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   Type
                 </td>
-                <td font-mono px-4 py-2 border border-gray-200>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   uint8
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   AD类型 (0x01=Flags, 0xFF=厂商自定义数据等)
                 </td>
               </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
+              <tr hover:bg-gray-50 dark:hover:bg-gray-700>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   2+
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   Data
                 </td>
-                <td font-mono px-4 py-2 border border-gray-200>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   bytes[]
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   实际数据内容，长度由Length字段指定
                 </td>
               </tr>
 
               <!-- Flags AD结构 -->
-              <tr bg-yellow-50>
-                <td font-mono px-4 py-2 border border-gray-200 colspan="4">
+              <tr bg-yellow-50 dark:bg-yellow-900 dark:bg-opacity-30>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600 colspan="4">
                   <strong>🚩 Flags AD结构 (Type: 0x01)</strong>
                 </td>
               </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
+              <tr hover:bg-gray-50 dark:hover:bg-gray-700>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   0
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   Length
                 </td>
-                <td font-mono px-4 py-2 border border-gray-200>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   0x02
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   固定长度2字节
                 </td>
               </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
+              <tr hover:bg-gray-50 dark:hover:bg-gray-700>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   1
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   Type
                 </td>
-                <td font-mono px-4 py-2 border border-gray-200>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   0x01
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   Flags类型标识
                 </td>
               </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
+              <tr hover:bg-gray-50 dark:hover:bg-gray-700>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   2
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   Flags Data
                 </td>
-                <td font-mono px-4 py-2 border border-gray-200>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   uint8
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   设备能力标志位：<br>
                   • Bit 0: LE Only Discoverable<br>
                   • Bit 1: General Discoverable<br>
@@ -1345,134 +1348,134 @@ function getTypeDescription(type: string): string {
               </tr>
 
               <!-- iBeacon AD结构 -->
-              <tr bg-orange-50>
-                <td font-mono px-4 py-2 border border-gray-200 colspan="4">
+              <tr bg-orange-50 dark:bg-orange-900 dark:bg-opacity-30>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600 colspan="4">
                   <strong>🍎 iBeacon AD结构 (Type: 0xFF, Apple Manufacturer)</strong>
                 </td>
               </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
+              <tr hover:bg-gray-50 dark:hover:bg-gray-700>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   0
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   Length
                 </td>
-                <td font-mono px-4 py-2 border border-gray-200>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   0x1A
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   固定长度26字节 (25字节数据 + 1字节Length)
                 </td>
               </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
+              <tr hover:bg-gray-50 dark:hover:bg-gray-700>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   1
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   Type
                 </td>
-                <td font-mono px-4 py-2 border border-gray-200>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   0xFF
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   厂商自定义数据类型
                 </td>
               </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
+              <tr hover:bg-gray-50 dark:hover:bg-gray-700>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   2-3
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   Company ID
                 </td>
-                <td font-mono px-4 py-2 border border-gray-200>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   uint16 (大端序)
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   厂商标识符，Apple为0x004C
                 </td>
               </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
+              <tr hover:bg-gray-50 dark:hover:bg-gray-700>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   4
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   Subtype
                 </td>
-                <td font-mono px-4 py-2 border border-gray-200>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   0x02
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   iBeacon子类型标识
                 </td>
               </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
+              <tr hover:bg-gray-50 dark:hover:bg-gray-700>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   5
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   iBeacon Type
                 </td>
-                <td font-mono px-4 py-2 border border-gray-200>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   0x15
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   iBeacon数据类型标识 (固定值21)
                 </td>
               </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
+              <tr hover:bg-gray-50 dark:hover:bg-gray-700>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   6-21
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   Proximity UUID
                 </td>
-                <td font-mono px-4 py-2 border border-gray-200>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   uint8[16]
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   设备唯一标识符，格式为8-4-4-4-12的标准UUID
                 </td>
               </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
+              <tr hover:bg-gray-50 dark:hover:bg-gray-700>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   22-23
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   Major
                 </td>
-                <td font-mono px-4 py-2 border border-gray-200>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   uint16 (大端序)
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   主要标识，用于分组管理 (如商场楼层)
                 </td>
               </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
+              <tr hover:bg-gray-50 dark:hover:bg-gray-700>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   24-25
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   Minor
                 </td>
-                <td font-mono px-4 py-2 border border-gray-200>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   uint16 (大端序)
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   次要标识，用于细分定位 (如具体店铺)
                 </td>
               </tr>
-              <tr hover:bg-gray-50>
-                <td font-mono px-4 py-2 border border-gray-200>
+              <tr hover:bg-gray-50 dark:hover:bg-gray-700>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   26
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   Measured Power
                 </td>
-                <td font-mono px-4 py-2 border border-gray-200>
+                <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   int8
                 </td>
-                <td px-4 py-2 border border-gray-200>
+                <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                   1米距离处的信号强度，用于距离计算 (有符号整数)
                 </td>
               </tr>
@@ -1481,12 +1484,12 @@ function getTypeDescription(type: string): string {
         </div>
 
         <!-- 04扫描返回包解析规则 -->
-        <div mt-6 p-4 rounded-lg bg-cyan-50>
-          <h3 text-sm text-cyan-800 font-semibold mb-3 flex gap-2 items-center>
+        <div mt-6 p-4 rounded-lg bg-cyan-50 dark:bg-cyan-900 dark:bg-opacity-30>
+          <h3 text-sm text-cyan-800 font-semibold mb-3 flex gap-2 items-center dark:text-cyan-200>
             <div rounded bg-cyan-600 h-4 w-2 />
             📡 04扫描返回包解析规则
           </h3>
-          <p text-sm text-cyan-700 mb-4>
+          <p text-sm text-cyan-700 mb-4 dark:text-cyan-300>
             <strong>04开头的报文表示扫描返回包，采用固定33字节长度格式</strong>，包含设备MAC地址、RSSI、厂商信息、设备名称和电量信息等。
             解析器根据实际代码实现精确提取各字段，支持动态设备名称长度解析。
           </p>
@@ -1494,187 +1497,187 @@ function getTypeDescription(type: string): string {
           <div overflow-x-auto>
             <table text-sm w-full border-collapse>
               <thead>
-                <tr bg-cyan-100>
-                  <th text-cyan-800 font-medium px-3 py-2 text-left border border-cyan-200>
+                <tr bg-cyan-100 dark:bg-cyan-900>
+                  <th text-cyan-800 font-medium px-3 py-2 text-left border border-cyan-200 dark:text-cyan-200 dark:border-cyan-700>
                     字节偏移
                   </th>
-                  <th text-cyan-800 font-medium px-3 py-2 text-left border border-cyan-200>
+                  <th text-cyan-800 font-medium px-3 py-2 text-left border border-cyan-200 dark:text-cyan-200 dark:border-cyan-700>
                     数据示例
                   </th>
-                  <th text-cyan-800 font-medium px-3 py-2 text-left border border-cyan-200>
+                  <th text-cyan-800 font-medium px-3 py-2 text-left border border-cyan-200 dark:text-cyan-200 dark:border-cyan-700>
                     含义
                   </th>
-                  <th text-cyan-800 font-medium px-3 py-2 text-left border border-cyan-200>
+                  <th text-cyan-800 font-medium px-3 py-2 text-left border border-cyan-200 dark:text-cyan-200 dark:border-cyan-700>
                     解析值/备注
                   </th>
                 </tr>
               </thead>
               <tbody>
-                <tr hover:bg-cyan-50>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                <tr hover:bg-cyan-50 dark:hover:bg-cyan-800>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     0
                   </td>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     0x04
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     报文类型标识
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     扫描返回包标识符，表示此为扫描响应数据
                   </td>
                 </tr>
-                <tr hover:bg-cyan-50>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                <tr hover:bg-cyan-50 dark:hover:bg-cyan-800>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     1–6
                   </td>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     6c 3d 20 c6 7b 90
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     设备MAC地址
                   </td>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     6C:3D:20:C6:7B:90 (格式化为XX:XX:XX:XX:XX:XX)
                   </td>
                 </tr>
-                <tr hover:bg-cyan-50>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                <tr hover:bg-cyan-50 dark:hover:bg-cyan-800>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     7
                   </td>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     f0
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     RSSI信号强度
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     有符号整数，0xF0 = -16 dBm
                   </td>
                 </tr>
-                <tr hover:bg-cyan-50>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                <tr hover:bg-cyan-50 dark:hover:bg-cyan-800>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     8–9
                   </td>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     03 03
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     广播标识头
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     固定值，用于识别包类型
                   </td>
                 </tr>
-                <tr hover:bg-cyan-50>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                <tr hover:bg-cyan-50 dark:hover:bg-cyan-800>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     10–11
                   </td>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     f0 ff
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     厂商ID
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     示例厂商代码
                   </td>
                 </tr>
-                <tr hover:bg-cyan-50>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                <tr hover:bg-cyan-50 dark:hover:bg-cyan-800>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     12
                   </td>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     0a
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     数据类型
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     完整名称类型
                   </td>
                 </tr>
-                <tr hover:bg-cyan-50>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                <tr hover:bg-cyan-50 dark:hover:bg-cyan-800>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     13
                   </td>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     09
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     数据长度
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     9 字节
                   </td>
                 </tr>
-                <tr hover:bg-cyan-50>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                <tr hover:bg-cyan-50 dark:hover:bg-cyan-800>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     14–22
                   </td>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     42 65 65 4c 69 6e 6b 65 72
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     设备名称
                   </td>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     "BeeLinker"
                   </td>
                 </tr>
-                <tr hover:bg-cyan-50>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                <tr hover:bg-cyan-50 dark:hover:bg-cyan-800>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     23–26
                   </td>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     09 16 b4 08
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     UUID或自定义字段
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     可用于识别不同设备类型
                   </td>
                 </tr>
-                <tr hover:bg-cyan-50>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                <tr hover:bg-cyan-50 dark:hover:bg-cyan-800>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     27–28
                   </td>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     27 46
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     Major值
                   </td>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     0x2746 = 10054
                   </td>
                 </tr>
-                <tr hover:bg-cyan-50>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                <tr hover:bg-cyan-50 dark:hover:bg-cyan-800>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     29–30
                   </td>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     b9 49
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     Minor值
                   </td>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     0xb949 = 47433
                   </td>
                 </tr>
-                <tr hover:bg-cyan-50>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                <tr hover:bg-cyan-50 dark:hover:bg-cyan-800>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     31–32
                   </td>
-                  <td font-mono px-3 py-2 border border-cyan-200>
+                  <td font-mono px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     A1 01
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     电压字段
                   </td>
-                  <td px-3 py-2 border border-cyan-200>
+                  <td px-3 py-2 border border-cyan-200 dark:text-cyan-100 dark:border-cyan-700>
                     最后2字节为电量信息，计算步骤：原始值417→基础电压4.17V→一般电池3.09V/纽扣电池2.78V
                   </td>
                 </tr>
@@ -1713,12 +1716,12 @@ function getTypeDescription(type: string): string {
         </div>
 
         <!-- 实际代码实现说明 -->
-        <div mt-6 p-4 rounded-lg bg-green-50>
-          <h3 text-sm text-green-800 font-semibold mb-3 flex gap-2 items-center>
+        <div mt-6 p-4 rounded-lg bg-green-50 dark:bg-green-900 dark:bg-opacity-30>
+          <h3 text-sm text-green-800 font-semibold mb-3 flex gap-2 items-center dark:text-green-200>
             <div rounded bg-green-600 h-4 w-2 />
             💻 实际代码实现说明
           </h3>
-          <div text-xs text-green-700 space-y-2>
+          <div text-xs text-green-700 space-y-2 dark:text-green-300>
             <p><strong>解析器架构：</strong></p>
             <ul ml-4 list-disc space-y-1>
               <li><strong>双模式支持：</strong> 自动识别04开头扫描返回包和标准广播包，分别调用专门解析函数</li>
@@ -1753,14 +1756,14 @@ function getTypeDescription(type: string): string {
         </div>
 
         <!-- 示例解析 -->
-        <div mt-6 p-4 rounded-lg bg-purple-50>
-          <h3 text-sm text-purple-800 font-semibold mb-2>
+        <div mt-6 p-4 rounded-lg bg-purple-50 dark:bg-purple-900 dark:bg-opacity-30>
+          <h3 text-sm text-purple-800 font-semibold mb-2 dark:text-purple-200>
             📝 示例解析
           </h3>
-          <p text-xs text-purple-700 mb-2>
+          <p text-xs text-purple-700 mb-2 dark:text-purple-300>
             <strong>广播包数据:</strong> 00d25f2dab2ed0ba0201061aff4c000215fda50693a4e24fb1afcfc6eb07647825271128a6b5
           </p>
-          <div text-xs text-purple-600 space-y-1>
+          <div text-xs text-purple-600 space-y-1 dark:text-purple-400>
             <div>• <strong>基础部分:</strong> 00 d25f2dab2ed0 ba = Type(0x00) + MAC(d2:5f:2d:ab:2e:d0) + RSSI(-70dBm)</div>
             <div>• <strong>AD结构1 (Flags):</strong> 020106 = Length(2) + Type(0x01) + Data(0x06)</div>
             <div>• <strong>AD结构2 (iBeacon):</strong> 1aff4c000215fda50693a4e24fb1afcfc6eb07647825271128a6b5</div>
@@ -1771,8 +1774,8 @@ function getTypeDescription(type: string): string {
 
       <!-- Advertising Type Code 参考表 -->
       <div mx-auto mt-8 max-w-7xl>
-        <div p-6 rounded-lg bg-white shadow-lg>
-          <h2 text-xl text-gray-800 font-semibold mb-4 flex gap-2 items-center>
+        <div p-6 rounded-lg bg-white shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
+          <h2 text-xl text-gray-800 font-semibold mb-4 flex gap-2 items-center dark:text-white>
             <div rounded bg-indigo-500 h-6 w-2 />
             Advertising Type Code 参考表
           </h2>
@@ -1780,11 +1783,11 @@ function getTypeDescription(type: string): string {
           <div overflow-x-auto>
             <table text-sm w-full border-collapse>
               <thead>
-                <tr bg-gray-50>
-                  <th text-gray-700 font-medium px-4 py-2 text-left border border-gray-200>
+                <tr text-gray-700 font-medium px-4 py-2 text-left border border-gray-200 bg-gray-50 dark:text-gray-200 dark:border-gray-600 dark:bg-gray-700>
+                  <th>
                     Code
                   </th>
-                  <th text-gray-700 font-medium px-4 py-2 text-left border border-gray-200>
+                  <th>
                     描述
                   </th>
                 </tr>
@@ -1793,12 +1796,12 @@ function getTypeDescription(type: string): string {
                 <tr
                   v-for="(description, code) in typeDescriptions"
                   :key="code"
-                  hover:bg-gray-50
+                  hover:bg-gray-50 dark:hover:bg-gray-700
                 >
-                  <td font-mono px-4 py-2 border border-gray-200>
+                  <td font-mono px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                     {{ code }}
                   </td>
-                  <td px-4 py-2 border border-gray-200>
+                  <td px-4 py-2 border border-gray-200 dark:text-gray-200 dark:border-gray-600>
                     {{ description }}
                   </td>
                 </tr>

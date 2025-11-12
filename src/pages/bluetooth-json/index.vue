@@ -13,6 +13,21 @@ interface ADStructure {
   description: string
 }
 
+// 扫描返回包解析结果接口
+interface ScanResponseData {
+  macAddress: string
+  rssi: number
+  headerId: string
+  vendorId: string
+  dataLength: number
+  dataType: string
+  deviceName?: string
+  customField?: string
+  major?: number
+  minor?: number
+  voltage?: number
+}
+
 // 广播包内容解析结果接口
 interface ParsedContent {
   // AD结构列表
@@ -45,6 +60,9 @@ interface ParsedContent {
     description: string
   }
 
+  // 扫描返回包数据 (04开头)
+  scanResponse?: ScanResponseData
+
   // 整体解析状态
   hasError: boolean
   errorMessage?: string
@@ -67,19 +85,6 @@ function parsePacket(hexString: string): ParsedPacket {
   // 移除空格和换行符
   const cleanHex = hexString.replace(/\s+/g, '').toLowerCase()
 
-  // 检查最小长度 (至少9字节)
-  if (cleanHex.length < 18) {
-    return {
-      original: hexString,
-      type: '',
-      macAddress: '',
-      rssi: 0,
-      content: '',
-      valid: false,
-      error: '数据长度不足，至少需要9字节 (18个十六进制字符)',
-    }
-  }
-
   // 检查是否为有效的十六进制字符串
   if (!/^[0-9a-f]+$/i.test(cleanHex)) {
     return {
@@ -92,6 +97,293 @@ function parsePacket(hexString: string): ParsedPacket {
       error: '包含无效的十六进制字符',
     }
   }
+
+  // 检查报文类型
+  const packetType = cleanHex.substring(0, 2)
+
+  if (packetType === '04') {
+    // 处理04开头的扫描返回包 (固定66字节长度)
+    return parseScanResponsePacket(hexString)
+  }
+  else {
+    // 处理普通广播包 (至少9字节)
+    if (cleanHex.length < 18) {
+      return {
+        original: hexString,
+        type: '',
+        macAddress: '',
+        rssi: 0,
+        content: '',
+        valid: false,
+        error: '数据长度不足，至少需要9字节 (18个十六进制字符)',
+      }
+    }
+
+    return parseNormalAdvertisementPacket(hexString)
+  }
+}
+
+// 解析扫描返回包 (04开头)
+function parseScanResponsePacket(hexString: string): ParsedPacket {
+  const cleanHex = hexString.replace(/\s+/g, '').toLowerCase()
+
+  try {
+    // 检查最小长度 (至少33字节 = 66个十六进制字符)
+    if (cleanHex.length < 66) {
+      return {
+        original: hexString,
+        type: '04',
+        macAddress: '',
+        rssi: 0,
+        content: '',
+        valid: false,
+        error: `扫描返回包长度不足，至少需要33字节(66个十六进制字符)，实际为${cleanHex.length / 2}字节(${cleanHex.length}个十六进制字符)`,
+      }
+    }
+
+    // 解析基本字段用于返回结果
+    const type = cleanHex.substring(0, 2) // 0x04 - 报文类型
+    const macBytes = cleanHex.substring(2, 14) // 字节1-6 - MAC地址
+    const rssiHex = cleanHex.substring(14, 16) // 字节7 - RSSI
+
+    // 格式化MAC地址
+    const macAddress = macBytes.match(/.{2}/g)?.join(':').toUpperCase() || ''
+
+    // 计算RSSI (有符号8位整数)
+    let rssi = Number.parseInt(rssiHex, 16)
+    if (rssi > 127) {
+      rssi = rssi - 256
+    }
+
+    // 解析扫描返回包内容
+    const parsedContent = parseScanResponseContent(cleanHex)
+
+    return {
+      original: hexString,
+      type,
+      macAddress,
+      rssi,
+      content: cleanHex.substring(16), // 从RSSI后的所有数据
+      parsedContent,
+      valid: true,
+    }
+  }
+  catch (error) {
+    return {
+      original: hexString,
+      type: '04',
+      macAddress: '',
+      rssi: 0,
+      content: '',
+      valid: false,
+      error: `扫描返回包解析错误: ${error instanceof Error ? error.message : '未知错误'}`,
+    }
+  }
+}
+
+// 解析扫描返回包内容
+function parseScanResponseContent(hexData: string): ParsedContent {
+  const parsed: ParsedContent = {
+    adStructures: [],
+    flags: {
+      length: 0,
+      type: '',
+      data: '',
+      description: '',
+      supportsLEOnlyDiscoverable: false,
+      supportsGeneralDiscoverable: false,
+      supportsBR_EDRNotSupported: false,
+      supportsLEAndBR_EDRController: false,
+      supportsLEAndBR_EDRHost: false,
+    },
+    iBeacon: {
+      length: 0,
+      type: '',
+      companyId: '',
+      subtype: '',
+      iBeaconType: '',
+      proximityUUID: '',
+      major: '',
+      minor: '',
+      measuredPower: '',
+      description: '',
+    },
+    scanResponse: undefined,
+    hasError: false,
+  }
+
+  try {
+    // 根据新表格解析04扫描返回包 (固定33字节长度)
+    if (hexData.length < 66) {
+      parsed.hasError = true
+      parsed.errorMessage = `扫描返回包长度不足，需要33字节(66个十六进制字符)，当前为${hexData.length / 2}字节`
+      return parsed
+    }
+
+    // 按照表格结构解析字段
+    // const packetType = hexData.substring(0, 2) // 字节0: 0x04 报文类型
+    const macBytes = hexData.substring(2, 14) // 字节1-6: MAC地址 (6字节)
+    const rssiHex = hexData.substring(14, 16) // 字节7: RSSI (1字节)
+    const headerId = hexData.substring(16, 20) // 字节8-9: 广播标识头 (2字节)
+    const vendorId = hexData.substring(20, 24) // 字节10-11: 厂商ID (2字节)
+    const dataTypeHex = hexData.substring(24, 26) // 字节12: 数据长度 (1字节)
+    const dataLengthHex = hexData.substring(26, 28) // 字节13: 数据类型 (1字节)
+
+    // 字节14-22: 设备名称 (根据数据长度字段确定，表格显示9字节)
+    const dataLength = Number.parseInt(dataLengthHex, 16)
+    const deviceNameStart = 28
+    const deviceNameEnd = deviceNameStart + dataLength * 2
+    let deviceNameData = ''
+    if (hexData.length >= deviceNameEnd) {
+      deviceNameData = hexData.substring(deviceNameStart, deviceNameEnd)
+    }
+
+    // 字节23-26: UUID或自定义字段 (4字节)
+    const customFieldStart = deviceNameEnd
+    const customFieldEnd = customFieldStart + 8
+    let customFieldData = ''
+    if (hexData.length >= customFieldEnd) {
+      customFieldData = hexData.substring(customFieldStart, customFieldEnd)
+    }
+
+    // 字节27-28: Major值 (2字节)
+    const majorStart = customFieldEnd
+    const majorEnd = majorStart + 4
+    let majorHex = ''
+    if (hexData.length >= majorEnd) {
+      majorHex = hexData.substring(majorStart, majorEnd)
+    }
+
+    // 字节29-30: Minor值 (2字节)
+    const minorStart = majorEnd
+    const minorEnd = minorStart + 4
+    let minorHex = ''
+    if (hexData.length >= minorEnd) {
+      minorHex = hexData.substring(minorStart, minorEnd)
+    }
+
+    // 字节31-32: 电压字段 (2字节)
+    const voltageStart = minorEnd
+    const voltageEnd = voltageStart + 4
+    let voltageHex = ''
+    if (hexData.length >= voltageEnd) {
+      voltageHex = hexData.substring(voltageStart, voltageEnd)
+    }
+
+    // 格式化MAC地址
+    const macAddress = macBytes.match(/.{2}/g)?.join(':').toUpperCase() || ''
+
+    // 计算RSSI (有符号8位整数)
+    let rssi = Number.parseInt(rssiHex, 16)
+    if (rssi > 127) {
+      rssi = rssi - 256
+    }
+
+    // 解析设备名称 (数据类型0x09表示完整名称)
+    let deviceName = ''
+    if (dataTypeHex === '09' && deviceNameData) {
+      deviceName = hexToString(deviceNameData)
+    }
+
+    // 解析Major (大端序)
+    let major: number | undefined
+    if (majorHex.length === 4) {
+      major = Number.parseInt(majorHex, 16)
+    }
+
+    // 解析Minor (大端序)
+    let minor: number | undefined
+    if (minorHex.length === 4) {
+      minor = Number.parseInt(minorHex, 16)
+    }
+
+    // 解析电压 (小端序，最后2字节为电量信息)
+    let voltage: number | undefined
+    let batteryInfo = ''
+    if (voltageHex.length === 4) {
+      // 小端序转换
+      const voltageRaw = Number.parseInt(`${voltageHex.substring(2, 4)}${voltageHex.substring(0, 2)}`, 16)
+      // 首先除以100
+      const baseVoltage = voltageRaw / 100
+      // 然后除以电压系数
+      const normalBatteryVoltage = baseVoltage / 1.35 // 一般电池系数
+      const buttonCellBatteryVoltage = baseVoltage / 1.5 // 纽扣电池系数
+
+      // 计算电量百分比
+      const normalBatteryPercentage = calculateBatteryPercentage(normalBatteryVoltage)
+      const buttonCellBatteryPercentage = calculateBatteryPercentage(buttonCellBatteryVoltage)
+
+      // 默认使用一般电池电压
+      voltage = normalBatteryVoltage
+      batteryInfo = `原始值: ${voltageRaw}, 基础电压: ${baseVoltage.toFixed(2)}V, 一般电池: ${normalBatteryVoltage.toFixed(2)}V (${normalBatteryPercentage}%), 纽扣电池: ${buttonCellBatteryVoltage.toFixed(2)}V (${buttonCellBatteryPercentage}%)`
+    }
+
+    // 创建扫描返回包数据
+    parsed.scanResponse = {
+      macAddress,
+      rssi,
+      headerId: headerId.toUpperCase(),
+      vendorId: vendorId.toUpperCase(),
+      dataLength,
+      dataType: `0x${dataTypeHex.toUpperCase()}`,
+      deviceName: deviceName || undefined,
+      customField: customFieldData || undefined,
+      major,
+      minor,
+      voltage,
+    }
+
+    // 添加电池信息到描述中
+    if (batteryInfo) {
+      parsed.errorMessage = batteryInfo // 暂时用errorMessage字段显示电池计算信息
+    }
+
+    // 检查解析状态
+    parsed.hasError = !parsed.scanResponse.macAddress
+    if (parsed.hasError && !parsed.errorMessage) {
+      parsed.errorMessage = '扫描返回包解析失败'
+    }
+  }
+  catch (error) {
+    parsed.hasError = true
+    parsed.errorMessage = error instanceof Error ? error.message : '解析过程中发生未知错误'
+  }
+
+  return parsed
+}
+
+// 十六进制字符串转ASCII字符串
+function hexToString(hex: string): string {
+  let result = ''
+  for (let i = 0; i < hex.length; i += 2) {
+    const charCode = Number.parseInt(hex.substring(i, i + 2), 16)
+    if (charCode === 0)
+      break // 遇到0字符停止
+    result += String.fromCharCode(charCode)
+  }
+  return result
+}
+
+// 计算电量百分比 (2.6V~3.65V线性范围)
+function calculateBatteryPercentage(voltage: number): number {
+  const minVoltage = 2.6
+  const maxVoltage = 3.65
+
+  if (voltage <= minVoltage) {
+    return 0
+  }
+  if (voltage >= maxVoltage) {
+    return 100
+  }
+
+  // 线性计算: (电压 - 最小电压) / (最大电压 - 最小电压) * 100
+  const percentage = ((voltage - minVoltage) / (maxVoltage - minVoltage)) * 100
+  return Math.round(percentage)
+}
+
+// 解析普通广播包
+function parseNormalAdvertisementPacket(hexString: string): ParsedPacket {
+  const cleanHex = hexString.replace(/\s+/g, '').toLowerCase()
 
   try {
     // 解析各个部分
@@ -392,7 +684,7 @@ function getTypeDescription(type: string): string {
         蓝牙广播包解析器
       </h1>
       <p text-gray-600 mt-2 text-center>
-        支持同时解析多个蓝牙广播包，支持批量输入
+        支持同时解析多个蓝牙广播包和扫描返回包，支持批量输入
       </p>
     </div>
 
@@ -413,7 +705,7 @@ function getTypeDescription(type: string): string {
           </label>
           <textarea
             v-model="inputText"
-            placeholder="格式1（每行一个）：&#10;00aea273f4f8deaa0201061aff4c000215ab8190d5d11e4941acc442f30510b40827473bd4b5&#10;00b059763f23acb60201061aff4c000215ab8190d5d11e4941acc442f30510b408277049f6c5&#10;&#10;格式2（JSON数组）：&#10;[&quot;00aea273f4f8deaa020106...&quot;, &quot;00b059763f23acb6020106...&quot;]"
+            placeholder="格式1（普通广播包）：&#10;00aea273f4f8deaa0201061aff4c000215ab8190d5d11e4941acc442f30510b40827473bd4b5&#10;&#10;格式2（扫描返回包 04开头）：&#10;046c3d20c67b90f00303f0ff0a094265654c696e6b65720a167825271436cd3401003401...&#10;&#10;格式3（JSON数组）：&#10;[&quot;00aea273f4f8deaa020106...&quot;, &quot;046c3d20c67b90f00303...&quot;]"
             text-sm font-mono px-3 py-2 border border-gray-300 rounded-md h-32 w-full resize-none
             focus:border-blue-500 focus:ring-2 focus:ring-blue-500
             rows="6"
@@ -564,8 +856,143 @@ function getTypeDescription(type: string): string {
                   {{ result.content.toUpperCase() }}
                 </div>
 
+                <!-- 扫描返回包解析 -->
+                <div v-if="result.parsedContent && result.parsedContent.scanResponse" mt-4>
+                  <h4 text-sm text-gray-700 font-medium mb-3 flex gap-2 items-center>
+                    <div rounded bg-cyan-500 h-4 w-2 />
+                    🔍 扫描返回包解析
+                    <span text-xs text-cyan-800 px-2 py-1 rounded-full bg-cyan-100>类型: 0x04</span>
+                  </h4>
+
+                  <!-- 扫描返回包基本信息 -->
+                  <div mb-3 p-3 border border-cyan-200 rounded-lg bg-cyan-50>
+                    <div text-xs text-cyan-700 font-medium mb-2>
+                      📡 设备基本信息
+                    </div>
+                    <div text-xs space-y-2>
+                      <div>
+                        <span text-gray-600 font-medium>设备MAC：</span>
+                        <span text-blue-600 font-mono>{{ result.parsedContent.scanResponse.macAddress }}</span>
+                      </div>
+                      <div>
+                        <span text-gray-600 font-medium>信号强度：</span>
+                        <span font-mono :class="result.parsedContent.scanResponse.rssi < -70 ? 'text-red-600' : result.parsedContent.scanResponse.rssi < -60 ? 'text-yellow-600' : 'text-green-600'">
+                          {{ result.parsedContent.scanResponse.rssi }} dBm
+                        </span>
+                      </div>
+                      <div>
+                        <span text-gray-600 font-medium>广播标识头：</span>
+                        <span font-mono>{{ result.parsedContent.scanResponse.headerId }}</span>
+                        <span text-gray-500 ml-1>(固定值 0x0303)</span>
+                      </div>
+                      <div>
+                        <span text-gray-600 font-medium>厂商ID：</span>
+                        <span font-mono>{{ result.parsedContent.scanResponse.vendorId }}</span>
+                      </div>
+                      <div>
+                        <span text-gray-600 font-medium>数据长度：</span>
+                        <span font-mono>{{ result.parsedContent.scanResponse.dataLength }} 字节</span>
+                      </div>
+                      <div>
+                        <span text-gray-600 font-medium>数据类型：</span>
+                        <span font-mono>{{ result.parsedContent.scanResponse.dataType }}</span>
+                        <span text-gray-500 ml-1>{{ result.parsedContent.scanResponse.dataType === '0x09' ? '(完整名称)' : '(其他类型)' }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 设备名称 -->
+                  <div v-if="result.parsedContent.scanResponse.deviceName" mb-3 p-3 border border-green-200 rounded-lg bg-green-50>
+                    <div text-xs text-green-700 font-medium mb-2>
+                      🏷️ 设备名称
+                    </div>
+                    <div text-xs>
+                      <span text-green-800 font-mono>{{ result.parsedContent.scanResponse.deviceName }}</span>
+                    </div>
+                  </div>
+
+                  <!-- 自定义字段 -->
+                  <div v-if="result.parsedContent.scanResponse.customField" mb-3 p-3 border border-purple-200 rounded-lg bg-purple-50>
+                    <div text-xs text-purple-700 font-medium mb-2>
+                      🔧 自定义字段 / UUID
+                    </div>
+                    <div text-xs>
+                      <span text-purple-800 font-mono>{{ result.parsedContent.scanResponse.customField.toUpperCase() }}</span>
+                    </div>
+                  </div>
+
+                  <!-- 标识信息 (Major/Minor) -->
+                  <div v-if="result.parsedContent.scanResponse.major !== undefined || result.parsedContent.scanResponse.minor !== undefined" mb-3 p-3 border border-blue-200 rounded-lg bg-blue-50>
+                    <div text-xs text-blue-700 font-medium mb-2>
+                      📍 标识信息 (Major/Minor)
+                    </div>
+                    <div text-xs gap-4 grid grid-cols-2>
+                      <div v-if="result.parsedContent.scanResponse.major !== undefined">
+                        <span text-gray-600 font-medium>Major：</span>
+                        <span text-blue-800 font-mono>{{ result.parsedContent.scanResponse.major }}</span>
+                      </div>
+                      <div v-if="result.parsedContent.scanResponse.minor !== undefined">
+                        <span text-gray-600 font-medium>Minor：</span>
+                        <span text-blue-800 font-mono>{{ result.parsedContent.scanResponse.minor }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 电压信息 -->
+                  <div v-if="result.parsedContent.scanResponse.voltage !== undefined" mb-3 p-3 border border-yellow-200 rounded-lg bg-yellow-50>
+                    <div text-xs text-yellow-700 font-medium mb-2>
+                      ⚡ 电压信息
+                    </div>
+                    <div text-xs space-y-2>
+                      <!-- 电压计算详情 -->
+                      <div v-if="result.parsedContent.errorMessage && result.parsedContent.errorMessage.includes('原始值')">
+                        <div text-xs text-gray-600 font-medium mb-1>
+                          电压计算详情：
+                        </div>
+                        <div text-xs text-gray-500 pl-2>
+                          {{ result.parsedContent.errorMessage }}
+                        </div>
+                      </div>
+
+                      <!-- 两种电池类型的结果 -->
+                      <div gap-2 grid grid-cols-1>
+                        <div p-2 border border-green-200 rounded bg-green-50>
+                          <div text-xs text-green-700 font-medium>
+                            一般电池 (系数 1.35)：
+                          </div>
+                          <div flex gap-2 items-center>
+                            <div text-sm text-green-800 font-mono>
+                              {{ result.parsedContent.scanResponse.voltage.toFixed(2) }} V
+                            </div>
+                            <div text-xs px-2 py-1 rounded-full :class="calculateBatteryPercentage(result.parsedContent.scanResponse.voltage) > 50 ? 'bg-green-100 text-green-800' : calculateBatteryPercentage(result.parsedContent.scanResponse.voltage) > 20 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'">
+                              {{ calculateBatteryPercentage(result.parsedContent.scanResponse.voltage) }}%
+                            </div>
+                          </div>
+                        </div>
+                        <div p-2 border border-blue-200 rounded bg-blue-50>
+                          <div text-xs text-blue-700 font-medium>
+                            纽扣电池 (系数 1.5)：
+                          </div>
+                          <div flex gap-2 items-center>
+                            <div text-sm text-blue-800 font-mono>
+                              {{ (result.parsedContent.scanResponse.voltage * 1.35 / 1.5).toFixed(2) }} V
+                            </div>
+                            <div text-xs px-2 py-1 rounded-full :class="calculateBatteryPercentage(result.parsedContent.scanResponse.voltage * 1.35 / 1.5) > 50 ? 'bg-green-100 text-green-800' : calculateBatteryPercentage(result.parsedContent.scanResponse.voltage * 1.35 / 1.5) > 20 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'">
+                              {{ calculateBatteryPercentage(result.parsedContent.scanResponse.voltage * 1.35 / 1.5) }}%
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div text-xs text-gray-500>
+                        电池有效工作电压范围: 2.6~3.65V
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- AD结构详细解析 -->
-                <div v-if="result.parsedContent && result.parsedContent.adStructures.length > 0" mt-4>
+                <div v-else-if="result.parsedContent && result.parsedContent.adStructures.length > 0" mt-4>
                   <h4 text-sm text-gray-700 font-medium mb-3 flex gap-2 items-center>
                     <div rounded bg-orange-500 h-4 w-2 />
                     <span v-if="result.parsedContent.iBeacon.proximityUUID" flex gap-2 items-center>
@@ -1051,6 +1478,278 @@ function getTypeDescription(type: string): string {
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- 04扫描返回包解析规则 -->
+        <div mt-6 p-4 rounded-lg bg-cyan-50>
+          <h3 text-sm text-cyan-800 font-semibold mb-3 flex gap-2 items-center>
+            <div rounded bg-cyan-600 h-4 w-2 />
+            📡 04扫描返回包解析规则
+          </h3>
+          <p text-sm text-cyan-700 mb-4>
+            <strong>04开头的报文表示扫描返回包，采用固定33字节长度格式</strong>，包含设备MAC地址、RSSI、厂商信息、设备名称和电量信息等。
+            解析器根据实际代码实现精确提取各字段，支持动态设备名称长度解析。
+          </p>
+
+          <div overflow-x-auto>
+            <table text-sm w-full border-collapse>
+              <thead>
+                <tr bg-cyan-100>
+                  <th text-cyan-800 font-medium px-3 py-2 text-left border border-cyan-200>
+                    字节偏移
+                  </th>
+                  <th text-cyan-800 font-medium px-3 py-2 text-left border border-cyan-200>
+                    数据示例
+                  </th>
+                  <th text-cyan-800 font-medium px-3 py-2 text-left border border-cyan-200>
+                    含义
+                  </th>
+                  <th text-cyan-800 font-medium px-3 py-2 text-left border border-cyan-200>
+                    解析值/备注
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr hover:bg-cyan-50>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    0
+                  </td>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    0x04
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    报文类型标识
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    扫描返回包标识符，表示此为扫描响应数据
+                  </td>
+                </tr>
+                <tr hover:bg-cyan-50>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    1–6
+                  </td>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    6c 3d 20 c6 7b 90
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    设备MAC地址
+                  </td>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    6C:3D:20:C6:7B:90 (格式化为XX:XX:XX:XX:XX:XX)
+                  </td>
+                </tr>
+                <tr hover:bg-cyan-50>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    7
+                  </td>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    f0
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    RSSI信号强度
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    有符号整数，0xF0 = -16 dBm
+                  </td>
+                </tr>
+                <tr hover:bg-cyan-50>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    8–9
+                  </td>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    03 03
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    广播标识头
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    固定值，用于识别包类型
+                  </td>
+                </tr>
+                <tr hover:bg-cyan-50>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    10–11
+                  </td>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    f0 ff
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    厂商ID
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    示例厂商代码
+                  </td>
+                </tr>
+                <tr hover:bg-cyan-50>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    12
+                  </td>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    0a
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    数据类型
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    完整名称类型
+                  </td>
+                </tr>
+                <tr hover:bg-cyan-50>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    13
+                  </td>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    09
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    数据长度
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    9 字节
+                  </td>
+                </tr>
+                <tr hover:bg-cyan-50>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    14–22
+                  </td>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    42 65 65 4c 69 6e 6b 65 72
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    设备名称
+                  </td>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    "BeeLinker"
+                  </td>
+                </tr>
+                <tr hover:bg-cyan-50>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    23–26
+                  </td>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    09 16 b4 08
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    UUID或自定义字段
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    可用于识别不同设备类型
+                  </td>
+                </tr>
+                <tr hover:bg-cyan-50>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    27–28
+                  </td>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    27 46
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    Major值
+                  </td>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    0x2746 = 10054
+                  </td>
+                </tr>
+                <tr hover:bg-cyan-50>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    29–30
+                  </td>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    b9 49
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    Minor值
+                  </td>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    0xb949 = 47433
+                  </td>
+                </tr>
+                <tr hover:bg-cyan-50>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    31–32
+                  </td>
+                  <td font-mono px-3 py-2 border border-cyan-200>
+                    A1 01
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    电压字段
+                  </td>
+                  <td px-3 py-2 border border-cyan-200>
+                    最后2字节为电量信息，计算步骤：原始值417→基础电压4.17V→一般电池3.09V/纽扣电池2.78V
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div text-xs text-cyan-600 mt-4>
+            <p><strong>🔋 实际电压计算逻辑：</strong></p>
+            <ul ml-4 list-disc space-y-1>
+              <li><strong>小端序处理：</strong> 电压字段采用小端序，需字节颠倒：0x01A1 → 0xA101 = 417</li>
+              <li><strong>基础电压：</strong> 原始值 ÷ 100 = 417 ÷ 100 = 4.17V</li>
+              <li>
+                <strong>电池类型系数：</strong>
+                <ul ml-6 list-circle space-y-1>
+                  <li>一般电池系数：1.35 → 4.17V ÷ 1.35 = 3.09V (19%电量)</li>
+                  <li>纽扣电池系数：1.5 → 4.17V ÷ 1.5 = 2.78V (0%电量)</li>
+                </ul>
+              </li>
+              <li><strong>电量百分比计算：</strong> 线性映射 (电压-2.6V) ÷ (3.65V-2.6V) × 100%</li>
+              <li><strong>有效范围：</strong> 2.6V~3.65V，超出范围按0%或100%计算</li>
+              <li><strong>显示规则：</strong> >50%绿色 ●，20-50%黄色 ●，≤20%红色 ●</li>
+              <li><strong>默认显示：</strong> 界面优先显示一般电池电压，同时提供纽扣电池计算结果</li>
+            </ul>
+
+            <p class="mt-3">
+              <strong>📝 动态字段解析：</strong>
+            </p>
+            <ul ml-4 list-disc space-y-1>
+              <li><strong>设备名称长度：</strong> 字节13的值决定设备名称字段长度（0-255字节）</li>
+              <li><strong>自适应偏移：</strong> 后续字段位置根据设备名称实际长度动态调整</li>
+              <li><strong>名称解析：</strong> 仅当数据类型为0x09时才进行ASCII字符串转换</li>
+              <li><strong>字符串终止：</strong> 遇到0x00字符时提前结束设备名称解析</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 实际代码实现说明 -->
+        <div mt-6 p-4 rounded-lg bg-green-50>
+          <h3 text-sm text-green-800 font-semibold mb-3 flex gap-2 items-center>
+            <div rounded bg-green-600 h-4 w-2 />
+            💻 实际代码实现说明
+          </h3>
+          <div text-xs text-green-700 space-y-2>
+            <p><strong>解析器架构：</strong></p>
+            <ul ml-4 list-disc space-y-1>
+              <li><strong>双模式支持：</strong> 自动识别04开头扫描返回包和标准广播包，分别调用专门解析函数</li>
+              <li><strong>错误处理：</strong> 完善的长度校验、格式验证和异常捕获机制</li>
+              <li><strong>动态解析：</strong> 04包支持0-255字节可变设备名称长度，后续字段位置自动调整</li>
+            </ul>
+
+            <p><strong>扫描返回包解析 (parseScanResponseContent)：</strong></p>
+            <ul ml-4 list-disc space-y-1>
+              <li><strong>字段提取：</strong> 精确按字节偏移提取MAC、RSSI、厂商ID、设备名称等33个字段</li>
+              <li><strong>名称转换：</strong> 数据类型0x09时调用hexToString进行ASCII转换，遇0x00终止</li>
+              <li><strong>电压计算：</strong> 小端序处理+双重电池系数+线性电量百分比算法</li>
+              <li><strong>结果封装：</strong> 创建ScanResponseData对象，包含所有解析字段和计算结果</li>
+            </ul>
+
+            <p><strong>标准广播包解析 (parsePacketContent)：</strong></p>
+            <ul ml-4 list-disc space-y-1>
+              <li><strong>AD结构迭代：</strong> while循环逐个解析Length+Type+Data结构</li>
+              <li><strong>Flags解析：</strong> Type 0x01时提取位标志：LE发现、BR/EDR支持等</li>
+              <li><strong>iBeacon识别：</strong> Type 0xFF且Apple 0x004C厂商ID时解析完整iBeacon结构</li>
+              <li><strong>UUID格式化：</strong> 16字节转换为8-4-4-4-12标准UUID格式</li>
+            </ul>
+
+            <p><strong>用户界面特性：</strong></p>
+            <ul ml-4 list-disc space-y-1>
+              <li><strong>批量输入：</strong> 支持JSON数组和换行分隔两种输入格式</li>
+              <li><strong>实时解析：</strong> 输入后立即解析并显示结构化结果</li>
+              <li><strong>错误提示：</strong> 详细的解析失败原因和修复建议</li>
+              <li><strong>导航功能：</strong> 多包快速定位和滚动导航</li>
+            </ul>
+          </div>
         </div>
 
         <!-- 示例解析 -->

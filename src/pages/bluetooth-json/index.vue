@@ -600,9 +600,131 @@ function parsePacketContent(content: string): ParsedContent {
   return parsed
 }
 
+// 过滤状态
+const filters = ref({
+  packetType: '',
+  major: '',
+  minor: '',
+  rssiMin: '',
+  rssiMax: '',
+  voltageMin: '',
+  voltageMax: '',
+  batteryMin: '',
+  batteryMax: '',
+})
+
+// 过滤器展开状态
+const showFilters = ref(false)
+
 // 解析结果
 const parsedResults = computed(() => {
   return packets.value.map(packet => parsePacket(packet))
+})
+
+// 过滤后的结果
+const filteredResults = computed(() => {
+  let results = parsedResults.value
+
+  // 按广播包类型过滤
+  if (filters.value.packetType) {
+    results = results.filter(result => result.type.toLowerCase() === filters.value.packetType.toLowerCase())
+  }
+
+  // 按Major过滤
+  if (filters.value.major) {
+    const majorFilter = filters.value.major.toLowerCase()
+    results = results.filter((result) => {
+      // 检查扫描返回包的Major
+      if (result.parsedContent?.scanResponse?.major !== undefined) {
+        return result.parsedContent.scanResponse.major.toString().includes(majorFilter)
+      }
+      // 检查iBeacon的Major
+      if (result.parsedContent?.iBeacon?.major) {
+        return result.parsedContent.iBeacon.major.toLowerCase().includes(majorFilter)
+      }
+      return false
+    })
+  }
+
+  // 按Minor过滤
+  if (filters.value.minor) {
+    const minorFilter = filters.value.minor.toLowerCase()
+    results = results.filter((result) => {
+      // 检查扫描返回包的Minor
+      if (result.parsedContent?.scanResponse?.minor !== undefined) {
+        return result.parsedContent.scanResponse.minor.toString().includes(minorFilter)
+      }
+      // 检查iBeacon的Minor
+      if (result.parsedContent?.iBeacon?.minor) {
+        return result.parsedContent.iBeacon.minor.toLowerCase().includes(minorFilter)
+      }
+      return false
+    })
+  }
+
+  // 按RSSI范围过滤
+  if (filters.value.rssiMin !== '') {
+    const rssiMin = Number.parseInt(filters.value.rssiMin)
+    if (!Number.isNaN(rssiMin)) {
+      results = results.filter(result => result.rssi >= rssiMin)
+    }
+  }
+  if (filters.value.rssiMax !== '') {
+    const rssiMax = Number.parseInt(filters.value.rssiMax)
+    if (!Number.isNaN(rssiMax)) {
+      results = results.filter(result => result.rssi <= rssiMax)
+    }
+  }
+
+  // 按电压范围过滤
+  if (filters.value.voltageMin !== '') {
+    const voltageMin = Number.parseFloat(filters.value.voltageMin)
+    if (!Number.isNaN(voltageMin)) {
+      results = results.filter((result) => {
+        if (result.parsedContent?.scanResponse?.voltage !== undefined) {
+          return result.parsedContent.scanResponse.voltage >= voltageMin
+        }
+        return false
+      })
+    }
+  }
+  if (filters.value.voltageMax !== '') {
+    const voltageMax = Number.parseFloat(filters.value.voltageMax)
+    if (!Number.isNaN(voltageMax)) {
+      results = results.filter((result) => {
+        if (result.parsedContent?.scanResponse?.voltage !== undefined) {
+          return result.parsedContent.scanResponse.voltage <= voltageMax
+        }
+        return false
+      })
+    }
+  }
+
+  // 按电量百分比范围过滤
+  if (filters.value.batteryMin !== '') {
+    const batteryMin = Number.parseInt(filters.value.batteryMin)
+    if (!Number.isNaN(batteryMin)) {
+      results = results.filter((result) => {
+        if (result.parsedContent?.scanResponse?.voltage !== undefined) {
+          return calculateBatteryPercentage(result.parsedContent.scanResponse.voltage) >= batteryMin
+        }
+        return false
+      })
+    }
+  }
+  if (filters.value.batteryMax !== '') {
+    const batteryMax = Number.parseInt(filters.value.batteryMax)
+    if (!Number.isNaN(batteryMax)) {
+      results = results.filter((result) => {
+        if (result.parsedContent?.scanResponse?.voltage !== undefined) {
+          return calculateBatteryPercentage(result.parsedContent.scanResponse.voltage) <= batteryMax
+        }
+        return false
+      })
+    }
+  }
+
+  return results
 })
 
 // 添加广播包
@@ -675,6 +797,26 @@ function getTypeDescription(type: string): string {
   const typeCode = Number.parseInt(type, 16)
   return typeDescriptions[typeCode] || '未知类型'
 }
+
+// 重置过滤器
+function resetFilters() {
+  filters.value = {
+    packetType: '',
+    major: '',
+    minor: '',
+    rssiMin: '',
+    rssiMax: '',
+    voltageMin: '',
+    voltageMax: '',
+    batteryMin: '',
+    batteryMax: '',
+  }
+}
+
+// 检查是否有活动过滤器
+const hasActiveFilters = computed(() => {
+  return Object.values(filters.value).some(value => value !== '')
+})
 </script>
 
 <template>
@@ -787,6 +929,9 @@ function getTypeDescription(type: string): string {
           <div flex gap-2 items-center>
             <div text-sm text-gray-500 font-normal dark:text-gray-400>
               共 {{ parsedResults.length }} 个广播包
+              <span v-if="hasActiveFilters" text-blue-600 dark:text-blue-400>
+                (已过滤: {{ filteredResults.length }})
+              </span>
             </div>
             <button
               v-if="parsedResults.length > 10"
@@ -798,16 +943,199 @@ function getTypeDescription(type: string): string {
           </div>
         </h2>
 
-        <div v-if="parsedResults.length === 0" text-gray-500 py-12 text-center dark:text-gray-400>
+        <!-- 过滤器控件 -->
+        <div mb-4 p-4 border border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-gray-700>
+          <div mb-3 flex items-center justify-between>
+            <h3 text-sm text-gray-700 font-medium flex gap-2 items-center dark:text-gray-200>
+              <div rounded bg-indigo-500 h-4 w-2 />
+              过滤器
+            </h3>
+            <div flex gap-2>
+              <button
+                v-if="hasActiveFilters"
+                text-xs text-red-600 transition-colors dark:text-red-400 hover:text-red-800 dark:hover:text-red-300
+                @click="resetFilters"
+              >
+                重置过滤器
+              </button>
+              <button
+                text-xs text-indigo-600 transition-colors dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300
+                @click="showFilters = !showFilters"
+              >
+                {{ showFilters ? '收起' : '展开' }} {{ showFilters ? '▲' : '▼' }}
+              </button>
+            </div>
+          </div>
+
+          <div v-show="showFilters" space-y-3>
+            <!-- 第一行：广播包类型、Major、Minor -->
+            <div gap-3 grid grid-cols-3>
+              <div>
+                <label text-xs text-gray-600 font-medium mb-1 block dark:text-gray-300>
+                  广播包类型
+                </label>
+                <select
+                  v-model="filters.packetType"
+                  class="text-sm px-2 py-1 border border-gray-300 rounded w-full dark:text-gray-200 dark:border-gray-600 focus:border-blue-500 dark:bg-gray-800 focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">
+                    全部类型
+                  </option>
+                  <option value="00">
+                    00 - 可连接无定向广播
+                  </option>
+                  <option value="01">
+                    01 - 可连接定向广播
+                  </option>
+                  <option value="02">
+                    02 - 不可连接无定向广播
+                  </option>
+                  <option value="03">
+                    03 - 可扫描无定向广播
+                  </option>
+                  <option value="04">
+                    04 - 扫描响应
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label text-xs text-gray-600 font-medium mb-1 block dark:text-gray-300>
+                  Major
+                </label>
+                <input
+                  v-model="filters.major"
+                  type="text"
+                  placeholder="输入Major值"
+                  class="text-sm px-2 py-1 border border-gray-300 rounded w-full dark:text-gray-200 dark:border-gray-600 focus:border-blue-500 dark:bg-gray-800 focus:ring-1 focus:ring-blue-500"
+                >
+              </div>
+
+              <div>
+                <label text-xs text-gray-600 font-medium mb-1 block dark:text-gray-300>
+                  Minor
+                </label>
+                <input
+                  v-model="filters.minor"
+                  type="text"
+                  placeholder="输入Minor值"
+                  class="text-sm px-2 py-1 border border-gray-300 rounded w-full dark:text-gray-200 dark:border-gray-600 focus:border-blue-500 dark:bg-gray-800 focus:ring-1 focus:ring-blue-500"
+                >
+              </div>
+            </div>
+
+            <!-- 第二行：RSSI范围 -->
+            <div gap-3 grid grid-cols-2>
+              <div>
+                <label text-xs text-gray-600 font-medium mb-1 block dark:text-gray-300>
+                  RSSI最小值 (dBm)
+                </label>
+                <input
+                  v-model="filters.rssiMin"
+                  type="number"
+                  placeholder="-100"
+                  class="text-sm px-2 py-1 border border-gray-300 rounded w-full dark:text-gray-200 dark:border-gray-600 focus:border-blue-500 dark:bg-gray-800 focus:ring-1 focus:ring-blue-500"
+                >
+              </div>
+
+              <div>
+                <label text-xs text-gray-600 font-medium mb-1 block dark:text-gray-300>
+                  RSSI最大值 (dBm)
+                </label>
+                <input
+                  v-model="filters.rssiMax"
+                  type="number"
+                  placeholder="-30"
+                  class="text-sm px-2 py-1 border border-gray-300 rounded w-full dark:text-gray-200 dark:border-gray-600 focus:border-blue-500 dark:bg-gray-800 focus:ring-1 focus:ring-blue-500"
+                >
+              </div>
+            </div>
+
+            <!-- 第三行：电压范围 -->
+            <div gap-3 grid grid-cols-2>
+              <div>
+                <label text-xs text-gray-600 font-medium mb-1 block dark:text-gray-300>
+                  电压最小值 (V)
+                </label>
+                <input
+                  v-model="filters.voltageMin"
+                  type="number"
+                  step="0.01"
+                  placeholder="2.6"
+                  class="text-sm px-2 py-1 border border-gray-300 rounded w-full dark:text-gray-200 dark:border-gray-600 focus:border-blue-500 dark:bg-gray-800 focus:ring-1 focus:ring-blue-500"
+                >
+              </div>
+
+              <div>
+                <label text-xs text-gray-600 font-medium mb-1 block dark:text-gray-300>
+                  电压最大值 (V)
+                </label>
+                <input
+                  v-model="filters.voltageMax"
+                  type="number"
+                  step="0.01"
+                  placeholder="3.65"
+                  class="text-sm px-2 py-1 border border-gray-300 rounded w-full dark:text-gray-200 dark:border-gray-600 focus:border-blue-500 dark:bg-gray-800 focus:ring-1 focus:ring-blue-500"
+                >
+              </div>
+            </div>
+
+            <!-- 第四行：电量范围 -->
+            <div gap-3 grid grid-cols-2>
+              <div>
+                <label text-xs text-gray-600 font-medium mb-1 block dark:text-gray-300>
+                  电量最小值 (%)
+                </label>
+                <input
+                  v-model="filters.batteryMin"
+                  type="number"
+                  min="0"
+                  max="100"
+                  placeholder="0"
+                  class="text-sm px-2 py-1 border border-gray-300 rounded w-full dark:text-gray-200 dark:border-gray-600 focus:border-blue-500 dark:bg-gray-800 focus:ring-1 focus:ring-blue-500"
+                >
+              </div>
+
+              <div>
+                <label text-xs text-gray-600 font-medium mb-1 block dark:text-gray-300>
+                  电量最大值 (%)
+                </label>
+                <input
+                  v-model="filters.batteryMax"
+                  type="number"
+                  min="0"
+                  max="100"
+                  placeholder="100"
+                  class="text-sm px-2 py-1 border border-gray-300 rounded w-full dark:text-gray-200 dark:border-gray-600 focus:border-blue-500 dark:bg-gray-800 focus:ring-1 focus:ring-blue-500"
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="filteredResults.length === 0" text-gray-500 py-12 text-center dark:text-gray-400>
           <div text-6xl mb-4>
             📡
           </div>
-          暂无解析结果，请在左侧输入广播包数据
+          <div v-if="parsedResults.length === 0">
+            暂无解析结果，请在左侧输入广播包数据
+          </div>
+          <div v-else>
+            没有符合过滤条件的结果
+            <div text-sm mt-2>
+              <button
+                text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300
+                @click="resetFilters"
+              >
+                清除过滤器
+              </button>
+            </div>
+          </div>
         </div>
 
         <div v-else max-h-screen overflow-y-auto space-y-4 style="max-height: calc(100vh - 200px);">
           <div
-            v-for="(result, index) in parsedResults"
+            v-for="(result, index) in filteredResults"
             :id="`packet-${index}`"
             :key="index"
             class="p-4 border rounded-lg scroll-mt-4"

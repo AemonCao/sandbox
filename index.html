@@ -2,7 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- 基础 favicon（旧版浏览器使用） -->
+    <link rel="icon" type="image/png" sizes="any" href="/favicon.ico" />
+    <!-- PNG 格式 favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <!-- iOS 主屏图标 -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- Android / PWA 图标（自动通过 manifest 引用） -->
+    <link rel="manifest" href="/site.webmanifest" />
   </head>
   <body class="font-sans bg-hex-ffffff dark:bg-hex-121212">
     <div id="app"></div>

@@ -44,6 +44,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/ibeacon-simulator/': RouteRecordInfo<
+      '/ibeacon-simulator/',
+      '/ibeacon-simulator',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
   }
 
   /**
@@ -72,6 +79,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/bluetooth-json/index.vue': {
       routes:
         | '/bluetooth-json/'
+      views:
+        | never
+    }
+    'src/pages/ibeacon-simulator/index.vue': {
+      routes:
+        | '/ibeacon-simulator/'
       views:
         | never
     }

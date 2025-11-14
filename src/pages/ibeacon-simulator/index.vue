@@ -28,13 +28,28 @@ const canvasContainerRef = ref<HTMLElement>()
 const beacons = ref<Beacon[]>([])
 const clients = ref<Client[]>([])
 const selectedObject = ref<SelectedObject>(null)
+const selectedObjects = ref<(Beacon | Client)[]>([])
 const isDragging = ref(false)
+const isBoxSelecting = ref(false)
 const dragOffsetX = ref(0)
 const dragOffsetY = ref(0)
 const nextBeaconId = ref(1)
 const nextClientId = ref(1)
 const animationFrameId = ref<number | null>(null)
-const errorMessage = ref('')
+const messageInfo = ref({
+  content: '',
+  type: 'info' as 'info' | 'success' | 'warning' | 'error',
+  show: false,
+})
+
+// 框选相关状态
+const boxSelection = ref({
+  startX: 0,
+  startY: 0,
+  endX: 0,
+  endY: 0,
+  isActive: false,
+})
 
 // 配置参数
 const scale = ref(50)
@@ -209,8 +224,45 @@ watch([beacons, clients, scale, beaconHeight, beaconN, clientRssiThreshold, show
 
 // 计算属性
 const infoPanelContent = computed(() => {
+  if (selectedObjects.value.length > 1) {
+    // 多选设备信息
+    const beacons = selectedObjects.value.filter(obj => obj.type === 'beacon') as Beacon[]
+    const clients = selectedObjects.value.filter(obj => obj.type === 'client') as Client[]
+
+    let html = `<h3>已选中 ${selectedObjects.value.length} 个对象</h3>`
+
+    if (beacons.length > 0) {
+      html += `<h4>信标 (${beacons.length}个)</h4><ul>`
+      beacons.forEach((b) => {
+        html += `<li>B${b.id}: (${(b.x / scale.value).toFixed(2)}m, ${(b.y / scale.value).toFixed(2)}m)</li>`
+      })
+      html += '</ul>'
+    }
+
+    if (clients.length > 0) {
+      html += `<h4>客户端 (${clients.length}个)</h4><ul>`
+      clients.forEach((c) => {
+        html += `<li>C${c.id}: (${(c.x / scale.value).toFixed(2)}m, ${(c.y / scale.value).toFixed(2)}m)</li>`
+      })
+      html += '</ul>'
+    }
+
+    html += '<p style="margin-top: 10px; color: #666;">按Delete键可删除所有选中对象，按ESC键清除选择。</p>'
+    return html
+  }
+
   if (!selectedObject.value) {
-    return '<p>在画布上点击一个信标或客户端以查看详情。双击或选中后按Delete键可删除。</p>'
+    return '<p><strong>操作说明：</strong></p>'
+      + '<ul style="list-style-type: disc; padding-left: 20px;">'
+      + '<li>点击设备进行选择</li>'
+      + '<li>按住Ctrl/Cmd键点击可多选设备</li>'
+      + '<li>在空白区域拖拽可框选多个设备</li>'
+      + '<li>选中设备后可拖拽移动</li>'
+      + '<li>按Delete键删除选中设备</li>'
+      + '<li>按ESC键清除选择</li>'
+      + '<li>双击设备可快速删除</li>'
+      + '</ul>'
+      + '<p style="margin-top: 10px; color: #666;">在画布上点击一个信标或客户端以查看详情。</p>'
   }
 
   if (selectedObject.value.type === 'beacon') {
@@ -407,12 +459,25 @@ function calculate2DDistance(distance3D: number, heightDiff: number): number {
   }
 }
 
-// 错误提示函数
-function showError(message: string): void {
-  errorMessage.value = message
+// 消息提示函数
+function showMessage(content: string, type: 'info' | 'success' | 'warning' | 'error' = 'info'): void {
+  messageInfo.value = {
+    content,
+    type,
+    show: true,
+  }
   setTimeout(() => {
-    errorMessage.value = ''
+    messageInfo.value.show = false
   }, 3000)
+}
+
+// 保持向后兼容的函数
+function showError(message: string): void {
+  showMessage(message, 'error')
+}
+
+function showSuccess(message: string): void {
+  showMessage(message, 'success')
 }
 
 // 绘图函数
@@ -438,7 +503,8 @@ function draw(): void {
   clients.value.forEach(c => drawClient(ctx, c))
   beacons.value.forEach(b => drawBeacon(ctx, b))
 
-  if (selectedObject.value) {
+  // 绘制单个选中对象的特效
+  if (selectedObject.value && selectedObjects.value.length <= 1) {
     if (selectedObject.value.type === 'beacon') {
       drawBeaconRange(ctx, selectedObject.value as Beacon)
     }
@@ -446,6 +512,11 @@ function draw(): void {
       drawClientCircles(ctx, selectedObject.value as Client)
       drawClientConnections(ctx, selectedObject.value as Client)
     }
+  }
+
+  // 绘制框选矩形
+  if (boxSelection.value.isActive) {
+    drawBoxSelection(ctx)
   }
 }
 
@@ -488,14 +559,18 @@ function drawBeacon(ctx: CanvasRenderingContext2D, b: Beacon): void {
     && selectedObject.value.id === b.id
     && selectedObject.value.type === 'beacon'
 
+  const isMultiSelected = selectedObjects.value.some(obj =>
+    obj.id === b.id && obj.type === 'beacon',
+  )
+
   ctx.beginPath()
   ctx.arc(b.x, b.y, BEACON_DEFAULTS.radius, 0, 2 * Math.PI)
   ctx.fillStyle = BEACON_DEFAULTS.color
   ctx.fill()
 
-  if (isSelected) {
+  if (isSelected || isMultiSelected) {
     ctx.lineWidth = 3
-    ctx.strokeStyle = BEACON_DEFAULTS.selectedColor
+    ctx.strokeStyle = isMultiSelected ? '#f59e0b' : BEACON_DEFAULTS.selectedColor
     ctx.stroke()
   }
 
@@ -510,13 +585,17 @@ function drawClient(ctx: CanvasRenderingContext2D, c: Client): void {
     && selectedObject.value.id === c.id
     && selectedObject.value.type === 'client'
 
+  const isMultiSelected = selectedObjects.value.some(obj =>
+    obj.id === c.id && obj.type === 'client',
+  )
+
   const size = CLIENT_DEFAULTS.size
   ctx.fillStyle = CLIENT_DEFAULTS.color
   ctx.fillRect(c.x - size / 2, c.y - size / 2, size, size)
 
-  if (isSelected) {
+  if (isSelected || isMultiSelected) {
     ctx.lineWidth = 3
-    ctx.strokeStyle = CLIENT_DEFAULTS.selectedColor
+    ctx.strokeStyle = isMultiSelected ? '#f59e0b' : CLIENT_DEFAULTS.selectedColor
     ctx.strokeRect(c.x - size / 2, c.y - size / 2, size, size)
   }
 
@@ -598,6 +677,24 @@ function drawClientConnections(ctx: CanvasRenderingContext2D, client: Client): v
   })
 }
 
+// 绘制框选矩形
+function drawBoxSelection(ctx: CanvasRenderingContext2D): void {
+  const { startX, startY, endX, endY } = boxSelection.value
+  const width = endX - startX
+  const height = endY - startY
+
+  // 绘制半透明填充
+  ctx.fillStyle = 'rgba(59, 130, 246, 0.1)'
+  ctx.fillRect(startX, startY, width, height)
+
+  // 绘制边框
+  ctx.strokeStyle = 'rgba(59, 130, 246, 0.8)'
+  ctx.lineWidth = 2
+  ctx.setLineDash([5, 5])
+  ctx.strokeRect(startX, startY, width, height)
+  ctx.setLineDash([])
+}
+
 // 交互处理
 function getObjectAt(x: number, y: number): SelectedObject {
   for (let i = clients.value.length - 1; i >= 0; i--) {
@@ -619,6 +716,52 @@ function getObjectAt(x: number, y: number): SelectedObject {
   return null
 }
 
+// 获取框选区域内的所有对象
+function getObjectsInBox(x1: number, y1: number, x2: number, y2: number): (Beacon | Client)[] {
+  const minX = Math.min(x1, x2)
+  const maxX = Math.max(x1, x2)
+  const minY = Math.min(y1, y2)
+  const maxY = Math.max(y1, y2)
+  const selectedObjects: (Beacon | Client)[] = []
+
+  // 检查信标
+  beacons.value.forEach((beacon) => {
+    if (beacon.x >= minX && beacon.x <= maxX && beacon.y >= minY && beacon.y <= maxY) {
+      selectedObjects.push(beacon)
+    }
+  })
+
+  // 检查客户端
+  clients.value.forEach((client) => {
+    const size = CLIENT_DEFAULTS.size
+    const halfSize = size / 2
+    if (client.x - halfSize >= minX && client.x + halfSize <= maxX
+      && client.y - halfSize >= minY && client.y + halfSize <= maxY) {
+      selectedObjects.push(client)
+    }
+  })
+
+  return selectedObjects
+}
+
+// 清除多选
+function clearSelection(): void {
+  selectedObjects.value = []
+  selectedObject.value = null
+}
+
+// 设置多选状态
+function setMultiSelection(objects: (Beacon | Client)[]): void {
+  selectedObjects.value = objects
+  // 如果只选中一个对象，同时设置selectedObject以保持兼容性
+  if (objects.length === 1) {
+    selectedObject.value = objects[0]
+  }
+  else {
+    selectedObject.value = null
+  }
+}
+
 function handleMouseDown(e: MouseEvent): void {
   const canvas = canvasRef.value
   if (!canvas)
@@ -628,25 +771,65 @@ function handleMouseDown(e: MouseEvent): void {
   const mouseX = e.clientX - rect.left
   const mouseY = e.clientY - rect.top
 
-  selectedObject.value = getObjectAt(mouseX, mouseY)
+  // 如果按住Ctrl键（Mac）或Meta键，添加到多选
+  const isCtrlPressed = e.ctrlKey || e.metaKey
+  const clickedObject = getObjectAt(mouseX, mouseY)
 
-  if (selectedObject.value) {
-    isDragging.value = true
-    canvas.style.cursor = 'grabbing'
-    dragOffsetX.value = mouseX - selectedObject.value.x
-    dragOffsetY.value = mouseY - selectedObject.value.y
+  if (clickedObject) {
+    if (isCtrlPressed) {
+      // Ctrl/Cmd + 点击：添加/移除多选
+      const existingIndex = selectedObjects.value.findIndex(obj =>
+        obj.id === clickedObject.id && obj.type === clickedObject.type,
+      )
+
+      if (existingIndex >= 0) {
+        // 已选中，移除
+        selectedObjects.value.splice(existingIndex, 1)
+      }
+      else {
+        // 未选中，添加
+        selectedObjects.value.push(clickedObject)
+      }
+
+      setMultiSelection(selectedObjects.value)
+    }
+    else {
+      // 普通点击：如果点击的对象已在多选中，保持多选，否则开始新的单选
+      const isAlreadySelected = selectedObjects.value.some(obj =>
+        obj.id === clickedObject.id && obj.type === clickedObject.type,
+      )
+
+      if (!isAlreadySelected) {
+        setMultiSelection([clickedObject])
+      }
+
+      isDragging.value = true
+      canvas.style.cursor = 'grabbing'
+      dragOffsetX.value = mouseX - clickedObject.x
+      dragOffsetY.value = mouseY - clickedObject.y
+    }
   }
   else {
-    isDragging.value = false
+    // 点击空白区域：开始框选或清除选择
+    if (!isCtrlPressed) {
+      clearSelection()
+    }
+
+    isBoxSelecting.value = true
+    boxSelection.value = {
+      startX: mouseX,
+      startY: mouseY,
+      endX: mouseX,
+      endY: mouseY,
+      isActive: true,
+    }
+    canvas.style.cursor = 'crosshair'
   }
 
   draw()
 }
 
 function handleMouseMove(e: MouseEvent): void {
-  if (!isDragging.value || !selectedObject.value)
-    return
-
   const canvas = canvasRef.value
   if (!canvas)
     return
@@ -655,22 +838,65 @@ function handleMouseMove(e: MouseEvent): void {
   const mouseX = e.clientX - rect.left
   const mouseY = e.clientY - rect.top
 
-  selectedObject.value.x = mouseX - dragOffsetX.value
-  selectedObject.value.y = mouseY - dragOffsetY.value
+  if (isDragging.value && (selectedObject.value || selectedObjects.value.length > 0)) {
+    // 多选拖拽
+    if (selectedObjects.value.length > 0) {
+      const deltaX = mouseX - dragOffsetX.value - selectedObjects.value[0].x
+      const deltaY = mouseY - dragOffsetY.value - selectedObjects.value[0].y
 
-  // 使用requestAnimationFrame优化拖拽重绘
-  if (animationFrameId.value) {
-    cancelAnimationFrame(animationFrameId.value)
+      selectedObjects.value.forEach((obj) => {
+        obj.x += deltaX
+        obj.y += deltaY
+      })
+
+      dragOffsetX.value = mouseX - selectedObjects.value[0].x
+      dragOffsetY.value = mouseY - selectedObjects.value[0].y
+    }
+    else if (selectedObject.value) {
+      // 单选拖拽（保持兼容性）
+      selectedObject.value.x = mouseX - dragOffsetX.value
+      selectedObject.value.y = mouseY - dragOffsetY.value
+    }
+
+    // 使用requestAnimationFrame优化拖拽重绘
+    if (animationFrameId.value) {
+      cancelAnimationFrame(animationFrameId.value)
+    }
+    animationFrameId.value = requestAnimationFrame(() => {
+      draw()
+      animationFrameId.value = null
+    })
   }
-  animationFrameId.value = requestAnimationFrame(() => {
+  else if (isBoxSelecting.value) {
+    // 更新框选矩形
+    boxSelection.value.endX = mouseX
+    boxSelection.value.endY = mouseY
     draw()
-    animationFrameId.value = null
-  })
+  }
 }
 
 function handleMouseUp(): void {
-  isDragging.value = false
   const canvas = canvasRef.value
+
+  if (isBoxSelecting.value) {
+    // 完成框选
+    const objectsInBox = getObjectsInBox(
+      boxSelection.value.startX,
+      boxSelection.value.startY,
+      boxSelection.value.endX,
+      boxSelection.value.endY,
+    )
+
+    if (objectsInBox.length > 0) {
+      setMultiSelection(objectsInBox)
+    }
+
+    // 重置框选状态
+    isBoxSelecting.value = false
+    boxSelection.value.isActive = false
+  }
+
+  isDragging.value = false
   if (canvas) {
     canvas.style.cursor = 'grab'
   }
@@ -700,9 +926,20 @@ function handleDoubleClick(e: MouseEvent): void {
 function handleKeyDown(e: KeyboardEvent): void {
   if ((e.target as HTMLElement).tagName === 'INPUT')
     return
-  if ((e.key === 'Delete' || e.key === 'Backspace') && selectedObject.value) {
+  if ((e.key === 'Delete' || e.key === 'Backspace') && (selectedObject.value || selectedObjects.value.length > 0)) {
     e.preventDefault()
-    deleteObject(selectedObject.value)
+    if (selectedObjects.value.length > 0) {
+      deleteMultipleObjects(selectedObjects.value)
+    }
+    else if (selectedObject.value) {
+      deleteObject(selectedObject.value)
+    }
+  }
+
+  // ESC键清除选择
+  if (e.key === 'Escape') {
+    clearSelection()
+    draw()
   }
 }
 
@@ -758,6 +995,29 @@ function deleteObject(obj: SelectedObject): void {
     selectedObject.value = null
   }
 
+  // 从多选中移除
+  selectedObjects.value = selectedObjects.value.filter(selectedObj =>
+    !(selectedObj.id === obj.id && selectedObj.type === obj.type),
+  )
+
+  draw()
+}
+
+function deleteMultipleObjects(objects: (Beacon | Client)[]): void {
+  if (!objects || objects.length === 0)
+    return
+
+  objects.forEach((obj) => {
+    if (obj.type === 'beacon') {
+      beacons.value = beacons.value.filter(b => b.id !== obj.id)
+    }
+    else if (obj.type === 'client') {
+      clients.value = clients.value.filter(c => c.id !== obj.id)
+    }
+  })
+
+  // 清除选择状态
+  clearSelection()
   draw()
 }
 
@@ -797,7 +1057,7 @@ function exportScene(): void {
     document.body.removeChild(link)
 
     URL.revokeObjectURL(url)
-    showError('场景已成功导出！')
+    showSuccess('场景已成功导出！')
   }
   catch (error) {
     console.error('导出场景失败:', error)
@@ -849,7 +1109,7 @@ function importScene(): void {
           draw()
         })
 
-        showError('场景已成功导入！')
+        showSuccess('场景已成功导入！')
       }
       catch (error) {
         console.error('导入场景失败:', error)
@@ -942,7 +1202,7 @@ function loadPresetScene(sceneType: keyof typeof presetScenes): void {
       draw()
     })
 
-    showError(`已加载${scene.name}预设场景`)
+    showSuccess(`已加载${scene.name}预设场景`)
   }
   catch (error) {
     console.error('加载预设场景失败:', error)
@@ -975,15 +1235,15 @@ onMounted(() => {
 
 <template>
   <div bg-gray-100 h-screen overflow-hidden dark:bg-gray-900>
-    <!-- 错误提示 -->
+    <!-- 消息提示 -->
     <NAlert
-      v-if="errorMessage"
-      type="error"
+      v-if="messageInfo.show"
+      :type="messageInfo.type"
       closable
       class="max-w-md transform left-1/2 top-4 fixed z-50 -translate-x-1/2"
-      @close="errorMessage = ''"
+      @close="messageInfo.show = false"
     >
-      {{ errorMessage }}
+      {{ messageInfo.content }}
     </NAlert>
 
     <NSplit
@@ -1106,6 +1366,22 @@ onMounted(() => {
                 </NButton>
                 <NButton type="error" @click="clearAll">
                   全部清除
+                </NButton>
+              </NSpace>
+              <NSpace>
+                <NButton
+                  type="warning"
+                  :disabled="selectedObjects.length === 0 && !selectedObject"
+                  @click="clearSelection"
+                >
+                  清除选择
+                </NButton>
+                <NButton
+                  type="error"
+                  :disabled="selectedObjects.length === 0 && !selectedObject"
+                  @click="selectedObjects.length > 0 ? deleteMultipleObjects(selectedObjects) : (selectedObject ? deleteObject(selectedObject) : null)"
+                >
+                  删除选中
                 </NButton>
               </NSpace>
               <NSpace>

@@ -41,6 +41,7 @@ const scale = ref(50)
 const beaconHeight = ref(3)
 const beaconN = ref(2.5)
 const clientRssiThreshold = ref(-85)
+const showCoverageArea = ref(false) // 定位范围显示开关
 const splitSize = ref(0.75) // 画布占比 (0-1)
 
 // 场景数据管理
@@ -52,6 +53,7 @@ const sceneData = computed(() => ({
     beaconHeight: beaconHeight.value,
     beaconN: beaconN.value,
     clientRssiThreshold: clientRssiThreshold.value,
+    showCoverageArea: showCoverageArea.value,
   },
   metadata: {
     version: '1.0.0',
@@ -67,6 +69,70 @@ watch(isDark, () => {
     draw()
   })
 })
+
+// 常量定义
+const BEACON_DEFAULTS = {
+  txPower: -59,
+  radius: 8,
+  color: 'rgba(26, 115, 232, 0.8)',
+  selectedColor: '#1a73e8',
+}
+
+const CLIENT_DEFAULTS = {
+  z: 0.8,
+  size: 12,
+  color: 'rgba(21, 128, 61, 0.8)',
+  selectedColor: '#15803d',
+}
+
+// 绘制定位覆盖范围
+function drawCoverageArea(ctx: CanvasRenderingContext2D): void {
+  if (beacons.value.length < 3)
+    return
+
+  const canvas = canvasRef.value
+  if (!canvas)
+    return
+
+  const width = canvas.width
+  const height = canvas.height
+  const step = 10 // 采样步长（像素）
+
+  // 创建临时canvas用于离屏渲染
+  const tempCanvas = document.createElement('canvas')
+  tempCanvas.width = width
+  tempCanvas.height = height
+  const tempCtx = tempCanvas.getContext('2d')
+  if (!tempCtx)
+    return
+
+  // 遍历画布上的每个点
+  for (let x = 0; x < width; x += step) {
+    for (let y = 0; y < height; y += step) {
+      const testClient: Client = {
+        id: -1,
+        type: 'client',
+        x,
+        y,
+        z: CLIENT_DEFAULTS.z,
+      }
+
+      // 计算能接收到的信号数量
+      const audibleBeacons = beacons.value.filter(beacon =>
+        calculateReceivedRSSI(beacon, testClient) >= clientRssiThreshold.value,
+      )
+
+      // 如果能接收到3个以上信标信号，绘制半透明颜色
+      if (audibleBeacons.length >= 3) {
+        tempCtx.fillStyle = 'rgba(76, 175, 80, 0.3)' // 绿色半透明
+        tempCtx.fillRect(x, y, step, step)
+      }
+    }
+  }
+
+  // 将离屏渲染结果绘制到主canvas
+  ctx.drawImage(tempCanvas, 0, 0)
+}
 
 // 监听scale变化，重新绘制网格
 watch(scale, () => {
@@ -117,6 +183,7 @@ function loadFromLocalStorage(): void {
       beaconHeight.value = data.settings.beaconHeight || 3
       beaconN.value = data.settings.beaconN || 2.5
       clientRssiThreshold.value = data.settings.clientRssiThreshold || -85
+      showCoverageArea.value = data.settings.showCoverageArea || false
     }
 
     // 更新ID计数器
@@ -136,24 +203,9 @@ function loadFromLocalStorage(): void {
 }
 
 // 监听数据变化自动保存
-watch([beacons, clients, scale, beaconHeight, beaconN, clientRssiThreshold], () => {
+watch([beacons, clients, scale, beaconHeight, beaconN, clientRssiThreshold, showCoverageArea], () => {
   saveToLocalStorage()
 }, { deep: true })
-
-// 常量
-const BEACON_DEFAULTS = {
-  txPower: -59,
-  radius: 8,
-  color: 'rgba(26, 115, 232, 0.8)',
-  selectedColor: '#1a73e8',
-}
-
-const CLIENT_DEFAULTS = {
-  z: 0.8,
-  size: 12,
-  color: 'rgba(21, 128, 61, 0.8)',
-  selectedColor: '#15803d',
-}
 
 // 计算属性
 const infoPanelContent = computed(() => {
@@ -376,6 +428,11 @@ function draw(): void {
 
   // 清除动态层
   ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+  // 绘制定位覆盖范围（如果开启）
+  if (showCoverageArea.value) {
+    drawCoverageArea(ctx)
+  }
 
   // 绘制动态元素（不包括网格）
   clients.value.forEach(c => drawClient(ctx, c))
@@ -778,6 +835,7 @@ function importScene(): void {
           beaconHeight.value = data.settings.beaconHeight || 3
           beaconN.value = data.settings.beaconN || 2.5
           clientRssiThreshold.value = data.settings.clientRssiThreshold || -85
+          showCoverageArea.value = data.settings.showCoverageArea || false
         }
 
         // 更新ID计数器
@@ -820,7 +878,7 @@ const presetScenes = {
     clients: [
       { id: 1, type: 'client' as const, x: 200, y: 200, z: 0.8 },
     ],
-    settings: { scale: 50, beaconHeight: 3, beaconN: 2.5, clientRssiThreshold: -85 },
+    settings: { scale: 50, beaconHeight: 3, beaconN: 2.5, clientRssiThreshold: -85, showCoverageArea: false },
   },
   office: {
     name: '办公室环境',
@@ -834,7 +892,7 @@ const presetScenes = {
       { id: 1, type: 'client' as const, x: 300, y: 250, z: 0.8 },
       { id: 2, type: 'client' as const, x: 200, y: 200, z: 0.8 },
     ],
-    settings: { scale: 50, beaconHeight: 2.5, beaconN: 2.0, clientRssiThreshold: -80 },
+    settings: { scale: 50, beaconHeight: 2.5, beaconN: 2.0, clientRssiThreshold: -80, showCoverageArea: false },
   },
   warehouse: {
     name: '仓库环境',
@@ -851,7 +909,7 @@ const presetScenes = {
     clients: [
       { id: 1, type: 'client' as const, x: 300, y: 300, z: 1.2 },
     ],
-    settings: { scale: 50, beaconHeight: 5, beaconN: 3.0, clientRssiThreshold: -90 },
+    settings: { scale: 50, beaconHeight: 5, beaconN: 3.0, clientRssiThreshold: -90, showCoverageArea: false },
   },
 }
 
@@ -873,6 +931,7 @@ function loadPresetScene(sceneType: keyof typeof presetScenes): void {
     beaconHeight.value = scene.settings.beaconHeight
     beaconN.value = scene.settings.beaconN
     clientRssiThreshold.value = scene.settings.clientRssiThreshold
+    showCoverageArea.value = scene.settings.showCoverageArea
 
     // 更新ID计数器
     nextBeaconId.value = Math.max(...beacons.value.map(b => b.id), 0) + 1
@@ -1014,6 +1073,21 @@ onMounted(() => {
                 placeholder="RSSI阈值"
                 @update:value="draw"
               />
+            </div>
+
+            <div mb-3>
+              <label text-gray-700 font-medium mb-1 block dark:text-gray-300>显示定位覆盖范围:</label>
+              <NSwitch
+                v-model:value="showCoverageArea"
+                @update:value="draw"
+              >
+                <template #checked>
+                  显示
+                </template>
+                <template #unchecked>
+                  隐藏
+                </template>
+              </NSwitch>
             </div>
           </div>
 

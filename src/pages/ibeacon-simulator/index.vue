@@ -23,6 +23,7 @@ type SelectedObject = Beacon | Client | null
 
 // 响应式状态
 const canvasRef = ref<HTMLCanvasElement>()
+const gridCanvasRef = ref<HTMLCanvasElement>()
 const canvasContainerRef = ref<HTMLElement>()
 const beacons = ref<Beacon[]>([])
 const clients = ref<Client[]>([])
@@ -32,11 +33,8 @@ const dragOffsetX = ref(0)
 const dragOffsetY = ref(0)
 const nextBeaconId = ref(1)
 const nextClientId = ref(1)
-
-// 监听主题变化，重新绘制Canvas
-watch(isDark, () => {
-  nextTick(() => draw())
-})
+const animationFrameId = ref<number | null>(null)
+const errorMessage = ref('')
 
 // 配置参数
 const scale = ref(50)
@@ -44,6 +42,103 @@ const beaconHeight = ref(3)
 const beaconN = ref(2.5)
 const clientRssiThreshold = ref(-85)
 const splitSize = ref(0.75) // 画布占比 (0-1)
+
+// 场景数据管理
+const sceneData = computed(() => ({
+  beacons: beacons.value,
+  clients: clients.value,
+  settings: {
+    scale: scale.value,
+    beaconHeight: beaconHeight.value,
+    beaconN: beaconN.value,
+    clientRssiThreshold: clientRssiThreshold.value,
+  },
+  metadata: {
+    version: '1.0.0',
+    createdAt: new Date().toISOString(),
+    name: 'iBeacon模拟器场景',
+  },
+}))
+
+// 监听主题变化，重新绘制Canvas
+watch(isDark, () => {
+  nextTick(() => {
+    drawGrid()
+    draw()
+  })
+})
+
+// 监听scale变化，重新绘制网格
+watch(scale, () => {
+  nextTick(() => {
+    drawGrid()
+    draw()
+  })
+})
+
+// 本地存储自动保存
+function saveToLocalStorage(): void {
+  try {
+    localStorage.setItem('ibeacon-scene', JSON.stringify(sceneData.value))
+    localStorage.setItem('ibeacon-scene-timestamp', new Date().toISOString())
+  }
+  catch (error) {
+    console.error('自动保存失败:', error)
+  }
+}
+
+function loadFromLocalStorage(): void {
+  try {
+    const savedData = localStorage.getItem('ibeacon-scene')
+    if (!savedData)
+      return
+
+    const data = JSON.parse(savedData)
+
+    // 检查数据是否过期（7天）
+    const timestamp = localStorage.getItem('ibeacon-scene-timestamp')
+    if (timestamp) {
+      const savedTime = new Date(timestamp)
+      const now = new Date()
+      const daysDiff = (now.getTime() - savedTime.getTime()) / (1000 * 60 * 60 * 24)
+      if (daysDiff > 7) {
+        localStorage.removeItem('ibeacon-scene')
+        localStorage.removeItem('ibeacon-scene-timestamp')
+        return
+      }
+    }
+
+    // 加载数据
+    beacons.value = data.beacons || []
+    clients.value = data.clients || []
+
+    if (data.settings) {
+      scale.value = data.settings.scale || 50
+      beaconHeight.value = data.settings.beaconHeight || 3
+      beaconN.value = data.settings.beaconN || 2.5
+      clientRssiThreshold.value = data.settings.clientRssiThreshold || -85
+    }
+
+    // 更新ID计数器
+    nextBeaconId.value = Math.max(...beacons.value.map(b => b.id), 0) + 1
+    nextClientId.value = Math.max(...clients.value.map(c => c.id), 0) + 1
+
+    selectedObject.value = null
+
+    nextTick(() => {
+      drawGrid()
+      draw()
+    })
+  }
+  catch (error) {
+    console.error('加载本地存储失败:', error)
+  }
+}
+
+// 监听数据变化自动保存
+watch([beacons, clients, scale, beaconHeight, beaconN, clientRssiThreshold], () => {
+  saveToLocalStorage()
+}, { deep: true })
 
 // 常量
 const BEACON_DEFAULTS = {
@@ -162,43 +257,127 @@ TxPower = ${b.txPower} dBm, n = ${beaconN.value}
 
 // 核心计算函数
 function calculateReceivedRSSI(beacon: Beacon, client: Client): number {
-  const dx = (beacon.x - client.x) / scale.value
-  const dy = (beacon.y - client.y) / scale.value
-  const dz = beacon.z - client.z
+  try {
+    // 参数验证
+    if (!beacon || !client || scale.value <= 0 || beaconN.value <= 0) {
+      return -100 // 返回最小RSSI值
+    }
 
-  const distance3D = Math.sqrt(dx * dx + dy * dy + dz * dz)
-  if (distance3D < 0.01)
-    return beacon.txPower
+    const dx = (beacon.x - client.x) / scale.value
+    const dy = (beacon.y - client.y) / scale.value
+    const dz = beacon.z - client.z
 
-  const rssi = beacon.txPower - 10 * beaconN.value * Math.log10(distance3D)
-  return Number.parseFloat(rssi.toFixed(2))
+    const distance3D = Math.sqrt(dx * dx + dy * dy + dz * dz)
+
+    // 检查距离是否有效
+    if (Number.isNaN(distance3D) || !Number.isFinite(distance3D)) {
+      return -100
+    }
+
+    if (distance3D < 0.01)
+      return beacon.txPower
+
+    const rssi = beacon.txPower - 10 * beaconN.value * Math.log10(distance3D)
+
+    // 检查计算结果是否有效
+    if (Number.isNaN(rssi) || !Number.isFinite(rssi)) {
+      return -100
+    }
+
+    return Number.parseFloat(rssi.toFixed(2))
+  }
+  catch (error) {
+    console.error('RSSI计算错误:', error)
+    showError('RSSI计算出现错误，请检查参数设置')
+    return -100
+  }
 }
 
 function calculate3DDistanceFromRSSI(beacon: Beacon, rssi: number): number {
-  const exponent = (beacon.txPower - rssi) / (10 * beaconN.value)
-  return 10 ** exponent
+  try {
+    // 参数验证
+    if (!beacon || Number.isNaN(rssi) || !Number.isFinite(rssi) || beaconN.value <= 0) {
+      return 0
+    }
+
+    const exponent = (beacon.txPower - rssi) / (10 * beaconN.value)
+
+    // 检查指数是否有效
+    if (Number.isNaN(exponent) || !Number.isFinite(exponent)) {
+      return 0
+    }
+
+    const distance = 10 ** exponent
+
+    // 检查距离是否合理
+    if (Number.isNaN(distance) || !Number.isFinite(distance) || distance < 0 || distance > 1000) {
+      return 0
+    }
+
+    return Number.parseFloat(distance.toFixed(3))
+  }
+  catch (error) {
+    console.error('3D距离计算错误:', error)
+    showError('3D距离计算出现错误，请检查RSSI值和衰减参数')
+    return 0
+  }
 }
 
 function calculate2DDistance(distance3D: number, heightDiff: number): number {
-  if (distance3D * distance3D < heightDiff * heightDiff) {
+  try {
+    // 参数验证
+    if (Number.isNaN(distance3D) || !Number.isFinite(distance3D)
+      || Number.isNaN(heightDiff) || !Number.isFinite(heightDiff)
+      || distance3D < 0) {
+      return 0
+    }
+
+    const squaredDiff = heightDiff * heightDiff
+    const squaredDistance = distance3D * distance3D
+
+    if (squaredDistance < squaredDiff) {
+      return 0
+    }
+
+    const distance2D = Math.sqrt(squaredDistance - squaredDiff)
+
+    // 检查结果有效性
+    if (Number.isNaN(distance2D) || !Number.isFinite(distance2D) || distance2D < 0) {
+      return 0
+    }
+
+    return Number.parseFloat(distance2D.toFixed(3))
+  }
+  catch (error) {
+    console.error('2D距离计算错误:', error)
+    showError('2D距离计算出现错误，请检查高度差和距离参数')
     return 0
   }
-  return Math.sqrt(distance3D * distance3D - heightDiff * heightDiff)
+}
+
+// 错误提示函数
+function showError(message: string): void {
+  errorMessage.value = message
+  setTimeout(() => {
+    errorMessage.value = ''
+  }, 3000)
 }
 
 // 绘图函数
 function draw(): void {
   const canvas = canvasRef.value
-  if (!canvas)
+  const gridCanvas = gridCanvasRef.value
+  if (!canvas || !gridCanvas)
     return
 
   const ctx = canvas.getContext('2d')
   if (!ctx)
     return
 
+  // 清除动态层
   ctx.clearRect(0, 0, canvas.width, canvas.height)
-  drawGrid(ctx, canvas)
 
+  // 绘制动态元素（不包括网格）
   clients.value.forEach(c => drawClient(ctx, c))
   beacons.value.forEach(b => drawBeacon(ctx, b))
 
@@ -213,7 +392,21 @@ function draw(): void {
   }
 }
 
-function drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement): void {
+// 绘制网格层（只在初始化和参数变化时重绘）
+function drawGrid(): void {
+  const gridCanvas = gridCanvasRef.value
+  if (!gridCanvas)
+    return
+
+  const ctx = gridCanvas.getContext('2d')
+  if (!ctx)
+    return
+
+  ctx.clearRect(0, 0, gridCanvas.width, gridCanvas.height)
+  drawGridLines(ctx, gridCanvas)
+}
+
+function drawGridLines(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement): void {
   // 根据当前主题选择网格颜色
   ctx.strokeStyle = isDark.value ? '#374151' : '#e0e0e0'
   ctx.lineWidth = 0.5
@@ -407,7 +600,15 @@ function handleMouseMove(e: MouseEvent): void {
 
   selectedObject.value.x = mouseX - dragOffsetX.value
   selectedObject.value.y = mouseY - dragOffsetY.value
-  draw()
+
+  // 使用requestAnimationFrame优化拖拽重绘
+  if (animationFrameId.value) {
+    cancelAnimationFrame(animationFrameId.value)
+  }
+  animationFrameId.value = requestAnimationFrame(() => {
+    draw()
+    animationFrameId.value = null
+  })
 }
 
 function handleMouseUp(): void {
@@ -415,6 +616,12 @@ function handleMouseUp(): void {
   const canvas = canvasRef.value
   if (canvas) {
     canvas.style.cursor = 'grab'
+  }
+
+  // 清理动画帧
+  if (animationFrameId.value) {
+    cancelAnimationFrame(animationFrameId.value)
+    animationFrameId.value = null
   }
 }
 
@@ -499,18 +706,196 @@ function deleteObject(obj: SelectedObject): void {
 
 function resizeCanvas(): void {
   const canvas = canvasRef.value
+  const gridCanvas = gridCanvasRef.value
   const container = canvasContainerRef.value
-  if (!canvas || !container)
+  if (!canvas || !gridCanvas || !container)
     return
 
-  canvas.width = container.clientWidth - 20
-  canvas.height = container.clientHeight - 20
+  const width = container.clientWidth - 20
+  const height = container.clientHeight - 20
+
+  // 设置两个画布的尺寸
+  canvas.width = width
+  canvas.height = height
+  gridCanvas.width = width
+  gridCanvas.height = height
+
+  // 重绘网格层和动态层
+  drawGrid()
   draw()
+}
+
+// 数据导入导出功能
+function exportScene(): void {
+  try {
+    const dataStr = JSON.stringify(sceneData.value, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `ibeacon-scene-${new Date().toISOString().slice(0, 10)}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    URL.revokeObjectURL(url)
+    showError('场景已成功导出！')
+  }
+  catch (error) {
+    console.error('导出场景失败:', error)
+    showError('导出场景失败，请重试')
+  }
+}
+
+function importScene(): void {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.json'
+
+  input.onchange = (event) => {
+    const file = (event.target as HTMLInputElement).files?.[0]
+    if (!file)
+      return
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string
+        const data = JSON.parse(content)
+
+        // 验证数据格式
+        if (!data.beacons || !data.clients || !data.settings) {
+          throw new Error('无效的场景数据格式')
+        }
+
+        // 加载数据
+        beacons.value = data.beacons || []
+        clients.value = data.clients || []
+
+        if (data.settings) {
+          scale.value = data.settings.scale || 50
+          beaconHeight.value = data.settings.beaconHeight || 3
+          beaconN.value = data.settings.beaconN || 2.5
+          clientRssiThreshold.value = data.settings.clientRssiThreshold || -85
+        }
+
+        // 更新ID计数器
+        nextBeaconId.value = Math.max(...beacons.value.map(b => b.id), 0) + 1
+        nextClientId.value = Math.max(...clients.value.map(c => c.id), 0) + 1
+
+        selectedObject.value = null
+
+        nextTick(() => {
+          drawGrid()
+          draw()
+        })
+
+        showError('场景已成功导入！')
+      }
+      catch (error) {
+        console.error('导入场景失败:', error)
+        showError('导入场景失败，请检查文件格式')
+      }
+    }
+
+    reader.readAsText(file)
+  }
+
+  input.click()
+}
+
+// 预设场景模板
+const presetScenes = {
+  hospital: {
+    name: '医院环境',
+    beacons: [
+      { id: 1, type: 'beacon' as const, x: 100, y: 100, z: 3, txPower: -59 },
+      { id: 2, type: 'beacon' as const, x: 300, y: 100, z: 3, txPower: -59 },
+      { id: 3, type: 'beacon' as const, x: 500, y: 100, z: 3, txPower: -59 },
+      { id: 4, type: 'beacon' as const, x: 100, y: 300, z: 3, txPower: -59 },
+      { id: 5, type: 'beacon' as const, x: 300, y: 300, z: 3, txPower: -59 },
+      { id: 6, type: 'beacon' as const, x: 500, y: 300, z: 3, txPower: -59 },
+    ],
+    clients: [
+      { id: 1, type: 'client' as const, x: 200, y: 200, z: 0.8 },
+    ],
+    settings: { scale: 50, beaconHeight: 3, beaconN: 2.5, clientRssiThreshold: -85 },
+  },
+  office: {
+    name: '办公室环境',
+    beacons: [
+      { id: 1, type: 'beacon' as const, x: 150, y: 150, z: 2.5, txPower: -59 },
+      { id: 2, type: 'beacon' as const, x: 450, y: 150, z: 2.5, txPower: -59 },
+      { id: 3, type: 'beacon' as const, x: 150, y: 350, z: 2.5, txPower: -59 },
+      { id: 4, type: 'beacon' as const, x: 450, y: 350, z: 2.5, txPower: -59 },
+    ],
+    clients: [
+      { id: 1, type: 'client' as const, x: 300, y: 250, z: 0.8 },
+      { id: 2, type: 'client' as const, x: 200, y: 200, z: 0.8 },
+    ],
+    settings: { scale: 50, beaconHeight: 2.5, beaconN: 2.0, clientRssiThreshold: -80 },
+  },
+  warehouse: {
+    name: '仓库环境',
+    beacons: [
+      { id: 1, type: 'beacon' as const, x: 100, y: 100, z: 5, txPower: -65 },
+      { id: 2, type: 'beacon' as const, x: 300, y: 100, z: 5, txPower: -65 },
+      { id: 3, type: 'beacon' as const, x: 500, y: 100, z: 5, txPower: -65 },
+      { id: 4, type: 'beacon' as const, x: 100, y: 300, z: 5, txPower: -65 },
+      { id: 5, type: 'beacon' as const, x: 300, y: 300, z: 5, txPower: -65 },
+      { id: 6, type: 'beacon' as const, x: 500, y: 300, z: 5, txPower: -65 },
+      { id: 7, type: 'beacon' as const, x: 200, y: 450, z: 5, txPower: -65 },
+      { id: 8, type: 'beacon' as const, x: 400, y: 450, z: 5, txPower: -65 },
+    ],
+    clients: [
+      { id: 1, type: 'client' as const, x: 300, y: 300, z: 1.2 },
+    ],
+    settings: { scale: 50, beaconHeight: 5, beaconN: 3.0, clientRssiThreshold: -90 },
+  },
+}
+
+function loadPresetScene(sceneType: keyof typeof presetScenes): void {
+  try {
+    const scene = presetScenes[sceneType]
+
+    // 清空当前场景
+    beacons.value = []
+    clients.value = []
+    selectedObject.value = null
+
+    // 加载预设场景
+    beacons.value = [...scene.beacons]
+    clients.value = [...scene.clients]
+
+    // 应用设置
+    scale.value = scene.settings.scale
+    beaconHeight.value = scene.settings.beaconHeight
+    beaconN.value = scene.settings.beaconN
+    clientRssiThreshold.value = scene.settings.clientRssiThreshold
+
+    // 更新ID计数器
+    nextBeaconId.value = Math.max(...beacons.value.map(b => b.id), 0) + 1
+    nextClientId.value = Math.max(...clients.value.map(c => c.id), 0) + 1
+
+    nextTick(() => {
+      drawGrid()
+      draw()
+    })
+
+    showError(`已加载${scene.name}预设场景`)
+  }
+  catch (error) {
+    console.error('加载预设场景失败:', error)
+    showError('加载预设场景失败，请重试')
+  }
 }
 
 // 生命周期
 onMounted(() => {
   nextTick(() => {
+    // 先加载本地存储的数据
+    loadFromLocalStorage()
     resizeCanvas()
 
     const canvas = canvasRef.value
@@ -531,6 +916,17 @@ onMounted(() => {
 
 <template>
   <div bg-gray-100 h-screen overflow-hidden dark:bg-gray-900>
+    <!-- 错误提示 -->
+    <NAlert
+      v-if="errorMessage"
+      type="error"
+      closable
+      class="max-w-md transform left-1/2 top-4 fixed z-50 -translate-x-1/2"
+      @close="errorMessage = ''"
+    >
+      {{ errorMessage }}
+    </NAlert>
+
     <NSplit
       direction="horizontal"
       :min="0.5"
@@ -542,11 +938,18 @@ onMounted(() => {
       <!-- 画布容器 -->
       <template #1>
         <div p-2 h-full>
-          <div ref="canvasContainerRef" rounded-lg bg-white flex h-full shadow-md items-center justify-center dark:bg-gray-800 dark:shadow-gray-700>
+          <div ref="canvasContainerRef" rounded-lg bg-white flex h-full shadow-md items-center justify-center relative dark:bg-gray-800 dark:shadow-gray-700>
+            <!-- 网格层 -->
+            <canvas
+              ref="gridCanvasRef"
+
+              pointer-events-none left-2 top-2 absolute
+            />
+            <!-- 动态元素层 -->
             <canvas
               ref="canvasRef"
 
-              bg-white cursor-grab dark:bg-gray-800
+              bg-transparent cursor-grab relative
             />
           </div>
         </div>
@@ -619,16 +1022,42 @@ onMounted(() => {
             <h3 text-lg text-blue-500 font-semibold mb-3 dark:text-blue-400>
               操作
             </h3>
-            <NSpace>
-              <NButton type="primary" @click="addBeacon">
-                添加蓝牙信标
-              </NButton>
-              <NButton type="primary" @click="addClient">
-                添加客户端
-              </NButton>
-              <NButton type="error" @click="clearAll">
-                全部清除
-              </NButton>
+            <NSpace vertical>
+              <NSpace>
+                <NButton type="primary" @click="addBeacon">
+                  添加蓝牙信标
+                </NButton>
+                <NButton type="primary" @click="addClient">
+                  添加客户端
+                </NButton>
+                <NButton type="error" @click="clearAll">
+                  全部清除
+                </NButton>
+              </NSpace>
+              <NSpace>
+                <NButton type="info" @click="exportScene">
+                  导出场景
+                </NButton>
+                <NButton type="warning" @click="importScene">
+                  导入场景
+                </NButton>
+              </NSpace>
+
+              <!-- 预设场景 -->
+              <div>
+                <label text-gray-700 font-medium mb-1 block dark:text-gray-300>预设场景模板:</label>
+                <NSpace>
+                  <NButton size="small" @click="loadPresetScene('hospital')">
+                    医院环境
+                  </NButton>
+                  <NButton size="small" @click="loadPresetScene('office')">
+                    办公室
+                  </NButton>
+                  <NButton size="small" @click="loadPresetScene('warehouse')">
+                    仓库
+                  </NButton>
+                </NSpace>
+              </div>
             </NSpace>
           </div>
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { isDark } from '~/composables'
 
 interface Beacon {
   id: number
@@ -32,11 +33,17 @@ const dragOffsetY = ref(0)
 const nextBeaconId = ref(1)
 const nextClientId = ref(1)
 
+// 监听主题变化，重新绘制Canvas
+watch(isDark, () => {
+  nextTick(() => draw())
+})
+
 // 配置参数
 const scale = ref(50)
 const beaconHeight = ref(3)
 const beaconN = ref(2.5)
 const clientRssiThreshold = ref(-85)
+const splitSize = ref(0.75) // 画布占比 (0-1)
 
 // 常量
 const BEACON_DEFAULTS = {
@@ -207,7 +214,8 @@ function draw(): void {
 }
 
 function drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement): void {
-  ctx.strokeStyle = '#e0e0e0'
+  // 根据当前主题选择网格颜色
+  ctx.strokeStyle = isDark.value ? '#374151' : '#e0e0e0'
   ctx.lineWidth = 0.5
 
   for (let x = 0; x < canvas.width; x += scale.value) {
@@ -241,7 +249,7 @@ function drawBeacon(ctx: CanvasRenderingContext2D, b: Beacon): void {
     ctx.stroke()
   }
 
-  ctx.fillStyle = '#000'
+  ctx.fillStyle = isDark.value ? '#e5e7eb' : '#000'
   ctx.font = '12px Arial'
   ctx.textAlign = 'center'
   ctx.fillText(`B${b.id}`, b.x, b.y + BEACON_DEFAULTS.radius + 12)
@@ -262,7 +270,7 @@ function drawClient(ctx: CanvasRenderingContext2D, c: Client): void {
     ctx.strokeRect(c.x - size / 2, c.y - size / 2, size, size)
   }
 
-  ctx.fillStyle = '#000'
+  ctx.fillStyle = isDark.value ? '#e5e7eb' : '#000'
   ctx.font = '12px Arial'
   ctx.textAlign = 'center'
   ctx.fillText(`C${c.id}`, c.x, c.y + size / 2 + 12)
@@ -324,7 +332,7 @@ function drawClientConnections(ctx: CanvasRenderingContext2D, client: Client): v
       const midY = (client.y + beacon.y) / 2
 
       // 绘制背景
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'
+      ctx.fillStyle = isDark.value ? 'rgba(31, 41, 55, 0.9)' : 'rgba(255, 255, 255, 0.9)'
       const text = `${distance3D.toFixed(2)}m`
       ctx.font = '12px Arial'
       const textWidth = ctx.measureText(text).width
@@ -522,140 +530,151 @@ onMounted(() => {
 </script>
 
 <template>
-  <div bg-gray-100 h-screen overflow-hidden>
-    <div p-2 flex h-full>
+  <div bg-gray-100 h-screen overflow-hidden dark:bg-gray-900>
+    <NSplit
+      direction="horizontal"
+      :min="0.5"
+      :max="0.9"
+      :default-size="splitSize"
+      :on-update:size="(size: number) => { splitSize = size; nextTick(() => resizeCanvas()) }"
+      class="h-full"
+    >
       <!-- 画布容器 -->
-      <div ref="canvasContainerRef" m-r-2 rounded-lg bg-white flex flex-1 shadow-md items-center justify-center>
-        <canvas
-          ref="canvasRef"
-          bg-white
-          cursor-grab
-        />
-      </div>
+      <template #1>
+        <div p-2 h-full>
+          <div ref="canvasContainerRef" rounded-lg bg-white flex h-full shadow-md items-center justify-center dark:bg-gray-800 dark:shadow-gray-700>
+            <canvas
+              ref="canvasRef"
+
+              bg-white cursor-grab dark:bg-gray-800
+            />
+          </div>
+        </div>
+      </template>
 
       <!-- 控制面板 -->
-      <div p-5 rounded-lg bg-white min-w-80 w-100 shadow-md overflow-y-auto>
-        <h2 text-xl text-blue-600 font-bold mb-4 pb-2 border-b-2 border-gray-200>
-          控制面板
-        </h2>
-
-        <!-- 全局设置 -->
-        <div mb-5>
-          <h3 text-lg text-blue-500 font-semibold mb-3>
-            全局设置
-          </h3>
-
-          <div mb-3>
-            <label font-medium mb-1 block>比例尺 (像素/米):</label>
-            <input
-              v-model.number="scale"
-              type="number"
-              min="10"
-
-              p-2 border-1 border-gray-300 rounded w-full
-              @change="draw"
-            >
+      <template #2>
+        <div p-5 h-full overflow-y-auto>
+          <div mb-4 pb-2 border-b-2 border-gray-200 flex items-center justify-between dark:border-gray-700>
+            <h2 text-xl text-blue-600 font-bold dark:text-blue-400>
+              控制面板
+            </h2>
           </div>
 
-          <div mb-3>
-            <label font-medium mb-1 block>信标默认高度 (米):</label>
-            <input
-              v-model.number="beaconHeight"
-              type="number"
-              step="0.1"
+          <!-- 全局设置 -->
+          <div mb-5>
+            <h3 text-lg text-blue-500 font-semibold mb-3 dark:text-blue-400>
+              全局设置
+            </h3>
 
-              p-2 border-1 border-gray-300 rounded w-full
-              @change="draw"
-            >
+            <div mb-3>
+              <label text-gray-700 font-medium mb-1 block dark:text-gray-300>比例尺 (像素/米):</label>
+              <NInputNumber
+                v-model:value="scale"
+                :min="10"
+                :step="1"
+                placeholder="比例尺"
+                @update:value="draw"
+              />
+            </div>
+
+            <div mb-3>
+              <label text-gray-700 font-medium mb-1 block dark:text-gray-300>信标默认高度 (米):</label>
+              <NInputNumber
+                v-model:value="beaconHeight"
+                :min="0"
+                :max="20"
+                :step="0.1"
+                placeholder="信标高度"
+                @update:value="draw"
+              />
+            </div>
+
+            <div mb-3>
+              <label text-gray-700 font-medium mb-1 block dark:text-gray-300>RSSI 衰减速率 (n):</label>
+              <NInputNumber
+                v-model:value="beaconN"
+                :min="1"
+                :max="5"
+                :step="0.1"
+                placeholder="衰减速率"
+                @update:value="draw"
+              />
+            </div>
+
+            <div mb-3>
+              <label text-gray-700 font-medium mb-1 block dark:text-gray-300>客户端 RSSI 接收阈值 (dBm):</label>
+              <NInputNumber
+                v-model:value="clientRssiThreshold"
+                :max="0"
+                :min="-100"
+                placeholder="RSSI阈值"
+                @update:value="draw"
+              />
+            </div>
           </div>
 
-          <div mb-3>
-            <label font-medium mb-1 block>RSSI 衰减速率 (n):</label>
-            <input
-              v-model.number="beaconN"
-              type="number"
-              step="0.1"
-
-              p-2 border-1 border-gray-300 rounded w-full
-              @change="draw"
-            >
+          <!-- 操作按钮 -->
+          <div mb-5>
+            <h3 text-lg text-blue-500 font-semibold mb-3 dark:text-blue-400>
+              操作
+            </h3>
+            <NSpace>
+              <NButton type="primary" @click="addBeacon">
+                添加蓝牙信标
+              </NButton>
+              <NButton type="primary" @click="addClient">
+                添加客户端
+              </NButton>
+              <NButton type="error" @click="clearAll">
+                全部清除
+              </NButton>
+            </NSpace>
           </div>
 
-          <div mb-3>
-            <label font-medium mb-1 block>客户端 RSSI 接收阈值 (dBm):</label>
-            <input
-              v-model.number="clientRssiThreshold"
-              type="number"
-              max="0"
-
-              p-2 border-1 border-gray-300 rounded w-full
-              @change="draw"
+          <!-- 选中对象信息 -->
+          <div mb-5>
+            <h3 text-lg text-blue-500 font-semibold mb-3 dark:text-blue-400>
+              选中对象信息
+            </h3>
+            <NCard
+              size="small"
+              bordered
             >
+              <div v-html="infoPanelContent" />
+            </NCard>
           </div>
-        </div>
 
-        <!-- 操作按钮 -->
-        <div mb-5>
-          <h3 text-lg text-blue-500 font-semibold mb-3>
-            操作
-          </h3>
-          <div gap-2 grid grid-cols-2>
-            <button
-              text-white
-
-              p-x-4 p-y-2 rounded bg-blue-500 transition-colors hover:bg-blue-600 @click="addBeacon"
+          <!-- 定位计算公式 -->
+          <div>
+            <h3 text-lg text-blue-500 font-semibold mb-3 dark:text-blue-400>
+              定位计算公式
+            </h3>
+            <NCard
+              size="small"
+              bordered
             >
-              添加蓝牙信标
-            </button>
-            <button
-              text-white
-
-              p-x-4 p-y-2 rounded bg-blue-500 transition-colors hover:bg-blue-600 @click="addClient"
-            >
-              添加客户端
-            </button>
-            <button
-              text-white
-
-              p-x-4 p-y-2 rounded bg-red-600 col-span-2 transition-colors hover:bg-red-700 @click="clearAll"
-            >
-              全部清除
-            </button>
-          </div>
-        </div>
-
-        <!-- 选中对象信息 -->
-        <div mb-5>
-          <h3 text-lg text-blue-500 font-semibold mb-3>
-            选中对象信息
-          </h3>
-          <div
-
-            text-sm leading-relaxed p-4 border-1 border-gray-200 rounded bg-gray-50
-            v-html="infoPanelContent"
-          />
-        </div>
-
-        <!-- 定位计算公式 -->
-        <div>
-          <h3 text-lg text-blue-500 font-semibold mb-3>
-            定位计算公式
-          </h3>
-          <div
-
-            text-sm leading-relaxed p-4 border-1 border-gray-200 rounded bg-gray-50
-          >
-            <div v-html="formulaPanelContent" />
+              <div v-html="formulaPanelContent" />
+            </NCard>
           </div>
         </div>
-      </div>
-    </div>
+      </template>
+    </NSplit>
   </div>
 </template>
 
 <style scoped>
 canvas {
   touch-action: none;
+}
+
+/* Naive UI Split 样式调整 */
+:deep(.NSplit) {
+  height: 100%;
+}
+
+:deep(.NSplit-pane) {
+  height: 100%;
 }
 
 /* 代码块样式 */
@@ -671,15 +690,28 @@ canvas {
   font-size: 12px;
 }
 
+.dark :deep(code) {
+  background-color: #374151;
+  color: #e5e7eb;
+}
+
 :deep(h3) {
   color: #1a73e8;
   margin: 10px 0 5px 0;
+}
+
+.dark :deep(h3) {
+  color: #60a5fa;
 }
 
 :deep(h4) {
   color: #1a73e8;
   margin: 8px 0 3px 0;
   font-size: 14px;
+}
+
+.dark :deep(h4) {
+  color: #60a5fa;
 }
 
 :deep(ul) {
@@ -690,6 +722,15 @@ canvas {
 
 :deep(li) {
   padding: 2px 0;
+}
+
+/* Naive UI 组件间距调整 */
+:deep(.NInputNumber) {
+  width: 100%;
+}
+
+:deep(.NCard .NCard__content) {
+  padding: 16px;
 }
 </style>
 

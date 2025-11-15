@@ -946,6 +946,50 @@ function handleKeyDown(e: KeyboardEvent): void {
   }
 }
 
+// 场景居中算法
+function centerScene(): void {
+  const canvas = canvasRef.value
+  if (!canvas)
+    return
+
+  const canvasWidth = canvas.width
+  const canvasHeight = canvas.height
+  const centerX = canvasWidth / 2
+  const centerY = canvasHeight / 2
+
+  // 收集所有对象的位置
+  const allObjects = [...beacons.value, ...clients.value]
+  if (allObjects.length === 0)
+    return
+
+  // 计算场景的边界
+  let minX = Infinity
+  let maxX = -Infinity
+  let minY = Infinity
+  let maxY = -Infinity
+
+  allObjects.forEach((obj) => {
+    minX = Math.min(minX, obj.x)
+    maxX = Math.max(maxX, obj.x)
+    minY = Math.min(minY, obj.y)
+    maxY = Math.max(maxY, obj.y)
+  })
+
+  // 计算场景的中心点
+  const sceneCenterX = (minX + maxX) / 2
+  const sceneCenterY = (minY + maxY) / 2
+
+  // 计算偏移量（需要移动的距离）
+  const offsetX = centerX - sceneCenterX
+  const offsetY = centerY - sceneCenterY
+
+  // 应用偏移量到所有对象
+  allObjects.forEach((obj) => {
+    obj.x += offsetX
+    obj.y += offsetY
+  })
+}
+
 // 对象管理
 function addBeacon(): void {
   const newBeacon: Beacon = {
@@ -1109,6 +1153,8 @@ function importScene(): void {
         selectedObject.value = null
 
         nextTick(() => {
+          // 将导入的场景移动到画布中央
+          centerScene()
           drawGrid()
           draw()
         })
@@ -1203,6 +1249,8 @@ function loadPresetScene(sceneType: keyof typeof presetScenes): void {
     nextClientId.value = Math.max(...clients.value.map(c => c.id), 0) + 1
 
     nextTick(() => {
+      // 将场景移动到画布中央
+      centerScene()
       drawGrid()
       draw()
     })

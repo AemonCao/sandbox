@@ -54,6 +54,7 @@ const boxSelection = ref({
 // 配置参数
 const scale = ref(50)
 const beaconHeight = ref(3)
+const clientHeight = ref(0.8) // 客户端默认高度（米）
 const beaconN = ref(2.5)
 const clientRssiThreshold = ref(-85)
 const showCoverageArea = ref(false) // 定位范围显示开关
@@ -67,6 +68,7 @@ const sceneData = computed(() => ({
   settings: {
     scale: scale.value,
     beaconHeight: beaconHeight.value,
+    clientHeight: clientHeight.value,
     beaconN: beaconN.value,
     clientRssiThreshold: clientRssiThreshold.value,
     showCoverageArea: showCoverageArea.value,
@@ -95,12 +97,12 @@ const BEACON_DEFAULTS = {
   selectedColor: '#1a73e8',
 }
 
-const CLIENT_DEFAULTS = {
-  z: 0.8,
+const CLIENT_DEFAULTS = computed(() => ({
+  z: clientHeight.value,
   size: 12,
   color: 'rgba(21, 128, 61, 0.8)',
   selectedColor: '#15803d',
-}
+}))
 
 // 绘制定位覆盖范围
 function drawCoverageArea(ctx: CanvasRenderingContext2D): void {
@@ -131,7 +133,7 @@ function drawCoverageArea(ctx: CanvasRenderingContext2D): void {
         type: 'client',
         x,
         y,
-        z: CLIENT_DEFAULTS.z,
+        z: CLIENT_DEFAULTS.value.z,
       }
 
       // 计算能接收到的信号数量
@@ -155,6 +157,13 @@ function drawCoverageArea(ctx: CanvasRenderingContext2D): void {
 watch(scale, () => {
   nextTick(() => {
     drawGrid()
+    draw()
+  })
+})
+
+// 监听clientHeight变化，重新绘制Canvas
+watch(clientHeight, () => {
+  nextTick(() => {
     draw()
   })
 })
@@ -198,6 +207,7 @@ function loadFromLocalStorage(): void {
     if (data.settings) {
       scale.value = data.settings.scale || 50
       beaconHeight.value = data.settings.beaconHeight || 3
+      clientHeight.value = data.settings.clientHeight || 0.8
       beaconN.value = data.settings.beaconN || 2.5
       clientRssiThreshold.value = data.settings.clientRssiThreshold || -85
       showCoverageArea.value = data.settings.showCoverageArea || false
@@ -221,7 +231,7 @@ function loadFromLocalStorage(): void {
 }
 
 // 监听数据变化自动保存
-watch([beacons, clients, scale, beaconHeight, beaconN, clientRssiThreshold, showCoverageArea, coverageStep], () => {
+watch([beacons, clients, scale, beaconHeight, clientHeight, beaconN, clientRssiThreshold, showCoverageArea, coverageStep], () => {
   saveToLocalStorage()
 }, { deep: true })
 
@@ -592,13 +602,13 @@ function drawClient(ctx: CanvasRenderingContext2D, c: Client): void {
     obj.id === c.id && obj.type === 'client',
   )
 
-  const size = CLIENT_DEFAULTS.size
-  ctx.fillStyle = CLIENT_DEFAULTS.color
+  const size = CLIENT_DEFAULTS.value.size
+  ctx.fillStyle = CLIENT_DEFAULTS.value.color
   ctx.fillRect(c.x - size / 2, c.y - size / 2, size, size)
 
   if (isSelected || isMultiSelected) {
     ctx.lineWidth = 3
-    ctx.strokeStyle = isMultiSelected ? '#f59e0b' : CLIENT_DEFAULTS.selectedColor
+    ctx.strokeStyle = isMultiSelected ? '#f59e0b' : CLIENT_DEFAULTS.value.selectedColor
     ctx.strokeRect(c.x - size / 2, c.y - size / 2, size, size)
   }
 
@@ -610,7 +620,7 @@ function drawClient(ctx: CanvasRenderingContext2D, c: Client): void {
 
 function drawBeaconRange(ctx: CanvasRenderingContext2D, beacon: Beacon): void {
   const distance3D = calculate3DDistanceFromRSSI(beacon, clientRssiThreshold.value)
-  const heightDiff = beacon.z - CLIENT_DEFAULTS.z
+  const heightDiff = beacon.z - CLIENT_DEFAULTS.value.z
   const distance2D = calculate2DDistance(distance3D, heightDiff)
   const radiusPx = distance2D * scale.value
 
@@ -702,7 +712,7 @@ function drawBoxSelection(ctx: CanvasRenderingContext2D): void {
 function getObjectAt(x: number, y: number): SelectedObject {
   for (let i = clients.value.length - 1; i >= 0; i--) {
     const c = clients.value[i]
-    const size = CLIENT_DEFAULTS.size
+    const size = CLIENT_DEFAULTS.value.size
     if (x >= c.x - size / 2 && x <= c.x + size / 2
       && y >= c.y - size / 2 && y <= c.y + size / 2) {
       return c
@@ -736,7 +746,7 @@ function getObjectsInBox(x1: number, y1: number, x2: number, y2: number): (Beaco
 
   // 检查客户端
   clients.value.forEach((client) => {
-    const size = CLIENT_DEFAULTS.size
+    const size = CLIENT_DEFAULTS.value.size
     const halfSize = size / 2
     if (client.x - halfSize >= minX && client.x + halfSize <= maxX
       && client.y - halfSize >= minY && client.y + halfSize <= maxY) {
@@ -1010,7 +1020,7 @@ function addClient(): void {
     type: 'client',
     x: 100,
     y: 100,
-    z: CLIENT_DEFAULTS.z,
+    z: CLIENT_DEFAULTS.value.z,
   }
   clients.value.push(newClient)
   draw()
@@ -1066,6 +1076,40 @@ function deleteMultipleObjects(objects: (Beacon | Client)[]): void {
   // 清除选择状态
   clearSelection()
   draw()
+}
+
+function updateAllBeaconsHeight(): void {
+  if (beacons.value.length === 0) {
+    showMessage('当前没有信标可以更新', 'warning')
+    return
+  }
+
+  const oldHeight = beacons.value[0]?.z || 0
+  const newHeight = beaconHeight.value
+
+  beacons.value.forEach((beacon) => {
+    beacon.z = newHeight
+  })
+
+  draw()
+  showSuccess(`已将所有信标高度从 ${oldHeight}m 更新为 ${newHeight}m`)
+}
+
+function updateAllClientsHeight(): void {
+  if (clients.value.length === 0) {
+    showMessage('当前没有客户端可以更新', 'warning')
+    return
+  }
+
+  const oldHeight = clients.value[0]?.z || 0
+  const newHeight = clientHeight.value
+
+  clients.value.forEach((client) => {
+    client.z = newHeight
+  })
+
+  draw()
+  showSuccess(`已将所有客户端高度从 ${oldHeight}m 更新为 ${newHeight}m`)
 }
 
 function resizeCanvas(): void {
@@ -1140,6 +1184,7 @@ function importScene(): void {
         if (data.settings) {
           scale.value = data.settings.scale || 50
           beaconHeight.value = data.settings.beaconHeight || 3
+          clientHeight.value = data.settings.clientHeight || 0.8
           beaconN.value = data.settings.beaconN || 2.5
           clientRssiThreshold.value = data.settings.clientRssiThreshold || -85
           showCoverageArea.value = data.settings.showCoverageArea || false
@@ -1188,7 +1233,7 @@ const presetScenes = {
     clients: [
       { id: 1, type: 'client' as const, x: 200, y: 200, z: 0.8 },
     ],
-    settings: { scale: 50, beaconHeight: 3, beaconN: 2.5, clientRssiThreshold: -85, showCoverageArea: false, coverageStep: 10 },
+    settings: { scale: 50, beaconHeight: 3, clientHeight: 0.8, beaconN: 2.5, clientRssiThreshold: -85, showCoverageArea: false, coverageStep: 10 },
   },
   office: {
     name: '办公室环境',
@@ -1202,7 +1247,7 @@ const presetScenes = {
       { id: 1, type: 'client' as const, x: 300, y: 250, z: 0.8 },
       { id: 2, type: 'client' as const, x: 200, y: 200, z: 0.8 },
     ],
-    settings: { scale: 50, beaconHeight: 2.5, beaconN: 2.0, clientRssiThreshold: -80, showCoverageArea: false, coverageStep: 10 },
+    settings: { scale: 50, beaconHeight: 2.5, clientHeight: 0.8, beaconN: 2.0, clientRssiThreshold: -80, showCoverageArea: false, coverageStep: 10 },
   },
   warehouse: {
     name: '仓库环境',
@@ -1219,7 +1264,7 @@ const presetScenes = {
     clients: [
       { id: 1, type: 'client' as const, x: 300, y: 300, z: 1.2 },
     ],
-    settings: { scale: 50, beaconHeight: 5, beaconN: 3.0, clientRssiThreshold: -90, showCoverageArea: false, coverageStep: 10 },
+    settings: { scale: 50, beaconHeight: 5, clientHeight: 1.2, beaconN: 3.0, clientRssiThreshold: -90, showCoverageArea: false, coverageStep: 10 },
   },
 }
 
@@ -1239,6 +1284,7 @@ function loadPresetScene(sceneType: keyof typeof presetScenes): void {
     // 应用设置
     scale.value = scene.settings.scale
     beaconHeight.value = scene.settings.beaconHeight
+    clientHeight.value = scene.settings.clientHeight
     beaconN.value = scene.settings.beaconN
     clientRssiThreshold.value = scene.settings.clientRssiThreshold
     showCoverageArea.value = scene.settings.showCoverageArea
@@ -1355,14 +1401,52 @@ onMounted(() => {
 
             <div mb-3>
               <label text-gray-700 font-medium mb-1 block dark:text-gray-300>信标默认高度 (米):</label>
-              <NInputNumber
-                v-model:value="beaconHeight"
-                :min="0"
-                :max="20"
-                :step="0.1"
-                placeholder="信标高度"
-                @update:value="draw"
-              />
+              <div flex gap-2>
+                <NInputNumber
+                  v-model:value="beaconHeight"
+                  :min="0"
+                  :max="20"
+                  :step="0.1"
+                  placeholder="信标高度"
+                  @update:value="draw"
+                />
+                <NButton
+                  size="small"
+                  type="primary"
+                  :disabled="beacons.length === 0"
+                  @click="updateAllBeaconsHeight"
+                >
+                  应用到所有信标
+                </NButton>
+              </div>
+              <div text-xs text-gray-500 mt-1 dark:text-gray-400>
+                修改只影响新增信标，点击"应用到所有信标"更新现有信标
+              </div>
+            </div>
+
+            <div mb-3>
+              <label text-gray-700 font-medium mb-1 block dark:text-gray-300>客户端默认高度 (米):</label>
+              <div flex gap-2>
+                <NInputNumber
+                  v-model:value="clientHeight"
+                  :min="0"
+                  :max="20"
+                  :step="0.1"
+                  placeholder="客户端高度"
+                  @update:value="draw"
+                />
+                <NButton
+                  size="small"
+                  type="primary"
+                  :disabled="clients.length === 0"
+                  @click="updateAllClientsHeight"
+                >
+                  应用到所有客户端
+                </NButton>
+              </div>
+              <div text-xs text-gray-500 mt-1 dark:text-gray-400>
+                修改只影响新增客户端，点击"应用到所有客户端"更新现有客户端
+              </div>
             </div>
 
             <div mb-3>

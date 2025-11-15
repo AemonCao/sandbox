@@ -57,6 +57,7 @@ const beaconHeight = ref(3)
 const beaconN = ref(2.5)
 const clientRssiThreshold = ref(-85)
 const showCoverageArea = ref(false) // 定位范围显示开关
+const coverageStep = ref(10) // 定位覆盖范围采样步长（像素）
 const splitSize = ref(0.75) // 画布占比 (0-1)
 
 // 场景数据管理
@@ -69,6 +70,7 @@ const sceneData = computed(() => ({
     beaconN: beaconN.value,
     clientRssiThreshold: clientRssiThreshold.value,
     showCoverageArea: showCoverageArea.value,
+    coverageStep: coverageStep.value,
   },
   metadata: {
     version: '1.0.0',
@@ -111,7 +113,7 @@ function drawCoverageArea(ctx: CanvasRenderingContext2D): void {
 
   const width = canvas.width
   const height = canvas.height
-  const step = 10 // 采样步长（像素）
+  const step = coverageStep.value // 采样步长（像素）
 
   // 创建临时canvas用于离屏渲染
   const tempCanvas = document.createElement('canvas')
@@ -199,6 +201,7 @@ function loadFromLocalStorage(): void {
       beaconN.value = data.settings.beaconN || 2.5
       clientRssiThreshold.value = data.settings.clientRssiThreshold || -85
       showCoverageArea.value = data.settings.showCoverageArea || false
+      coverageStep.value = data.settings.coverageStep || 10
     }
 
     // 更新ID计数器
@@ -218,7 +221,7 @@ function loadFromLocalStorage(): void {
 }
 
 // 监听数据变化自动保存
-watch([beacons, clients, scale, beaconHeight, beaconN, clientRssiThreshold, showCoverageArea], () => {
+watch([beacons, clients, scale, beaconHeight, beaconN, clientRssiThreshold, showCoverageArea, coverageStep], () => {
   saveToLocalStorage()
 }, { deep: true })
 
@@ -1096,6 +1099,7 @@ function importScene(): void {
           beaconN.value = data.settings.beaconN || 2.5
           clientRssiThreshold.value = data.settings.clientRssiThreshold || -85
           showCoverageArea.value = data.settings.showCoverageArea || false
+          coverageStep.value = data.settings.coverageStep || 10
         }
 
         // 更新ID计数器
@@ -1138,7 +1142,7 @@ const presetScenes = {
     clients: [
       { id: 1, type: 'client' as const, x: 200, y: 200, z: 0.8 },
     ],
-    settings: { scale: 50, beaconHeight: 3, beaconN: 2.5, clientRssiThreshold: -85, showCoverageArea: false },
+    settings: { scale: 50, beaconHeight: 3, beaconN: 2.5, clientRssiThreshold: -85, showCoverageArea: false, coverageStep: 10 },
   },
   office: {
     name: '办公室环境',
@@ -1152,7 +1156,7 @@ const presetScenes = {
       { id: 1, type: 'client' as const, x: 300, y: 250, z: 0.8 },
       { id: 2, type: 'client' as const, x: 200, y: 200, z: 0.8 },
     ],
-    settings: { scale: 50, beaconHeight: 2.5, beaconN: 2.0, clientRssiThreshold: -80, showCoverageArea: false },
+    settings: { scale: 50, beaconHeight: 2.5, beaconN: 2.0, clientRssiThreshold: -80, showCoverageArea: false, coverageStep: 10 },
   },
   warehouse: {
     name: '仓库环境',
@@ -1169,7 +1173,7 @@ const presetScenes = {
     clients: [
       { id: 1, type: 'client' as const, x: 300, y: 300, z: 1.2 },
     ],
-    settings: { scale: 50, beaconHeight: 5, beaconN: 3.0, clientRssiThreshold: -90, showCoverageArea: false },
+    settings: { scale: 50, beaconHeight: 5, beaconN: 3.0, clientRssiThreshold: -90, showCoverageArea: false, coverageStep: 10 },
   },
 }
 
@@ -1192,6 +1196,7 @@ function loadPresetScene(sceneType: keyof typeof presetScenes): void {
     beaconN.value = scene.settings.beaconN
     clientRssiThreshold.value = scene.settings.clientRssiThreshold
     showCoverageArea.value = scene.settings.showCoverageArea
+    coverageStep.value = scene.settings.coverageStep
 
     // 更新ID计数器
     nextBeaconId.value = Math.max(...beacons.value.map(b => b.id), 0) + 1
@@ -1348,6 +1353,21 @@ onMounted(() => {
                   隐藏
                 </template>
               </NSwitch>
+            </div>
+
+            <div v-if="showCoverageArea" mb-3>
+              <label text-gray-700 font-medium mb-1 block dark:text-gray-300>采样步长 (像素):</label>
+              <NInputNumber
+                v-model:value="coverageStep"
+                :min="5"
+                :max="50"
+                :step="1"
+                placeholder="采样步长"
+                @update:value="draw"
+              />
+              <div text-xs text-gray-500 mt-1 dark:text-gray-400>
+                较小的值提供更高精度但性能较差，较大的值性能更好但精度较低
+              </div>
             </div>
           </div>
 

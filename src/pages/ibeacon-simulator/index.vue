@@ -235,101 +235,150 @@ watch([beacons, clients, scale, beaconHeight, clientHeight, beaconN, clientRssiT
   saveToLocalStorage()
 }, { deep: true })
 
-// 计算属性
-const infoPanelContent = computed(() => {
+// 定义数据类型接口
+interface MultiSelectionData {
+  type: 'multi-selection'
+  totalCount: number
+  beacons: Array<{ id: number, x: string, y: string }>
+  clients: Array<{ id: number, x: string, y: string }>
+}
+
+interface InstructionData {
+  type: 'instructions'
+}
+
+interface BeaconData {
+  type: 'beacon'
+  id: number
+  x: string
+  y: string
+  xM: string
+  yM: string
+  z: number
+  txPower: number
+}
+
+interface ClientData {
+  type: 'client'
+  id: number
+  x: string
+  y: string
+  xM: string
+  yM: string
+  z: number
+  rssiData: Array<{ beaconId: number, rssi: number, isAudible: boolean }>
+}
+
+type InfoPanelData = MultiSelectionData | InstructionData | BeaconData | ClientData
+
+// 公式面板数据类型
+interface EmptyFormulaData {
+  type: 'empty'
+}
+
+interface InsufficientFormulaData {
+  type: 'insufficient'
+  count: number
+  clientId: number
+}
+
+interface CalculationFormulaData {
+  type: 'calculation'
+  clientId: number
+  audibleCount: number
+  beaconData: Array<{
+    beaconId: number
+    txPower: number
+    receivedRssi: number
+    distance3D: string
+    heightDiff: number
+    distance2D: string
+    x: string
+    y: string
+  }>
+  n: number
+}
+
+type FormulaPanelData = EmptyFormulaData | InsufficientFormulaData | CalculationFormulaData
+
+// 计算属性 - 返回结构化数据而不是HTML字符串
+const infoPanelData = computed((): InfoPanelData => {
   if (selectedObjects.value.length > 1) {
     // 多选设备信息
     const beacons = selectedObjects.value.filter(obj => obj.type === 'beacon') as Beacon[]
     const clients = selectedObjects.value.filter(obj => obj.type === 'client') as Client[]
 
-    let html = `<h3>已选中 ${selectedObjects.value.length} 个对象</h3>`
-
-    if (beacons.length > 0) {
-      html += `<h4>信标 (${beacons.length}个)</h4><ul>`
-      beacons.forEach((b) => {
-        html += `<li>B${b.id}: (${(b.x / scale.value).toFixed(2)}m, ${(b.y / scale.value).toFixed(2)}m)</li>`
-      })
-      html += '</ul>'
+    return {
+      type: 'multi-selection',
+      totalCount: selectedObjects.value.length,
+      beacons: beacons.map(b => ({
+        id: b.id,
+        x: (b.x / scale.value).toFixed(2),
+        y: (b.y / scale.value).toFixed(2),
+      })),
+      clients: clients.map(c => ({
+        id: c.id,
+        x: (c.x / scale.value).toFixed(2),
+        y: (c.y / scale.value).toFixed(2),
+      })),
     }
-
-    if (clients.length > 0) {
-      html += `<h4>客户端 (${clients.length}个)</h4><ul>`
-      clients.forEach((c) => {
-        html += `<li>C${c.id}: (${(c.x / scale.value).toFixed(2)}m, ${(c.y / scale.value).toFixed(2)}m)</li>`
-      })
-      html += '</ul>'
-    }
-
-    html += '<p style="margin-top: 10px; color: #666;">按Delete键可删除所有选中对象，按ESC键清除选择。</p>'
-    return html
   }
 
   if (!selectedObject.value) {
-    return '<p><strong>操作说明：</strong></p>'
-      + '<ul style="list-style-type: disc; padding-left: 20px;">'
-      + '<li>点击设备进行选择</li>'
-      + '<li>按住Ctrl/Cmd键点击可多选设备</li>'
-      + '<li>在空白区域拖拽可框选多个设备</li>'
-      + '<li>选中设备后可拖拽移动</li>'
-      + '<li>按Delete键删除选中设备</li>'
-      + '<li>按ESC键清除选择</li>'
-      + '<li>双击设备可快速删除</li>'
-      + '</ul>'
-      + '<p style="margin-top: 10px; color: #666;">在画布上点击一个信标或客户端以查看详情。</p>'
+    return { type: 'instructions' }
   }
 
   if (selectedObject.value.type === 'beacon') {
     const b = selectedObject.value as Beacon
-    return `
-      <h3>信标 B${b.id}</h3>
-      <ul>
-        <li>位置 (px): (${b.x.toFixed(1)}, ${b.y.toFixed(1)})</li>
-        <li>位置 (m): (${(b.x / scale.value).toFixed(2)}, ${(b.y / scale.value).toFixed(2)})</li>
-        <li>高度 (m): ${b.z}</li>
-        <li>TxPower (dBm): ${b.txPower} (1米处RSSI)</li>
-      </ul>
-    `
+    return {
+      type: 'beacon',
+      id: b.id,
+      x: b.x.toFixed(1),
+      y: b.y.toFixed(1),
+      xM: (b.x / scale.value).toFixed(2),
+      yM: (b.y / scale.value).toFixed(2),
+      z: b.z,
+      txPower: b.txPower,
+    }
   }
   else {
     const c = selectedObject.value as Client
-    let rssiList = ''
-
-    beacons.value.forEach((b) => {
-      const rssi = calculateReceivedRSSI(b, c)
-      const color = rssi >= clientRssiThreshold.value ? 'green' : 'red'
-      rssiList += `<li>来自 B${b.id}: <strong style="color:${color}">${rssi} dBm</strong></li>`
-    })
-    if (beacons.value.length === 0) {
-      rssiList = '<li>无可用信标</li>'
+    return {
+      type: 'client',
+      id: c.id,
+      x: c.x.toFixed(1),
+      y: c.y.toFixed(1),
+      xM: (c.x / scale.value).toFixed(2),
+      yM: (c.y / scale.value).toFixed(2),
+      z: c.z,
+      rssiData: beacons.value.map((b) => {
+        const rssi = calculateReceivedRSSI(b, c)
+        return {
+          beaconId: b.id,
+          rssi,
+          isAudible: rssi >= clientRssiThreshold.value,
+        }
+      }),
     }
-
-    return `
-      <h3>客户端 C${c.id}</h3>
-      <ul>
-        <li>位置 (px): (${c.x.toFixed(1)}, ${c.y.toFixed(1)})</li>
-        <li>位置 (m): (${(c.x / scale.value).toFixed(2)}, ${(c.y / scale.value).toFixed(2)})</li>
-        <li>高度 (m): ${c.z}</li>
-      </ul>
-      <h4>接收到的信号强度:</h4>
-      <ul>${rssiList}</ul>
-    `
   }
 })
 
-const formulaPanelContent = computed(() => {
+// 计算属性 - 返回结构化数据
+const formulaPanelData = computed((): FormulaPanelData => {
   if (!selectedObject.value || selectedObject.value.type !== 'client') {
-    return '<p>点击一个客户端以查看计算过程。</p>'
+    return { type: 'empty' }
   }
 
   const client = selectedObject.value as Client
   const audibleBeacons = beacons.value.filter(b => calculateReceivedRSSI(b, client) >= clientRssiThreshold.value)
 
   if (audibleBeacons.length < 3) {
-    return `<p>至少需要接收到3个信标的信号才能进行三角定位。当前接收到 ${audibleBeacons.length} 个。</p>`
+    return {
+      type: 'insufficient',
+      count: audibleBeacons.length,
+      clientId: client.id,
+    }
   }
-
-  let html = `<h3>C${client.id} 的三角定位计算</h3>`
-  html += `<p><strong>第1步:</strong> 根据RSSI计算与每个信标的2D平面距离 (d)</p>`
 
   const beaconData = audibleBeacons.slice(0, 3).map((b) => {
     const receivedRssi = calculateReceivedRSSI(b, client)
@@ -337,43 +386,60 @@ const formulaPanelContent = computed(() => {
     const heightDiff = b.z - client.z
     const distance2D = calculate2DDistance(distance3D, heightDiff)
 
-    html += `
-      <p><strong>对于信标 B${b.id}:</strong></p>
-      <code>
-RSSI = ${receivedRssi} dBm
-TxPower = ${b.txPower} dBm, n = ${beaconN.value}
-3D距离 = 10^(${b.txPower} - (${receivedRssi})) / (10 * ${beaconN.value}))
-       = ${distance3D.toFixed(3)} 米
-
-平面距离 d${b.id} = sqrt( (3D距离)² - (高度差)² )
-            = sqrt( ${distance3D.toFixed(3)}² - (${b.z}-${client.z})² )
-            = <strong>${distance2D.toFixed(3)} 米</strong>
-      </code>`
-
     return {
+      beaconId: b.id,
+      txPower: b.txPower,
+      receivedRssi,
+      distance3D: distance3D.toFixed(3),
+      heightDiff,
+      distance2D: distance2D.toFixed(3),
       x: (b.x / scale.value).toFixed(3),
       y: (b.y / scale.value).toFixed(3),
-      d: distance2D.toFixed(3),
     }
   })
 
-  html += `<p><strong>第2步:</strong> 建立方程组求解客户端位置 (x, y)</p>`
-  html += `<code>
-(x - x₁)² + (y - y₁)² = d₁²
-(x - x₂)² + (y - y₂)² = d₂²
-(x - x₃)² + (y - y₃)² = d₃²
-
-代入数值:
-(x - ${beaconData[0].x})² + (y - ${beaconData[0].y})² = ${beaconData[0].d}²
-(x - ${beaconData[1].x})² + (y - ${beaconData[1].y})² = ${beaconData[1].d}²
-(x - ${beaconData[2].x})² + (y - ${beaconData[2].y})² = ${beaconData[2].d}²
-      </code>`
-
-  return html
+  return {
+    type: 'calculation',
+    clientId: client.id,
+    audibleCount: audibleBeacons.length,
+    beaconData,
+    n: beaconN.value,
+  }
 })
+
+// 记忆化优化 - 缓存RSSI计算结果
+const cachedRSSICalculation = (() => {
+  const cache = new Map<string, number>()
+
+  return (beacon: Beacon, client: Client): number => {
+    // 缓存键包含位置信息，确保移动时重新计算
+    const key = `${beacon.id}-${client.id}-${beacon.txPower}-${beacon.z}-${client.z}-${scale.value}-${beaconN.value}-${beacon.x.toFixed(0)}-${beacon.y.toFixed(0)}-${client.x.toFixed(0)}-${client.y.toFixed(0)}`
+
+    if (cache.has(key)) {
+      return cache.get(key)!
+    }
+
+    const result = performRSSICalculation(beacon, client)
+    cache.set(key, result)
+
+    // 限制缓存大小，避免内存泄漏
+    if (cache.size > 1000) {
+      const firstKey = cache.keys().next().value
+      if (firstKey) {
+        cache.delete(firstKey)
+      }
+    }
+
+    return result
+  }
+})()
 
 // 核心计算函数
 function calculateReceivedRSSI(beacon: Beacon, client: Client): number {
+  return cachedRSSICalculation(beacon, client)
+}
+
+function performRSSICalculation(beacon: Beacon, client: Client): number {
   try {
     // 参数验证
     if (!beacon || !client || scale.value <= 0 || beaconN.value <= 0) {
@@ -516,8 +582,9 @@ function draw(): void {
   clients.value.forEach(c => drawClient(ctx, c))
   beacons.value.forEach(b => drawBeacon(ctx, b))
 
-  // 绘制单个选中对象的特效
+  // 绘制选中对象的特效
   if (selectedObject.value && selectedObjects.value.length <= 1) {
+    // 单选时的特效
     if (selectedObject.value.type === 'beacon') {
       drawBeaconRange(ctx, selectedObject.value as Beacon)
     }
@@ -525,6 +592,15 @@ function draw(): void {
       drawClientCircles(ctx, selectedObject.value as Client)
       drawClientConnections(ctx, selectedObject.value as Client)
     }
+  }
+  else if (selectedObjects.value.length > 0) {
+    // 多选时，为每个客户端绘制信号圈和连线
+    selectedObjects.value.forEach((obj) => {
+      if (obj.type === 'client') {
+        drawClientCircles(ctx, obj as Client)
+        drawClientConnections(ctx, obj as Client)
+      }
+    })
   }
 
   // 绘制框选矩形
@@ -1572,7 +1648,113 @@ onMounted(() => {
               size="small"
               bordered
             >
-              <div v-html="infoPanelContent" />
+              <!-- 多选设备信息 -->
+              <div v-if="infoPanelData.type === 'multi-selection'">
+                <h3 text="blue-600" dark:text="blue-400" font-medium>
+                  已选中 {{ infoPanelData.totalCount }} 个对象
+                </h3>
+
+                <div v-if="infoPanelData.beacons?.length > 0" mt-3>
+                  <h4 text="blue-500" text-sm font-medium>
+                    信标 ({{ infoPanelData.beacons.length }}个)
+                  </h4>
+                  <ul mt-2 pl-5 space-y-1>
+                    <li v-for="beacon in infoPanelData.beacons" :key="`beacon-${beacon.id}`" text-sm>
+                      B{{ beacon.id }}: ({{ beacon.x }}m, {{ beacon.y }}m)
+                    </li>
+                  </ul>
+                </div>
+
+                <div v-if="infoPanelData.clients?.length > 0" mt-3>
+                  <h4 text="green-500" text-sm font-medium>
+                    客户端 ({{ infoPanelData.clients.length }}个)
+                  </h4>
+                  <ul mt-2 pl-5 space-y-1>
+                    <li v-for="client in infoPanelData.clients" :key="`client-${client.id}`" text-sm>
+                      C{{ client.id }}: ({{ client.x }}m, {{ client.y }}m)
+                    </li>
+                  </ul>
+                </div>
+
+                <p text="gray-500" text-sm mt-3>
+                  按Delete键可删除所有选中对象，按ESC键清除选择。
+                </p>
+              </div>
+
+              <!-- 操作说明 -->
+              <div v-else-if="infoPanelData.type === 'instructions'">
+                <p font-medium>
+                  操作说明：
+                </p>
+                <ul mt-2 pl-5 list-disc space-y-1>
+                  <li>点击设备进行选择</li>
+                  <li>按住Ctrl/Cmd键点击可多选设备</li>
+                  <li>在空白区域拖拽可框选多个设备</li>
+                  <li>选中设备后可拖拽移动</li>
+                  <li>按Delete键删除选中设备</li>
+                  <li>按ESC键清除选择</li>
+                  <li>双击设备可快速删除</li>
+                </ul>
+                <p text="gray-500" text-sm mt-3>
+                  在画布上点击一个信标或客户端以查看详情。
+                </p>
+              </div>
+
+              <!-- 信标详情 -->
+              <div v-else-if="infoPanelData.type === 'beacon'">
+                <h3 text="blue-600" dark:text="blue-400" font-medium>
+                  信标 B{{ infoPanelData.id }}
+                </h3>
+                <ul mt-3 space-y-2>
+                  <li text-sm>
+                    位置 (px): ({{ infoPanelData.x }}, {{ infoPanelData.y }})
+                  </li>
+                  <li text-sm>
+                    位置 (m): ({{ infoPanelData.xM }}, {{ infoPanelData.yM }})
+                  </li>
+                  <li text-sm>
+                    高度 (m): {{ infoPanelData.z }}
+                  </li>
+                  <li text-sm>
+                    TxPower (dBm): {{ infoPanelData.txPower }} (1米处RSSI)
+                  </li>
+                </ul>
+              </div>
+
+              <!-- 客户端详情 -->
+              <div v-else-if="infoPanelData.type === 'client'">
+                <h3 text="green-600" dark:text="green-400" font-medium>
+                  客户端 C{{ infoPanelData.id }}
+                </h3>
+                <ul mt-3 space-y-2>
+                  <li text-sm>
+                    位置 (px): ({{ infoPanelData.x }}, {{ infoPanelData.y }})
+                  </li>
+                  <li text-sm>
+                    位置 (m): ({{ infoPanelData.xM }}, {{ infoPanelData.yM }})
+                  </li>
+                  <li text-sm>
+                    高度 (m): {{ infoPanelData.z }}
+                  </li>
+                </ul>
+                <h4 text-sm font-medium mt-4>
+                  接收到的信号强度:
+                </h4>
+                <ul mt-2 space-y-1>
+                  <li
+                    v-for="data in infoPanelData.rssiData"
+                    :key="`rssi-${data.beaconId}`"
+                    text-sm
+                    :text="data.isAudible ? 'green-600' : 'red-600'"
+                    font-medium
+                  >
+                    来自 B{{ data.beaconId }}: {{ data.rssi }} dBm
+                  </li>
+                  <li v-if="infoPanelData.rssiData?.length === 0" text="gray-500" text-sm>
+                    无可用信标
+                  </li>
+                </ul>
+              </div>
             </NCard>
           </div>
 
@@ -1585,7 +1767,68 @@ onMounted(() => {
               size="small"
               bordered
             >
-              <div v-html="formulaPanelContent" />
+              <!-- 无客户端时的提示 -->
+              <div v-if="formulaPanelData.type === 'empty'">
+                <p text-gray-500>
+                  点击一个客户端以查看计算过程。
+                </p>
+              </div>
+
+              <!-- 信号不足时的提示 -->
+              <div v-else-if="formulaPanelData.type === 'insufficient'">
+                <p>
+                  至少需要接收到3个信标的信号才能进行三角定位。
+                  客户端C{{ formulaPanelData.clientId }}当前接收到 {{ formulaPanelData.count }} 个。
+                </p>
+              </div>
+
+              <!-- 计算过程展示 -->
+              <div v-else-if="formulaPanelData.type === 'calculation'">
+                <h3 text="blue-600" dark:text="blue-400" font-medium mb-4>
+                  C{{ formulaPanelData.clientId }} 的三角定位计算
+                </h3>
+
+                <p font-medium mb-3>
+                  第1步: 根据RSSI计算与每个信标的2D平面距离 (d)
+                </p>
+
+                <div space-y-4>
+                  <div v-for="beacon in formulaPanelData.beaconData" :key="`calc-${beacon.beaconId}`">
+                    <p font-medium>
+                      对于信标 B{{ beacon.beaconId }}:
+                    </p>
+                    <code
+                      text-xs leading-relaxed font-mono p-3 rounded bg-gray-100 block whitespace-pre-wrap dark:bg-gray-800
+                    >
+                      RSSI = {{ beacon.receivedRssi }} dBm
+                      TxPower = {{ beacon.txPower }} dBm, n = {{ formulaPanelData.n }}
+                      3D距离 = 10^(({{ beacon.txPower }} - ({{ beacon.receivedRssi }})) / (10 * {{ formulaPanelData.n }}))
+                      = {{ beacon.distance3D }} 米
+
+                      平面距离 d{{ beacon.beaconId }} = sqrt( (3D距离)² - (高度差)² )
+                      = sqrt( {{ beacon.distance3D }}² - ({{ beacon.heightDiff }})² )
+                      = {{ beacon.distance2D }} 米
+                    </code>
+                  </div>
+                </div>
+
+                <p font-medium mb-3 mt-4>
+                  第2步: 建立方程组求解客户端位置 (x, y)
+                </p>
+                <code
+
+                  text-xs leading-relaxed font-mono p-3 rounded bg-gray-100 block whitespace-pre-wrap dark:bg-gray-800
+                >
+                  (x - x₁)² + (y - y₁)² = d₁²
+                  (x - x₂)² + (y - y₂)² = d₂²
+                  (x - x₃)² + (y - y₃)² = d₃²
+
+                  代入数值:
+                  (x - {{ formulaPanelData.beaconData[0]?.x }})² + (y - {{ formulaPanelData.beaconData[0]?.y }})² = {{ formulaPanelData.beaconData[0]?.distance2D }}²
+                  (x - {{ formulaPanelData.beaconData[1]?.x }})² + (y - {{ formulaPanelData.beaconData[1]?.y }})² = {{ formulaPanelData.beaconData[1]?.distance2D }}²
+                  (x - {{ formulaPanelData.beaconData[2]?.x }})² + (y - {{ formulaPanelData.beaconData[2]?.y }})² = {{ formulaPanelData.beaconData[2]?.distance2D }}²
+                </code>
+              </div>
             </NCard>
           </div>
         </div>

@@ -1,0 +1,24 @@
+{
+  "name": "医院环境",
+  "description": "医院室内环境下的iBeacon部署方案，适用于医院导航、资产追踪和患者定位等场景",
+  "beacons": [
+    { "id": 1, "type": "beacon", "x": 100, "y": 100, "z": 3, "txPower": -59 },
+    { "id": 2, "type": "beacon", "x": 300, "y": 100, "z": 3, "txPower": -59 },
+    { "id": 3, "type": "beacon", "x": 500, "y": 100, "z": 3, "txPower": -59 },
+    { "id": 4, "type": "beacon", "x": 100, "y": 300, "z": 3, "txPower": -59 },
+    { "id": 5, "type": "beacon", "x": 300, "y": 300, "z": 3, "txPower": -59 },
+    { "id": 6, "type": "beacon", "x": 500, "y": 300, "z": 3, "txPower": -59 }
+  ],
+  "clients": [
+    { "id": 1, "type": "client", "x": 200, "y": 200, "z": 0.8 }
+  ],
+  "settings": {
+    "scale": 50,
+    "beaconHeight": 3,
+    "clientHeight": 0.8,
+    "beaconN": 2.5,
+    "clientRssiThreshold": -85,
+    "showCoverageArea": false,
+    "coverageStep": 10
+  }
+}

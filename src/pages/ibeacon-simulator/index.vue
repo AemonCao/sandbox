@@ -8,6 +8,7 @@ import InfoPanel from './components/InfoPanel.vue'
 import MessageAlert from './components/MessageAlert.vue'
 import { useFormulaPanel } from './composables/useFormulaPanel'
 import { useInfoPanel } from './composables/useInfoPanel'
+import { usePresetScenes } from './composables/usePresetScenes'
 import { useSceneData } from './composables/useSceneData'
 
 // 使用composables管理状态
@@ -34,6 +35,8 @@ const {
   updateAllClientsHeight,
   centerScene,
 } = useSceneData()
+// 使用预设场景
+const { loadPresetScene: loadPresetSceneFromComposable } = usePresetScenes()
 
 // 使用面板数据
 const { infoPanelData } = useInfoPanel(
@@ -242,89 +245,32 @@ function importScene(): void {
   input.click()
 }
 
-// 预设场景模板
-const presetScenes = {
-  hospital: {
-    name: '医院环境',
-    beacons: [
-      { id: 1, type: 'beacon' as const, x: 100, y: 100, z: 3, txPower: -59 },
-      { id: 2, type: 'beacon' as const, x: 300, y: 100, z: 3, txPower: -59 },
-      { id: 3, type: 'beacon' as const, x: 500, y: 100, z: 3, txPower: -59 },
-      { id: 4, type: 'beacon' as const, x: 100, y: 300, z: 3, txPower: -59 },
-      { id: 5, type: 'beacon' as const, x: 300, y: 300, z: 3, txPower: -59 },
-      { id: 6, type: 'beacon' as const, x: 500, y: 300, z: 3, txPower: -59 },
-    ],
-    clients: [
-      { id: 1, type: 'client' as const, x: 200, y: 200, z: 0.8 },
-    ],
-    settings: { scale: 50, beaconHeight: 3, clientHeight: 0.8, beaconN: 2.5, clientRssiThreshold: -85, showCoverageArea: false, coverageStep: 10 },
-  },
-  office: {
-    name: '办公室环境',
-    beacons: [
-      { id: 1, type: 'beacon' as const, x: 150, y: 150, z: 2.5, txPower: -59 },
-      { id: 2, type: 'beacon' as const, x: 450, y: 150, z: 2.5, txPower: -59 },
-      { id: 3, type: 'beacon' as const, x: 150, y: 350, z: 2.5, txPower: -59 },
-      { id: 4, type: 'beacon' as const, x: 450, y: 350, z: 2.5, txPower: -59 },
-    ],
-    clients: [
-      { id: 1, type: 'client' as const, x: 300, y: 250, z: 0.8 },
-      { id: 2, type: 'client' as const, x: 200, y: 200, z: 0.8 },
-    ],
-    settings: { scale: 50, beaconHeight: 2.5, clientHeight: 0.8, beaconN: 2.0, clientRssiThreshold: -80, showCoverageArea: false, coverageStep: 10 },
-  },
-  warehouse: {
-    name: '仓库环境',
-    beacons: [
-      { id: 1, type: 'beacon' as const, x: 100, y: 100, z: 5, txPower: -65 },
-      { id: 2, type: 'beacon' as const, x: 300, y: 100, z: 5, txPower: -65 },
-      { id: 3, type: 'beacon' as const, x: 500, y: 100, z: 5, txPower: -65 },
-      { id: 4, type: 'beacon' as const, x: 100, y: 300, z: 5, txPower: -65 },
-      { id: 5, type: 'beacon' as const, x: 300, y: 300, z: 5, txPower: -65 },
-      { id: 6, type: 'beacon' as const, x: 500, y: 300, z: 5, txPower: -65 },
-      { id: 7, type: 'beacon' as const, x: 200, y: 450, z: 5, txPower: -65 },
-      { id: 8, type: 'beacon' as const, x: 400, y: 450, z: 5, txPower: -65 },
-    ],
-    clients: [
-      { id: 1, type: 'client' as const, x: 300, y: 300, z: 1.2 },
-    ],
-    settings: { scale: 50, beaconHeight: 5, clientHeight: 1.2, beaconN: 3.0, clientRssiThreshold: -90, showCoverageArea: false, coverageStep: 10 },
-  },
-}
-
+// 加载预设场景
 function loadPresetScene(sceneType: string): void {
-  try {
-    const scene = presetScenes[sceneType as keyof typeof presetScenes]
-
-    // 清空当前场景
-    beacons.value = []
-    clients.value = []
-    selectedObject.value = null
-    selectedObjects.value = []
-
-    // 加载预设场景
-    beacons.value = [...scene.beacons]
-    clients.value = [...scene.clients]
-
-    // 应用设置
-    scale.value = scene.settings.scale
-    beaconHeight.value = scene.settings.beaconHeight
-    clientHeight.value = scene.settings.clientHeight
-    beaconN.value = scene.settings.beaconN
-    clientRssiThreshold.value = scene.settings.clientRssiThreshold
-    showCoverageArea.value = scene.settings.showCoverageArea
-    coverageStep.value = scene.settings.coverageStep
-
-    nextTick(() => {
-      centerScene()
-    })
-
-    showSuccess(`已加载${scene.name}预设场景`)
-  }
-  catch (error) {
-    console.error('加载预设场景失败:', error)
-    showError('加载预设场景失败，请重试')
-  }
+  loadPresetSceneFromComposable(sceneType, {
+    clearAll: () => {
+      beacons.value = []
+      clients.value = []
+      selectedObject.value = null
+      selectedObjects.value = []
+    },
+    setBeacons: (newBeacons) => { beacons.value = newBeacons },
+    setClients: (newClients) => { clients.value = newClients },
+    setScale: (newScale) => { scale.value = newScale },
+    setBeaconHeight: (newHeight) => { beaconHeight.value = newHeight },
+    setClientHeight: (newHeight) => { clientHeight.value = newHeight },
+    setBeaconN: (newN) => { beaconN.value = newN },
+    setClientRssiThreshold: (newThreshold) => { clientRssiThreshold.value = newThreshold },
+    setShowCoverageArea: (show) => { showCoverageArea.value = show },
+    setCoverageStep: (newStep) => { coverageStep.value = newStep },
+    centerScene: () => {
+      nextTick(() => {
+        centerScene()
+      })
+    },
+    showSuccess: (message) => { showSuccess(message) },
+    showError: (message) => { showError(message) },
+  })
 }
 
 // 本地存储功能

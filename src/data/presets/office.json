@@ -1,0 +1,23 @@
+{
+  "name": "办公室环境",
+  "description": "办公室环境下的iBeacon部署方案，适用于员工考勤、会议室管理和室内导航等场景",
+  "beacons": [
+    { "id": 1, "type": "beacon", "x": 150, "y": 150, "z": 2.5, "txPower": -59 },
+    { "id": 2, "type": "beacon", "x": 450, "y": 150, "z": 2.5, "txPower": -59 },
+    { "id": 3, "type": "beacon", "x": 150, "y": 350, "z": 2.5, "txPower": -59 },
+    { "id": 4, "type": "beacon", "x": 450, "y": 350, "z": 2.5, "txPower": -59 }
+  ],
+  "clients": [
+    { "id": 1, "type": "client", "x": 300, "y": 250, "z": 0.8 },
+    { "id": 2, "type": "client", "x": 200, "y": 200, "z": 0.8 }
+  ],
+  "settings": {
+    "scale": 50,
+    "beaconHeight": 2.5,
+    "clientHeight": 0.8,
+    "beaconN": 2.0,
+    "clientRssiThreshold": -80,
+    "showCoverageArea": false,
+    "coverageStep": 10
+  }
+}

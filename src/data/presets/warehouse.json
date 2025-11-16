@@ -1,0 +1,26 @@
+{
+  "name": "仓库环境",
+  "description": "仓库环境下的iBeacon部署方案，适用于库存管理、资产追踪和人员定位等场景",
+  "beacons": [
+    { "id": 1, "type": "beacon", "x": 100, "y": 100, "z": 5, "txPower": -65 },
+    { "id": 2, "type": "beacon", "x": 300, "y": 100, "z": 5, "txPower": -65 },
+    { "id": 3, "type": "beacon", "x": 500, "y": 100, "z": 5, "txPower": -65 },
+    { "id": 4, "type": "beacon", "x": 100, "y": 300, "z": 5, "txPower": -65 },
+    { "id": 5, "type": "beacon", "x": 300, "y": 300, "z": 5, "txPower": -65 },
+    { "id": 6, "type": "beacon", "x": 500, "y": 300, "z": 5, "txPower": -65 },
+    { "id": 7, "type": "beacon", "x": 200, "y": 450, "z": 5, "txPower": -65 },
+    { "id": 8, "type": "beacon", "x": 400, "y": 450, "z": 5, "txPower": -65 }
+  ],
+  "clients": [
+    { "id": 1, "type": "client", "x": 300, "y": 300, "z": 1.2 }
+  ],
+  "settings": {
+    "scale": 50,
+    "beaconHeight": 5,
+    "clientHeight": 1.2,
+    "beaconN": 3.0,
+    "clientRssiThreshold": -90,
+    "showCoverageArea": false,
+    "coverageStep": 10
+  }
+}

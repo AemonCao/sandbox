@@ -51,6 +51,41 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/ibeacon-simulator/components/BeaconCanvas': RouteRecordInfo<
+      '/ibeacon-simulator/components/BeaconCanvas',
+      '/ibeacon-simulator/components/BeaconCanvas',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/ibeacon-simulator/components/ControlPanel': RouteRecordInfo<
+      '/ibeacon-simulator/components/ControlPanel',
+      '/ibeacon-simulator/components/ControlPanel',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/ibeacon-simulator/components/FormulaPanel': RouteRecordInfo<
+      '/ibeacon-simulator/components/FormulaPanel',
+      '/ibeacon-simulator/components/FormulaPanel',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/ibeacon-simulator/components/InfoPanel': RouteRecordInfo<
+      '/ibeacon-simulator/components/InfoPanel',
+      '/ibeacon-simulator/components/InfoPanel',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/ibeacon-simulator/components/MessageAlert': RouteRecordInfo<
+      '/ibeacon-simulator/components/MessageAlert',
+      '/ibeacon-simulator/components/MessageAlert',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
   }
 
   /**
@@ -85,6 +120,36 @@ declare module 'vue-router/auto-routes' {
     'src/pages/ibeacon-simulator/index.vue': {
       routes:
         | '/ibeacon-simulator/'
+      views:
+        | never
+    }
+    'src/pages/ibeacon-simulator/components/BeaconCanvas.vue': {
+      routes:
+        | '/ibeacon-simulator/components/BeaconCanvas'
+      views:
+        | never
+    }
+    'src/pages/ibeacon-simulator/components/ControlPanel.vue': {
+      routes:
+        | '/ibeacon-simulator/components/ControlPanel'
+      views:
+        | never
+    }
+    'src/pages/ibeacon-simulator/components/FormulaPanel.vue': {
+      routes:
+        | '/ibeacon-simulator/components/FormulaPanel'
+      views:
+        | never
+    }
+    'src/pages/ibeacon-simulator/components/InfoPanel.vue': {
+      routes:
+        | '/ibeacon-simulator/components/InfoPanel'
+      views:
+        | never
+    }
+    'src/pages/ibeacon-simulator/components/MessageAlert.vue': {
+      routes:
+        | '/ibeacon-simulator/components/MessageAlert'
       views:
         | never
     }

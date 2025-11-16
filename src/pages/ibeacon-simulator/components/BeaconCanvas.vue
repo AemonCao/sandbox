@@ -47,6 +47,17 @@ const {
 // 动画帧ID
 let animationFrameId: number | null = null
 
+// 拖拽相关的状态
+interface DragState {
+  object: Beacon | Client
+  startX: number
+  startY: number
+}
+
+let dragStartObjects: DragState[] = []
+let dragStartX = 0
+let dragStartY = 0
+
 // 绘制函数
 function redraw(): void {
   draw(
@@ -100,12 +111,48 @@ function handleMouseDown(e: MouseEvent): void {
       emit('objectClick', clickedObject) // 由父组件处理多选逻辑
     }
     else {
-      // 普通点击
-      emit('objectClick', clickedObject)
+      // 普通点击 - 先设置拖拽状态，再决定是否需要更新选择
       isDragging.value = true
       canvas.style.cursor = 'grabbing'
-      dragOffsetX.value = mouseX - clickedObject.x
-      dragOffsetY.value = mouseY - clickedObject.y
+
+      // 检查点击的对象是否已在选中列表中
+      const isInSelectedObjects = props.selectedObjects.some(obj =>
+        obj.id === clickedObject.id && obj.type === clickedObject.type,
+      )
+      const isCurrentSingleSelection = props.selectedObject
+        && props.selectedObject.id === clickedObject.id
+        && props.selectedObject.type === clickedObject.type
+
+      if (!isInSelectedObjects && !isCurrentSingleSelection) {
+        // 点击的对象不在选中列表中，更新选择
+        emit('objectClick', clickedObject)
+      }
+
+      // 记录拖拽开始时的状态
+      dragStartX = mouseX
+      dragStartY = mouseY
+
+      // 使用延迟来确保选择状态已更新
+      nextTick(() => {
+        if (props.selectedObjects.length > 0) {
+          // 多选拖拽，记录所有对象的初始位置
+          dragStartObjects = props.selectedObjects.map(obj => ({
+            object: obj,
+            startX: obj.x,
+            startY: obj.y,
+          }))
+        }
+        else if (props.selectedObject) {
+          // 单选拖拽
+          dragStartObjects = [{
+            object: props.selectedObject,
+            startX: props.selectedObject.x,
+            startY: props.selectedObject.y,
+          }]
+          dragOffsetX.value = mouseX - props.selectedObject.x
+          dragOffsetY.value = mouseY - props.selectedObject.y
+        }
+      })
     }
   }
   else {
@@ -137,35 +184,32 @@ function handleMouseMove(e: MouseEvent): void {
   const mouseX = e.clientX - rect.left
   const mouseY = e.clientY - rect.top
 
-  if (isDragging.value && (props.selectedObject || props.selectedObjects.length > 0)) {
-    // 多选拖拽
+  if (isDragging.value && dragStartObjects.length > 0) {
+    const deltaX = mouseX - dragStartX
+    const deltaY = mouseY - dragStartY
+
+    // 检查是否拖拽了信标
+    const hasBeacons = dragStartObjects.some(item => item.object.type === 'beacon')
+
+    if (hasBeacons) {
+      // 清除覆盖范围缓存
+      coverageAreaCache.value.canvas = null
+    }
+
     if (props.selectedObjects.length > 0) {
-      const deltaX = mouseX - dragOffsetX.value - props.selectedObjects[0].x
-      const deltaY = mouseY - dragOffsetY.value - props.selectedObjects[0].y
-
-      // 检查是否拖拽了信标
-      const hasBeacons = props.selectedObjects.some(obj => obj.type === 'beacon')
-
-      if (hasBeacons) {
-        // 清除覆盖范围缓存
-        coverageAreaCache.value.canvas = null
-      }
-
-      emit('objectDrag', props.selectedObjects[0], deltaX, deltaY)
-      dragOffsetX.value = mouseX - props.selectedObjects[0].x
-      dragOffsetY.value = mouseY - props.selectedObjects[0].y
+      // 多选拖拽 - 直接在组件内更新所有选中对象的位置
+      dragStartObjects.forEach((dragState) => {
+        const currentObj = props.selectedObjects.find(obj =>
+          obj.id === dragState.object.id && obj.type === dragState.object.type,
+        )
+        if (currentObj) {
+          currentObj.x = dragState.startX + deltaX
+          currentObj.y = dragState.startY + deltaY
+        }
+      })
     }
     else if (props.selectedObject) {
       // 单选拖拽
-      const isBeacon = props.selectedObject.type === 'beacon'
-
-      if (isBeacon) {
-        // 清除覆盖范围缓存
-        coverageAreaCache.value.canvas = null
-      }
-
-      const deltaX = mouseX - dragOffsetX.value - props.selectedObject.x
-      const deltaY = mouseY - dragOffsetY.value - props.selectedObject.y
       emit('objectDrag', props.selectedObject, deltaX, deltaY)
     }
 
@@ -209,7 +253,12 @@ function handleMouseUp(): void {
     boxSelection.value.isActive = false
   }
 
+  // 重置拖拽状态
   isDragging.value = false
+  dragStartObjects = []
+  dragStartX = 0
+  dragStartY = 0
+
   if (canvas) {
     canvas.style.cursor = 'grab'
   }

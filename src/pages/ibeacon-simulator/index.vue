@@ -112,7 +112,7 @@ function handleObjectClick(object: any): void {
 
 function handleObjectDrag(object: any, deltaX: number, deltaY: number): void {
   if (selectedObjects.value.length > 1) {
-    // 多选拖拽
+    // 多选拖拽 - 移动所有选中的对象
     selectedObjects.value.forEach((obj) => {
       obj.x += deltaX
       obj.y += deltaY

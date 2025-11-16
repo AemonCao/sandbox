@@ -16,29 +16,71 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const emit = defineEmits<{
-  'update:scale': [value: number]
-  'update:beacon-height': [value: number]
-  'update:client-height': [value: number]
-  'update:beacon-n': [value: number]
-  'update:client-rssi-threshold': [value: number]
-  'update:show-coverage-area': [value: boolean]
-  'update:coverage-step': [value: number]
-  'addBeacon': []
-  'addClient': []
-  'clearAll': []
-  'clearSelection': []
-  'deleteSelected': []
-  'updateAllBeaconsHeight': []
-  'updateAllClientsHeight': []
-  'exportScene': []
-  'importScene': []
-  'loadPreset': [type: string]
-}>()
+// 直接使用 defineEmits 而不使用 TypeScript 语法
+const emit = defineEmits([
+  'update:scale',
+  'update:beacon-height',
+  'update:client-height',
+  'update:beacon-n',
+  'update:client-rssi-threshold',
+  'update:show-coverage-area',
+  'update:coverage-step',
+  'addBeacon',
+  'addClient',
+  'clearAll',
+  'clearSelection',
+  'deleteSelected',
+  'updateAllBeaconsHeight',
+  'updateAllClientsHeight',
+  'exportScene',
+  'importScene',
+  'loadPreset',
+])
 
 // 计算属性
 const canUpdateBeaconsHeight = computed(() => props.beaconsCount > 0)
 const canUpdateClientsHeight = computed(() => props.clientsCount > 0)
+
+// 事件处理函数
+function handleUpdateScale(value: number | null) {
+  if (value !== null) {
+    emit('update:scale', value)
+  }
+}
+
+function handleUpdateBeaconHeight(value: number | null) {
+  if (value !== null) {
+    emit('update:beacon-height', value)
+  }
+}
+
+function handleUpdateClientHeight(value: number | null) {
+  if (value !== null) {
+    emit('update:client-height', value)
+  }
+}
+
+function handleUpdateBeaconN(value: number | null) {
+  if (value !== null) {
+    emit('update:beacon-n', value)
+  }
+}
+
+function handleUpdateClientRssiThreshold(value: number | null) {
+  if (value !== null) {
+    emit('update:client-rssi-threshold', value)
+  }
+}
+
+function handleUpdateShowCoverageArea(value: boolean) {
+  emit('update:show-coverage-area', value)
+}
+
+function handleUpdateCoverageStep(value: number | null) {
+  if (value !== null) {
+    emit('update:coverage-step', value)
+  }
+}
 </script>
 
 <template>
@@ -52,11 +94,11 @@ const canUpdateClientsHeight = computed(() => props.clientsCount > 0)
       <div class="form-group">
         <label class="form-label">比例尺 (像素/米):</label>
         <NInputNumber
-          :model-value="scale"
+          :value="scale"
           :min="10"
           :step="1"
           placeholder="比例尺"
-          @update:model-value="emit('update:scale', $event)"
+          @update:value="handleUpdateScale"
         />
       </div>
 
@@ -64,12 +106,12 @@ const canUpdateClientsHeight = computed(() => props.clientsCount > 0)
         <label class="form-label">信标默认高度 (米):</label>
         <div class="input-with-button">
           <NInputNumber
-            :model-value="beaconHeight"
+            :value="beaconHeight"
             :min="0"
             :max="20"
             :step="0.1"
             placeholder="信标高度"
-            @update:model-value="emit('update:beacon-height', $event)"
+            @update:value="handleUpdateBeaconHeight"
           />
           <NButton
             size="small"
@@ -89,12 +131,12 @@ const canUpdateClientsHeight = computed(() => props.clientsCount > 0)
         <label class="form-label">客户端默认高度 (米):</label>
         <div class="input-with-button">
           <NInputNumber
-            :model-value="clientHeight"
+            :value="clientHeight"
             :min="0"
             :max="20"
             :step="0.1"
             placeholder="客户端高度"
-            @update:model-value="emit('update:client-height', $event)"
+            @update:value="handleUpdateClientHeight"
           />
           <NButton
             size="small"
@@ -113,31 +155,31 @@ const canUpdateClientsHeight = computed(() => props.clientsCount > 0)
       <div class="form-group">
         <label class="form-label">RSSI 衰减速率 (n):</label>
         <NInputNumber
-          :model-value="beaconN"
+          :value="beaconN"
           :min="1"
           :max="5"
           :step="0.1"
           placeholder="衰减速率"
-          @update:model-value="emit('update:beacon-n', $event)"
+          @update:value="handleUpdateBeaconN"
         />
       </div>
 
       <div class="form-group">
         <label class="form-label">客户端 RSSI 接收阈值 (dBm):</label>
         <NInputNumber
-          :model-value="clientRssiThreshold"
+          :value="clientRssiThreshold"
           :max="0"
           :min="-100"
           placeholder="RSSI阈值"
-          @update:model-value="emit('update:client-rssi-threshold', $event)"
+          @update:value="handleUpdateClientRssiThreshold"
         />
       </div>
 
       <div class="form-group">
         <label class="form-label">显示定位覆盖范围:</label>
         <NSwitch
-          :model-value="showCoverageArea"
-          @update:model-value="emit('update:show-coverage-area', $event)"
+          :value="showCoverageArea"
+          @update:value="handleUpdateShowCoverageArea"
         >
           <template #checked>
             显示
@@ -151,12 +193,12 @@ const canUpdateClientsHeight = computed(() => props.clientsCount > 0)
       <div v-if="showCoverageArea" class="form-group">
         <label class="form-label">采样步长 (像素):</label>
         <NInputNumber
-          :model-value="coverageStep"
+          :value="coverageStep"
           :min="5"
           :max="50"
           :step="1"
           placeholder="采样步长"
-          @update:model-value="emit('update:coverage-step', $event)"
+          @update:value="handleUpdateCoverageStep"
         />
         <div class="form-hint">
           较小的值提供更高精度但性能较差，较大的值性能更好但精度较低

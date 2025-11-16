@@ -151,7 +151,7 @@ export function useSceneData() {
   }
 
   // 场景居中
-  function centerScene(): void {
+  function centerScene(canvasWidth?: number, canvasHeight?: number): void {
     const allObjects = [...beacons.value, ...clients.value]
     if (allObjects.length === 0)
       return
@@ -171,8 +171,24 @@ export function useSceneData() {
     const sceneCenterX = (minX + maxX) / 2
     const sceneCenterY = (minY + maxY) / 2
 
-    const centerX = 400 // 假设画布中心在400,300
-    const centerY = 300
+    // 优先使用传入的画布尺寸，否则尝试获取实际画布尺寸
+    let centerX = 400 // 默认值
+    let centerY = 300 // 默认值
+
+    if (canvasWidth && canvasHeight) {
+      // 使用传入的画布尺寸
+      centerX = canvasWidth / 2
+      centerY = canvasHeight / 2
+    }
+    else {
+      // 尝试获取画布实际尺寸
+      const canvasElement = document.querySelector('.main-canvas') as HTMLCanvasElement
+      if (canvasElement) {
+        centerX = canvasElement.width / 2
+        centerY = canvasElement.height / 2
+      }
+    }
+
     const offsetX = centerX - sceneCenterX
     const offsetY = centerY - sceneCenterY
 

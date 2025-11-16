@@ -228,7 +228,14 @@ function importScene(): void {
         selectedObjects.value = []
 
         nextTick(() => {
-          centerScene()
+          // 获取画布实际尺寸并居中场景
+          const canvasElement = document.querySelector('.main-canvas') as HTMLCanvasElement
+          if (canvasElement) {
+            centerScene(canvasElement.width, canvasElement.height)
+          }
+          else {
+            centerScene()
+          }
         })
 
         showSuccess('场景已成功导入！')
@@ -265,7 +272,14 @@ function loadPresetScene(sceneType: string): void {
     setCoverageStep: (newStep) => { coverageStep.value = newStep },
     centerScene: () => {
       nextTick(() => {
-        centerScene()
+        // 获取画布实际尺寸并居中场景
+        const canvasElement = document.querySelector('.main-canvas') as HTMLCanvasElement
+        if (canvasElement) {
+          centerScene(canvasElement.width, canvasElement.height)
+        }
+        else {
+          centerScene()
+        }
       })
     },
     showSuccess: (message) => { showSuccess(message) },
@@ -341,7 +355,14 @@ function loadFromLocalStorage(): void {
     selectedObjects.value = []
 
     nextTick(() => {
-      centerScene()
+      // 获取画布实际尺寸并居中场景
+      const canvasElement = document.querySelector('.main-canvas') as HTMLCanvasElement
+      if (canvasElement) {
+        centerScene(canvasElement.width, canvasElement.height)
+      }
+      else {
+        centerScene()
+      }
     })
   }
   catch (error) {

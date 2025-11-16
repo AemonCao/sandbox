@@ -104,6 +104,26 @@ const CLIENT_DEFAULTS = computed(() => ({
   selectedColor: '#15803d',
 }))
 
+// 覆盖范围缓存 - 只依赖于信标位置和参数，与客户端无关
+const coverageAreaCache = ref<{
+  canvas: HTMLCanvasElement | null
+  beaconsHash: string
+  settingsHash: string
+}>({
+  canvas: null,
+  beaconsHash: '',
+  settingsHash: '',
+})
+
+// 计算信标和设置的哈希值
+function calculateBeaconsHash(): string {
+  return beacons.value.map(b => `${b.id}-${b.x.toFixed(0)}-${b.y.toFixed(0)}-${b.z}-${b.txPower}`).join('|')
+}
+
+function calculateSettingsHash(): string {
+  return `${scale.value}-${clientRssiThreshold.value}-${coverageStep.value}-${beaconN.value}`
+}
+
 // 绘制定位覆盖范围
 function drawCoverageArea(ctx: CanvasRenderingContext2D): void {
   if (beacons.value.length < 3)
@@ -117,7 +137,22 @@ function drawCoverageArea(ctx: CanvasRenderingContext2D): void {
   const height = canvas.height
   const step = coverageStep.value // 采样步长（像素）
 
-  // 创建临时canvas用于离屏渲染
+  // 计算当前信标和设置的哈希值
+  const currentBeaconsHash = calculateBeaconsHash()
+  const currentSettingsHash = calculateSettingsHash()
+
+  // 检查缓存是否有效
+  if (coverageAreaCache.value.canvas
+    && coverageAreaCache.value.beaconsHash === currentBeaconsHash
+    && coverageAreaCache.value.settingsHash === currentSettingsHash
+    && coverageAreaCache.value.canvas.width === width
+    && coverageAreaCache.value.canvas.height === height) {
+    // 使用缓存的覆盖范围
+    ctx.drawImage(coverageAreaCache.value.canvas, 0, 0)
+    return
+  }
+
+  // 缓存失效，重新计算覆盖范围
   const tempCanvas = document.createElement('canvas')
   tempCanvas.width = width
   tempCanvas.height = height
@@ -149,13 +184,22 @@ function drawCoverageArea(ctx: CanvasRenderingContext2D): void {
     }
   }
 
-  // 将离屏渲染结果绘制到主canvas
+  // 更新缓存
+  coverageAreaCache.value = {
+    canvas: tempCanvas,
+    beaconsHash: currentBeaconsHash,
+    settingsHash: currentSettingsHash,
+  }
+
+  // 将覆盖范围绘制到主canvas
   ctx.drawImage(tempCanvas, 0, 0)
 }
 
 // 监听scale变化，重新绘制网格
 watch(scale, () => {
   nextTick(() => {
+    // 清除覆盖范围缓存
+    coverageAreaCache.value.canvas = null
     drawGrid()
     draw()
   })
@@ -167,6 +211,16 @@ watch(clientHeight, () => {
     draw()
   })
 })
+
+// 监听影响覆盖范围的参数变化，清除缓存
+watch([beaconN, clientRssiThreshold, coverageStep], () => {
+  coverageAreaCache.value.canvas = null
+})
+
+// 监听信标位置变化，清除覆盖范围缓存
+watch(beacons, () => {
+  coverageAreaCache.value.canvas = null
+}, { deep: true })
 
 // 本地存储自动保存
 function saveToLocalStorage(): void {
@@ -928,10 +982,16 @@ function handleMouseMove(e: MouseEvent): void {
   const mouseY = e.clientY - rect.top
 
   if (isDragging.value && (selectedObject.value || selectedObjects.value.length > 0)) {
+    let shouldInvalidateCoverageCache = false
+
     // 多选拖拽
     if (selectedObjects.value.length > 0) {
       const deltaX = mouseX - dragOffsetX.value - selectedObjects.value[0].x
       const deltaY = mouseY - dragOffsetY.value - selectedObjects.value[0].y
+
+      // 检查是否拖拽了信标
+      const hasBeacons = selectedObjects.value.some(obj => obj.type === 'beacon')
+      shouldInvalidateCoverageCache = hasBeacons
 
       selectedObjects.value.forEach((obj) => {
         obj.x += deltaX
@@ -943,8 +1003,16 @@ function handleMouseMove(e: MouseEvent): void {
     }
     else if (selectedObject.value) {
       // 单选拖拽（保持兼容性）
+      const isBeacon = selectedObject.value.type === 'beacon'
+      shouldInvalidateCoverageCache = isBeacon
+
       selectedObject.value.x = mouseX - dragOffsetX.value
       selectedObject.value.y = mouseY - dragOffsetY.value
+    }
+
+    // 如果拖拽了信标，清除覆盖范围缓存
+    if (shouldInvalidateCoverageCache) {
+      coverageAreaCache.value.canvas = null
     }
 
     // 使用requestAnimationFrame优化拖拽重绘

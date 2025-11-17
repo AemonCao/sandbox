@@ -13,10 +13,10 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  'scenario-change': [scenario: string]
-  'run-test': []
-  'stop-test': []
-  'generate-random': []
+  scenarioChange: [scenario: string]
+  runTest: []
+  stopTest: []
+  generateRandom: []
 }>()
 
 const showAdvancedOptions = ref(false)
@@ -47,7 +47,8 @@ const currentScenarioInfo = computed(() => {
 
 const estimatedDuration = computed(() => {
   const scenario = currentScenarioInfo.value
-  if (!scenario) return '未知'
+  if (!scenario)
+    return '未知'
 
   let baseTime = 0
 
@@ -89,41 +90,45 @@ const canStartTest = computed(() => {
 // 方法
 function startTest() {
   if (!canStartTest.value) {
-    alert('需要至少3个信标和5个测试点才能开始测试')
+    console.warn('需要至少3个信标和5个测试点才能开始测试')
     return
   }
-  emit('run-test')
+  emit('runTest')
 }
 
 function stopTest() {
-  emit('stop-test')
+  emit('stopTest')
 }
 
 function generateCustomTest() {
   // 根据自定义配置生成测试数据
-  emit('generate-random')
+  emit('generateRandom')
 }
 
 function getProgressColor(): string {
-  if (props.testProgress < 30) return 'bg-red-500'
-  if (props.testProgress < 70) return 'bg-yellow-500'
+  if (props.testProgress < 30)
+    return 'bg-red-500'
+  if (props.testProgress < 70)
+    return 'bg-yellow-500'
   return 'bg-green-500'
 }
 
 function getTestComplexity(scenario: any): { level: string, color: string } {
   const complexity = scenario.beaconCount * scenario.testPointCount
 
-  if (complexity < 50) return { level: '简单', color: 'text-green-600' }
-  if (complexity < 150) return { level: '中等', color: 'text-yellow-600' }
+  if (complexity < 50)
+    return { level: '简单', color: 'text-green-600' }
+  if (complexity < 150)
+    return { level: '中等', color: 'text-yellow-600' }
   return { level: '复杂', color: 'text-red-600' }
 }
 </script>
 
 <template>
-  <div class="bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+  <div class="border border-gray-200 rounded-lg bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
     <!-- 标题栏 -->
     <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+      <h3 class="text-lg text-gray-900 font-semibold dark:text-white">
         测试控制
       </h3>
     </div>
@@ -131,24 +136,25 @@ function getTestComplexity(scenario: any): { level: string, color: string } {
     <!-- 内容区域 -->
     <div class="p-4 space-y-4">
       <!-- 当前状态 -->
-      <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
-        <div class="grid grid-cols-2 gap-4 text-sm">
+      <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50">
+        <div class="text-sm gap-4 grid grid-cols-2">
           <div>
             <span class="text-gray-500 dark:text-gray-400">信标数量:</span>
-            <span class="ml-2 font-medium text-gray-900 dark:text-white">{{ beaconsCount }}</span>
+            <span class="text-gray-900 font-medium ml-2 dark:text-white">{{ beaconsCount }}</span>
           </div>
           <div>
             <span class="text-gray-500 dark:text-gray-400">测试点数量:</span>
-            <span class="ml-2 font-medium text-gray-900 dark:text-white">{{ testPointsCount }}</span>
+            <span class="text-gray-900 font-medium ml-2 dark:text-white">{{ testPointsCount }}</span>
           </div>
         </div>
 
         <!-- 状态指示器 -->
         <div class="mt-2 flex items-center space-x-2">
-          <div :class="[
-            'w-2 h-2 rounded-full',
-            canStartTest ? 'bg-green-500' : 'bg-red-500'
-          ]"></div>
+          <div
+            class="rounded-full h-2 w-2" :class="[
+              canStartTest ? 'bg-green-500' : 'bg-red-500',
+            ]"
+          />
           <span class="text-sm text-gray-600 dark:text-gray-400">
             {{ canStartTest ? '可以开始测试' : '需要更多数据' }}
           </span>
@@ -157,14 +163,14 @@ function getTestComplexity(scenario: any): { level: string, color: string } {
 
       <!-- 测试场景选择 -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label class="text-sm text-gray-700 font-medium mb-2 block dark:text-gray-300">
           测试场景
         </label>
         <select
           :value="activeTestScenario"
           :disabled="isRunningTest"
-          class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-          @change="emit('scenario-change', ($event.target as HTMLSelectElement).value)"
+          class="text-sm px-3 py-2 border border-gray-300 rounded-md w-full dark:text-white dark:border-gray-600 focus:border-blue-500 dark:bg-gray-700 disabled:bg-gray-100 disabled:cursor-not-allowed focus:ring-blue-500"
+          @change="emit('scenarioChange', ($event.target as HTMLSelectElement).value)"
         >
           <option
             v-for="scenario in testScenarios"
@@ -177,9 +183,9 @@ function getTestComplexity(scenario: any): { level: string, color: string } {
       </div>
 
       <!-- 场景信息 -->
-      <div v-if="currentScenarioInfo" class="border border-gray-200 rounded-lg p-3 dark:border-gray-600">
-        <div class="flex items-center justify-between mb-2">
-          <h4 class="font-medium text-gray-900 dark:text-white">
+      <div v-if="currentScenarioInfo" class="p-3 border border-gray-200 rounded-lg dark:border-gray-600">
+        <div class="mb-2 flex items-center justify-between">
+          <h4 class="text-gray-900 font-medium dark:text-white">
             {{ currentScenarioInfo.name }}
           </h4>
           <span :class="getTestComplexity(currentScenarioInfo).color" class="text-xs font-medium">
@@ -187,11 +193,11 @@ function getTestComplexity(scenario: any): { level: string, color: string } {
           </span>
         </div>
 
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+        <p class="text-sm text-gray-600 mb-2 dark:text-gray-400">
           {{ currentScenarioInfo.description }}
         </p>
 
-        <div class="text-xs text-gray-500 dark:text-gray-500 space-y-1">
+        <div class="text-xs text-gray-500 space-y-1 dark:text-gray-500">
           <div>信标: {{ currentScenarioInfo.beaconCount }}个</div>
           <div>测试点: {{ currentScenarioInfo.testPointCount }}个</div>
           <div>预计耗时: {{ estimatedDuration }}</div>
@@ -200,17 +206,17 @@ function getTestComplexity(scenario: any): { level: string, color: string } {
 
       <!-- 进度条 -->
       <div v-if="isRunningTest" class="space-y-2">
-        <div class="flex items-center justify-between text-sm">
+        <div class="text-sm flex items-center justify-between">
           <span class="text-gray-600 dark:text-gray-400">测试进度</span>
-          <span class="font-medium text-gray-900 dark:text-white">{{ testProgress.toFixed(1) }}%</span>
+          <span class="text-gray-900 font-medium dark:text-white">{{ testProgress.toFixed(1) }}%</span>
         </div>
-        <div class="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+        <div class="rounded-full bg-gray-200 h-2 w-full dark:bg-gray-700">
           <div
-            :class="['h-2 rounded-full transition-all duration-300', getProgressColor()]"
+            class="rounded-full h-2 transition-all duration-300" :class="[getProgressColor()]"
             :style="{ width: `${testProgress}%` }"
-          ></div>
+          />
         </div>
-        <div class="text-xs text-center text-gray-500 dark:text-gray-400">
+        <div class="text-xs text-gray-500 text-center dark:text-gray-400">
           测试进行中，请耐心等待...
         </div>
       </div>
@@ -220,7 +226,7 @@ function getTestComplexity(scenario: any): { level: string, color: string } {
         <button
           v-if="!isRunningTest"
           :disabled="!canStartTest"
-          class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
+          class="text-white font-medium px-4 py-2 rounded-lg bg-blue-600 w-full transition-colors disabled:bg-gray-300 hover:bg-blue-700 disabled:cursor-not-allowed"
           @click="startTest"
         >
           🚀 开始测试
@@ -228,15 +234,15 @@ function getTestComplexity(scenario: any): { level: string, color: string } {
 
         <button
           v-else
-          class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+          class="text-white font-medium px-4 py-2 rounded-lg bg-red-600 w-full transition-colors hover:bg-red-700"
           @click="stopTest"
         >
           ⏹️ 停止测试
         </button>
 
         <button
-          class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-          @click="emit('generate-random')"
+          class="text-white font-medium px-4 py-2 rounded-lg bg-green-600 w-full transition-colors hover:bg-green-700"
+          @click="emit('generateRandom')"
         >
           🎲 生成随机测试数据
         </button>
@@ -245,12 +251,12 @@ function getTestComplexity(scenario: any): { level: string, color: string } {
       <!-- 高级选项 -->
       <div>
         <button
-          class="w-full text-left text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center justify-between"
+          class="text-sm text-gray-600 text-left flex w-full transition-colors items-center justify-between dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
           @click="showAdvancedOptions = !showAdvancedOptions"
         >
           <span>⚙️ 高级选项</span>
           <svg
-            :class="['w-4 h-4 transition-transform', showAdvancedOptions ? 'rotate-180' : '']"
+            class="h-4 w-4 transition-transform" :class="[showAdvancedOptions ? 'rotate-180' : '']"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -259,82 +265,82 @@ function getTestComplexity(scenario: any): { level: string, color: string } {
           </svg>
         </button>
 
-        <div v-show="showAdvancedOptions" class="mt-3 space-y-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-          <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <div v-show="showAdvancedOptions" class="mt-3 p-3 rounded-lg bg-gray-50 space-y-3 dark:bg-gray-900/50">
+          <h5 class="text-sm text-gray-700 font-medium mb-2 dark:text-gray-300">
             自定义测试配置
           </h5>
 
-          <div class="grid grid-cols-2 gap-3">
+          <div class="gap-3 grid grid-cols-2">
             <div>
-              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">测试区域宽度</label>
+              <label class="text-xs text-gray-600 mb-1 block dark:text-gray-400">测试区域宽度</label>
               <input
                 v-model.number="customTestConfig.testAreaWidth"
                 type="number"
                 min="50"
                 max="500"
-                class="w-full px-2 py-1 text-sm border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                class="text-sm px-2 py-1 border border-gray-300 rounded w-full dark:text-white dark:border-gray-600 dark:bg-gray-700"
               >
             </div>
 
             <div>
-              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">测试区域高度</label>
+              <label class="text-xs text-gray-600 mb-1 block dark:text-gray-400">测试区域高度</label>
               <input
                 v-model.number="customTestConfig.testAreaHeight"
                 type="number"
                 min="50"
                 max="500"
-                class="w-full px-2 py-1 text-sm border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                class="text-sm px-2 py-1 border border-gray-300 rounded w-full dark:text-white dark:border-gray-600 dark:bg-gray-700"
               >
             </div>
 
             <div>
-              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">信标数量</label>
+              <label class="text-xs text-gray-600 mb-1 block dark:text-gray-400">信标数量</label>
               <input
                 v-model.number="customTestConfig.beaconCount"
                 type="number"
                 min="3"
                 max="20"
-                class="w-full px-2 py-1 text-sm border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                class="text-sm px-2 py-1 border border-gray-300 rounded w-full dark:text-white dark:border-gray-600 dark:bg-gray-700"
               >
             </div>
 
             <div>
-              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">测试点数量</label>
+              <label class="text-xs text-gray-600 mb-1 block dark:text-gray-400">测试点数量</label>
               <input
                 v-model.number="customTestConfig.testPointCount"
                 type="number"
                 min="5"
                 max="100"
-                class="w-full px-2 py-1 text-sm border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                class="text-sm px-2 py-1 border border-gray-300 rounded w-full dark:text-white dark:border-gray-600 dark:bg-gray-700"
               >
             </div>
 
             <div>
-              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">噪声水平</label>
+              <label class="text-xs text-gray-600 mb-1 block dark:text-gray-400">噪声水平</label>
               <input
                 v-model.number="customTestConfig.noiseLevel"
                 type="number"
                 min="0"
                 max="10"
                 step="0.5"
-                class="w-full px-2 py-1 text-sm border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                class="text-sm px-2 py-1 border border-gray-300 rounded w-full dark:text-white dark:border-gray-600 dark:bg-gray-700"
               >
             </div>
 
             <div>
-              <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">测试次数</label>
+              <label class="text-xs text-gray-600 mb-1 block dark:text-gray-400">测试次数</label>
               <input
                 v-model.number="customTestConfig.iterations"
                 type="number"
                 min="1"
                 max="10"
-                class="w-full px-2 py-1 text-sm border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                class="text-sm px-2 py-1 border border-gray-300 rounded w-full dark:text-white dark:border-gray-600 dark:bg-gray-700"
               >
             </div>
           </div>
 
           <button
-            class="w-full px-3 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition-colors"
+            class="text-sm text-white px-3 py-2 rounded bg-indigo-600 w-full transition-colors hover:bg-indigo-700"
             @click="generateCustomTest"
           >
             生成自定义测试
@@ -343,7 +349,7 @@ function getTestComplexity(scenario: any): { level: string, color: string } {
       </div>
 
       <!-- 测试统计 -->
-      <div class="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-600">
+      <div class="text-xs text-gray-500 pt-2 border-t border-gray-200 dark:text-gray-400 dark:border-gray-600">
         <div class="flex items-center justify-between">
           <span>💡 提示: 选择合适的测试场景以获得准确的算法性能对比</span>
         </div>

@@ -17,7 +17,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  'algorithm-change': [algorithm: string]
+  'algorithmChange': [algorithm: string]
   'config-change': [algorithm: string, config: any]
 }>()
 
@@ -86,7 +86,7 @@ const algorithmPositions = computed(() => {
 })
 
 // 绘制函数
-function draw() {
+function _draw() {
   const canvas = canvasRef.value
   if (!canvas)
     return
@@ -209,14 +209,14 @@ function drawComparisonVisualization(ctx: CanvasRenderingContext2D) {
   // 绘制所有算法结果的对比
   const algorithms = Object.keys(algorithmPositions.value)
 
-  algorithms.forEach((algorithm, algorithmIndex) => {
+  algorithms.forEach((algorithm, _algorithmIndex) => {
     const positions = algorithmPositions.value[algorithm]
     if (!positions)
       return
 
     const color = colors.algorithm[algorithm as keyof typeof colors.algorithm]
 
-    positions.forEach((position: any, index: number) => {
+    positions.forEach((position: any, _index: number) => {
       const screenPos = worldToScreen(position.x, position.y)
 
       // 绘制算法位置
@@ -370,7 +370,7 @@ function drawBeaconCoverage(ctx: CanvasRenderingContext2D, beacon: any) {
   ctx.setLineDash([])
 }
 
-function drawTruePosition(ctx: CanvasRenderingContext2D, position: any, index: number) {
+function drawTruePosition(ctx: CanvasRenderingContext2D, position: any, _index: number) {
   const screenPos = worldToScreen(position.x, position.y)
   const radius = 4
 
@@ -421,7 +421,7 @@ function drawAlgorithmResults(ctx: CanvasRenderingContext2D) {
 
   const algorithmColor = colors.algorithm[props.selectedAlgorithm as keyof typeof colors.algorithm]
 
-  positions.forEach((position: any, index: number) => {
+  positions.forEach((position: any, _index: number) => {
     const screenPos = worldToScreen(position.x, position.y)
 
     // 绘制算法结果位置
@@ -508,7 +508,8 @@ function screenToWorld(screenX: number, screenY: number) {
 
 // 计算理想的缩放比例和偏移，使所有内容都在视野内
 function calculateOptimalView() {
-  if (!canvasRef.value || !props.beacons?.length) return
+  if (!canvasRef.value || !props.beacons?.length)
+    return
 
   const canvas = canvasRef.value
   const padding = 50 // 边距
@@ -517,25 +518,26 @@ function calculateOptimalView() {
   const allPoints: { x: number, y: number }[] = []
 
   // 添加信标
-  props.beacons.forEach(beacon => {
+  props.beacons.forEach((beacon) => {
     allPoints.push({ x: beacon.x, y: beacon.y })
   })
 
   // 添加测试点
   if (props.testPoints) {
-    props.testPoints.forEach(point => {
+    props.testPoints.forEach((point) => {
       allPoints.push({ x: point.x, y: point.y })
     })
   }
 
   // 添加真实位置
   if (props.truePositions) {
-    props.truePositions.forEach(position => {
+    props.truePositions.forEach((position) => {
       allPoints.push({ x: position.x, y: position.y })
     })
   }
 
-  if (allPoints.length === 0) return
+  if (allPoints.length === 0)
+    return
 
   // 计算边界框
   const minX = Math.min(...allPoints.map(p => p.x))
@@ -560,13 +562,13 @@ function calculateOptimalView() {
   scale.value = Math.max(optimalScale, 10) // 最小缩放为10
   offset.value = {
     x: canvasCenterX - worldCenterX * scale.value,
-    y: canvasCenterY - worldCenterY * scale.value
+    y: canvasCenterY - worldCenterY * scale.value,
   }
 
-  console.log('计算最佳视图:', {
+  console.warn('计算最佳视图:', {
     worldBounds: { minX, maxX, minY, maxY },
     optimalScale: scale.value,
-    offset: offset.value
+    offset: offset.value,
   })
 }
 
@@ -680,14 +682,14 @@ function handleMouseUp() {
   isPanning.value = false
 }
 
-function handleClick(event: MouseEvent) {
+function handleClick(_event: MouseEvent) {
   if (!isDragging.value && hoveredObject.value) {
     // 如果是测试点，切换选中的算法
     if (hoveredObject.value.id && hoveredObject.value.id.startsWith('point')) {
       const algorithms = Object.keys(props.algorithmResults)
       const currentIndex = algorithms.indexOf(props.selectedAlgorithm)
       const nextIndex = (currentIndex + 1) % algorithms.length
-      emit('algorithm-change', algorithms[nextIndex])
+      emit('algorithmChange', algorithms[nextIndex])
     }
   }
 }
@@ -740,7 +742,7 @@ function detectObjectAt(worldX: number, worldY: number): any {
   return null
 }
 
-function updateObjectPosition(object: any) {
+function updateObjectPosition(_object: any) {
   // 这里应该调用父组件的方法来更新数据
   // 暂时留空，实际实现时需要与父组件通信
 }
@@ -750,11 +752,11 @@ onMounted(() => {
   setTimeout(() => {
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
-    console.log('AlgorithmCanvas mounted, refs:', {
+    console.warn('AlgorithmCanvas mounted, refs:', {
       canvasRef: !!canvasRef.value,
       containerRef: !!containerRef.value,
       beacons: props.beacons?.length || 0,
-      testPoints: props.testPoints?.length || 0
+      testPoints: props.testPoints?.length || 0,
     })
 
     // 计算最佳视图并绘制
@@ -766,10 +768,12 @@ onMounted(() => {
 // 简化的绘制函数
 function simpleDraw() {
   const canvas = canvasRef.value
-  if (!canvas) return
+  if (!canvas)
+    return
 
   const ctx = canvas.getContext('2d')
-  if (!ctx) return
+  if (!ctx)
+    return
 
   // 清空画布
   ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -820,7 +824,7 @@ function simpleDraw() {
       ctx.lineWidth = 2
       ctx.stroke()
 
-      console.log('绘制信标:', beacon.id, '位置:', screenPos)
+      console.warn('绘制信标:', beacon.id, '位置:', screenPos)
     })
   }
 
@@ -835,7 +839,7 @@ function simpleDraw() {
       ctx.arc(screenPos.x, screenPos.y, 4, 0, Math.PI * 2)
       ctx.fill()
 
-      console.log('绘制测试点:', point.id, '位置:', screenPos)
+      console.warn('绘制测试点:', point.id, '位置:', screenPos)
     })
   }
 
@@ -860,11 +864,11 @@ function simpleDraw() {
       ctx.lineTo(screenPos.x, screenPos.y + 6)
       ctx.stroke()
 
-      console.log('绘制真实位置:', index, '位置:', screenPos)
+      console.warn('绘制真实位置:', index, '位置:', screenPos)
     })
   }
 
-  console.log('simpleDraw完成')
+  console.warn('simpleDraw完成')
 }
 
 watch(() => [props.beacons, props.testPoints, props.truePositions], () => {

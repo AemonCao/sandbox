@@ -944,7 +944,7 @@ function resizeCanvas() {
           <span>真实位置</span>
         </div>
         <div class="flex items-center space-x-2">
-          <div class="rounded-full h-3 w-3" :style="{ backgroundColor: colors.algorithm[selectedAlgorithm] }" />
+          <div class="rounded-full h-3 w-3" :style="{ backgroundColor: colors.algorithm[selectedAlgorithm as keyof typeof colors.algorithm] }" />
           <span>{{ selectedAlgorithm }}结果</span>
         </div>
       </div>

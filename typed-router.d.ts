@@ -86,6 +86,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/infusion-monitoring/': RouteRecordInfo<
+      '/infusion-monitoring/',
+      '/infusion-monitoring',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/positioning-algorithms/': RouteRecordInfo<
       '/positioning-algorithms/',
       '/positioning-algorithms',
@@ -185,6 +192,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/ibeacon-simulator/components/MessageAlert.vue': {
       routes:
         | '/ibeacon-simulator/components/MessageAlert'
+      views:
+        | never
+    }
+    'src/pages/infusion-monitoring/index.vue': {
+      routes:
+        | '/infusion-monitoring/'
       views:
         | never
     }

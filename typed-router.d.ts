@@ -86,6 +86,41 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/positioning-algorithms/': RouteRecordInfo<
+      '/positioning-algorithms/',
+      '/positioning-algorithms',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/positioning-algorithms/components/AlgorithmCanvas': RouteRecordInfo<
+      '/positioning-algorithms/components/AlgorithmCanvas',
+      '/positioning-algorithms/components/AlgorithmCanvas',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/positioning-algorithms/components/AlgorithmPanel': RouteRecordInfo<
+      '/positioning-algorithms/components/AlgorithmPanel',
+      '/positioning-algorithms/components/AlgorithmPanel',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/positioning-algorithms/components/ResultPanel': RouteRecordInfo<
+      '/positioning-algorithms/components/ResultPanel',
+      '/positioning-algorithms/components/ResultPanel',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/positioning-algorithms/components/TestPanel': RouteRecordInfo<
+      '/positioning-algorithms/components/TestPanel',
+      '/positioning-algorithms/components/TestPanel',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
   }
 
   /**
@@ -150,6 +185,36 @@ declare module 'vue-router/auto-routes' {
     'src/pages/ibeacon-simulator/components/MessageAlert.vue': {
       routes:
         | '/ibeacon-simulator/components/MessageAlert'
+      views:
+        | never
+    }
+    'src/pages/positioning-algorithms/index.vue': {
+      routes:
+        | '/positioning-algorithms/'
+      views:
+        | never
+    }
+    'src/pages/positioning-algorithms/components/AlgorithmCanvas.vue': {
+      routes:
+        | '/positioning-algorithms/components/AlgorithmCanvas'
+      views:
+        | never
+    }
+    'src/pages/positioning-algorithms/components/AlgorithmPanel.vue': {
+      routes:
+        | '/positioning-algorithms/components/AlgorithmPanel'
+      views:
+        | never
+    }
+    'src/pages/positioning-algorithms/components/ResultPanel.vue': {
+      routes:
+        | '/positioning-algorithms/components/ResultPanel'
+      views:
+        | never
+    }
+    'src/pages/positioning-algorithms/components/TestPanel.vue': {
+      routes:
+        | '/positioning-algorithms/components/TestPanel'
       views:
         | never
     }

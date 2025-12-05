@@ -43,6 +43,9 @@ catalogs:
     '@types/node':
       specifier: ^22.19.0
       version: 22.19.0
+    '@types/three':
+      specifier: ^0.181.0
+      version: 0.181.0
     '@unocss/eslint-plugin':
       specifier: ^66.5.4
       version: 66.5.4
@@ -141,7 +144,7 @@ importers:
         specifier: catalog:dev
         version: 5.0.0
       '@types/three':
-        specifier: ^0.181.0
+        specifier: catalog:dev
         version: 0.181.0
       '@unhead/vue':
         specifier: catalog:frontend

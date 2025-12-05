@@ -93,13 +93,6 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/obj-model-test/': RouteRecordInfo<
-      '/obj-model-test/',
-      '/obj-model-test',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
     '/positioning-algorithms/': RouteRecordInfo<
       '/positioning-algorithms/',
       '/positioning-algorithms',
@@ -205,12 +198,6 @@ declare module 'vue-router/auto-routes' {
     'src/pages/infusion-monitoring/index.vue': {
       routes:
         | '/infusion-monitoring/'
-      views:
-        | never
-    }
-    'src/pages/obj-model-test/index.vue': {
-      routes:
-        | '/obj-model-test/'
       views:
         | never
     }

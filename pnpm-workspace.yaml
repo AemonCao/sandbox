@@ -17,6 +17,7 @@ catalogs:
     '@types/echarts': ^5.0.0
     '@types/lodash': ^4.17.20
     '@types/node': ^22.19.0
+    '@types/three': ^0.181.0
     '@unocss/eslint-plugin': ^66.5.4
     '@unocss/preset-wind4': ^66.5.4
     '@vue-macros/volar': ^3.1.1
@@ -43,6 +44,7 @@ catalogs:
     nanoid: ^5.1.6
     normalize.css: ^8.0.1
     pinia: ^3.0.4
+    three: ^0.181.2
     vue: ^3.5.23
     vue-router: ^4.6.3
 

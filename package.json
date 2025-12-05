@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@types/echarts": "catalog:dev",
+    "@types/three": "catalog:dev",
     "@unhead/vue": "catalog:frontend",
     "@vueuse/core": "catalog:frontend",
     "echarts": "catalog:frontend",
@@ -24,6 +25,7 @@
     "nanoid": "catalog:frontend",
     "normalize.css": "catalog:frontend",
     "pinia": "catalog:frontend",
+    "three": "catalog:frontend",
     "vue": "catalog:frontend",
     "vue-router": "catalog:frontend"
   },

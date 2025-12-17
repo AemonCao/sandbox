@@ -8,11 +8,17 @@ const emit = defineEmits<{
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const preview28Ref = ref<HTMLCanvasElement | null>(null)
 const preview784Ref = ref<HTMLCanvasElement | null>(null)
-const { handleMouseDown, handleMouseMove, handleMouseUp, clear, getImageData, initCanvas } = useDrawing(canvasRef)
+const { handleMouseDown, clear, getImageData, initCanvas, isDrawing } = useDrawing(canvasRef)
 
 onMounted(() => {
   initCanvas()
   clearPreviews()
+})
+
+watch(isDrawing, (newVal, oldVal) => {
+  if (oldVal && !newVal) {
+    handleDrawEnd()
+  }
 })
 
 function handleClear() {
@@ -108,9 +114,6 @@ function handleDrawEnd() {
       rounded-lg cursor-crosshair shadow-md
       border="2 solid gray-300 dark:border-gray-600"
       @mousedown="handleMouseDown"
-      @mousemove="handleMouseMove"
-      @mouseup="handleMouseUp(); handleDrawEnd()"
-      @mouseleave="handleMouseUp"
     />
     <NButton type="warning" @click="handleClear">
       清除画布

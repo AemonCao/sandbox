@@ -18,6 +18,9 @@ export function useDrawing(canvasRef: Ref<HTMLCanvasElement | null>) {
     const y = e.clientY - rect.top
     ctx.value.beginPath()
     ctx.value.moveTo(x, y)
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
   }
 
   function handleMouseMove(e: MouseEvent) {
@@ -32,6 +35,8 @@ export function useDrawing(canvasRef: Ref<HTMLCanvasElement | null>) {
 
   function handleMouseUp() {
     isDrawing.value = false
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', handleMouseUp)
   }
 
   function clear() {

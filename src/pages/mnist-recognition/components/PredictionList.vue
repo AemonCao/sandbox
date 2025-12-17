@@ -3,16 +3,26 @@ const props = defineProps<{
   predictions: number[]
 }>()
 
+const sortByProb = ref(false)
+
 const maxIndex = computed(() => {
   const max = Math.max(...props.predictions)
   return props.predictions.indexOf(max)
+})
+
+const sortedPredictions = computed(() => {
+  const items = props.predictions.map((prob, index) => ({ prob, index }))
+  return sortByProb.value ? items.sort((a, b) => b.prob - a.prob) : items
 })
 </script>
 
 <template>
   <div flex flex-col gap-3>
+    <NButton size="small" @click="sortByProb = !sortByProb">
+      {{ sortByProb ? '默认排序' : '按概率排序' }}
+    </NButton>
     <div
-      v-for="(prob, index) in predictions"
+      v-for="{ prob, index } in sortedPredictions"
       :key="index"
 
       p-3 rounded-lg flex gap-3 transition-all items-center
@@ -30,8 +40,8 @@ const maxIndex = computed(() => {
           :height="20"
         />
       </div>
-      <div text-sm font-medium text-right w-16 dark:text-gray-200>
-        {{ (prob * 100).toFixed(1) }}%
+      <div text-sm font-medium text-right w-20 dark:text-gray-200>
+        {{ (prob * 100).toFixed(5) }}%
       </div>
     </div>
   </div>

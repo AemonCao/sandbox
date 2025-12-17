@@ -200,6 +200,26 @@ function handleDelete(model: ModelMetadata) {
   })
 }
 
+function handleClearAll() {
+  dialog.warning({
+    title: '清空所有模型',
+    content: `确定删除所有 ${models.value.length} 个模型？此操作不可恢复！`,
+    positiveText: '删除',
+    negativeText: '取消',
+    onPositiveClick: async () => {
+      try {
+        await Promise.all(models.value.map(m => deleteModel(m.name)))
+        selectedModel.value = ''
+        refreshTrigger.value++
+        message.success('已清空所有模型')
+      }
+      catch {
+        message.error('清空失败')
+      }
+    },
+  })
+}
+
 async function handleSelect(model: ModelMetadata) {
   selectedModel.value = model.name
   emit('select', model.name)
@@ -209,6 +229,7 @@ defineExpose({
   refresh: () => refreshTrigger.value++,
   setSelected: (name: string) => selectedModel.value = name,
   handleImport,
+  handleClearAll,
 })
 </script>
 

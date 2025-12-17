@@ -84,7 +84,7 @@ function handleModelSaved(modelName: string) {
 </script>
 
 <template>
-  <div p-4 min-h-screen from-blue-50 to-indigo-100 bg-gradient-to-br dark:from-gray-900 dark:to-blue-900>
+  <div p-4 min-h-screen from-blue-50 to-indigo-100 bg-gradient-to-br sm:p-6 dark:from-gray-900 dark:to-blue-900>
     <div mb-6>
       <h1 text-3xl font-bold text-center dark:text-white>
         手写数字识别
@@ -101,17 +101,20 @@ function handleModelSaved(modelName: string) {
 
       <div mx-auto gap-4 max-w-7xl flex="~ col">
         <!-- 第一行：模型列表 -->
-        <div p-6 rounded-lg bg-white shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
-          <div mb-4 flex items-center justify-between>
+        <div p-4 rounded-lg bg-white shadow-lg sm:p-6 dark:bg-gray-800 dark:shadow-gray-700>
+          <div mb-4 gap-3 flex="~ col sm:row" items-start justify-between sm:items-center>
             <h2 text-xl font-semibold dark:text-white>
               模型列表
             </h2>
-            <div flex gap-2>
+            <div flex flex-wrap gap-2>
               <NButton @click="modelManagerRef?.handleImport()">
                 导入模型
               </NButton>
               <NButton type="primary" @click="showTrainingModal = true">
                 训练新模型
+              </NButton>
+              <NButton type="error" @click="modelManagerRef?.handleClearAll()">
+                清空所有
               </NButton>
             </div>
           </div>
@@ -121,7 +124,7 @@ function handleModelSaved(modelName: string) {
         <!-- 第二行：绘图区 + 识别结果 -->
         <div gap-4 flex="~ col lg:row">
           <!-- 绘图区 -->
-          <div p-6 rounded-lg bg-white flex-1 shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
+          <div p-4 rounded-lg bg-white flex-1 shadow-lg sm:p-6 dark:bg-gray-800 dark:shadow-gray-700>
             <h2 text-xl font-semibold mb-4 dark:text-white>
               绘制数字
             </h2>
@@ -129,7 +132,7 @@ function handleModelSaved(modelName: string) {
           </div>
 
           <!-- 识别结果 -->
-          <div p-6 rounded-lg bg-white flex-1 shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
+          <div p-4 rounded-lg bg-white flex-1 shadow-lg sm:p-6 dark:bg-gray-800 dark:shadow-gray-700>
             <h2 text-xl font-semibold mb-4 dark:text-white>
               识别结果
             </h2>
@@ -139,7 +142,7 @@ function handleModelSaved(modelName: string) {
       </div>
 
       <!-- 训练弹窗 -->
-      <NModal v-model:show="showTrainingModal" preset="card" title="模型训练" w-800px>
+      <NModal v-model:show="showTrainingModal" preset="card" title="模型训练" style="max-width: min(800px, 95vw)">
         <ModelControls @start-training="handleStartTraining" @model-loaded="handleDrawingUpdate(currentImageData)" />
         <TrainingPanel @saved="handleModelSaved" />
       </NModal>

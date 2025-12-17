@@ -8,7 +8,7 @@ const emit = defineEmits<{ saved: [modelName: string] }>()
 
 const store = useMnistStore()
 const { trainModel, cancelTraining } = useTraining()
-const { saveModel } = useModel()
+const { saveModel, createModel } = useModel()
 const message = useMessage()
 
 const chartRef = ref<HTMLDivElement | null>(null)
@@ -25,6 +25,9 @@ async function handleStartTraining() {
   message.info('开始训练模型，这可能需要5-15分钟...')
   startTime.value = new Date()
   totalBatches.value = 0
+
+  const model = createModel()
+  store.setModel(model, 'custom')
 
   const success = await trainModel({
     epochs: epochs.value,

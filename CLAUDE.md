@@ -4,7 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Vue 3 frontend sandbox project used for running demo code and debugging new components. The project provides a minimal but modern development environment for rapid prototyping and testing.
+This is a Vue 3 frontend sandbox project used for running demo code and debugging new components. The project provides a modern development environment for rapid prototyping, testing, and showcasing various technical demos including:
+
+- **Bluetooth & IoT**: Bluetooth beacon parsing, iBeacon positioning simulation
+- **Machine Learning**: MNIST handwritten digit recognition with TensorFlow.js
+- **Data Visualization**: ECharts integration for complex data display
+- **Healthcare**: Infusion monitoring systems
+- **Positioning Algorithms**: Multi-algorithm positioning engine comparison
 
 ## Common Development Commands
 
@@ -38,12 +44,16 @@ This is a Vue 3 frontend sandbox project used for running demo code and debuggin
 
 - **Framework**: Vue 3 with Composition API and `<script setup>` syntax
 - **Build Tool**: Vite with hot module replacement
-- **Styling**: UnoCSS for atomic CSS with presetWind4 and presetIcons
+- **Styling**: UnoCSS for atomic CSS with presetWind4, presetAttributify, presetIcons, and presetWebFonts
 - **State Management**: Pinia
-- **Routing**: File-based routing via unplugin-vue-router
+- **Routing**: File-based routing via unplugin-vue-router with hash mode
 - **UI Library**: Naive UI with auto-import resolvers
-- **Data Visualization**: ECharts and ECharts-GL
+- **Data Visualization**: ECharts and ECharts-GL for 2D/3D charts
+- **Machine Learning**: TensorFlow.js with WebGL backend
+- **3D Graphics**: Three.js for 3D rendering
+- **Utilities**: Lodash, nanoid, jszip
 - **Head Management**: @unhead/vue for meta tags
+- **Type Safety**: TypeScript with strict mode
 
 ### Auto-Import System
 
@@ -55,13 +65,33 @@ This is a Vue 3 frontend sandbox project used for running demo code and debuggin
 
 ### Key Directories
 
-- `src/pages/` - File-based routing (pages become routes automatically)
-  - `index.vue` - Main homepage showing available routes
-  - `bluetooth-json/index.vue` - Bluetooth JSON data parsing demo
-  - `[...all].vue` - Catch-all route for 404 handling
-- `src/layouts/` - Layout components for page structure
-  - `default.vue` - Default layout with dynamic title management
-- `src/composables/` - Vue composables for reusable logic (auto-imported)
+```
+src/
+├── assets/          # Static resources (images, fonts, etc.)
+├── components/      # Vue components (auto-imported)
+├── composables/     # Vue composables for reusable logic (auto-imported)
+│   ├── dark.ts      # Dark mode composable
+│   ├── index.ts     # Composables barrel export
+│   └── useEcharts.ts # ECharts integration composable
+├── data/            # Static data and presets
+│   └── presets/     # Preset configurations
+├── layouts/         # Layout components
+│   └── default.vue  # Default layout with dynamic title management
+├── pages/           # File-based routing (pages become routes automatically)
+│   ├── index.vue    # Main homepage showing available routes
+│   ├── bluetooth-json/index.vue           # 蓝牙信标解析
+│   ├── ibeacon-simulator/index.vue        # 室内蓝牙定位模拟器 (三角定位)
+│   ├── infusion-monitoring/index.vue      # 智能输液监控
+│   ├── mnist-data-preview/index.vue       # MNIST数据预览
+│   ├── mnist-recognition/index.vue        # 手写数字识别
+│   ├── positioning-algorithms/index.vue   # 多算法定位引擎对比
+│   └── [...all].vue # Catch-all route for 404 handling
+├── styles/          # Global styles and theme configuration
+│   └── customTheme.ts # Naive UI theme customization
+├── App.vue          # Root component
+├── main.ts          # Application entry point
+└── naive-ui.d.ts    # Naive UI type definitions
+```
 
 ### Routing System
 
@@ -80,10 +110,19 @@ This is a Vue 3 frontend sandbox project used for running demo code and debuggin
 
 ### Build Configuration
 
-- Path alias: `~/` points to `src/` directory
-- Environment-specific builds (development, staging, production)
-- TypeScript strict mode enabled
-- Vue DevTools integration with VS Code launch support
+- **Path Alias**: `~/` points to `src/` directory
+- **Base Path**: `./` for flexible deployment
+- **Environment Builds**: Support for development, staging, and production modes
+- **TypeScript**: Strict mode enabled with comprehensive type checking
+- **Vue DevTools**: Integration with VS Code launch support
+- **Vite Plugins**:
+  - `unplugin-vue-router` - File-based routing
+  - `vite-plugin-vue-layouts` - Layout system
+  - `unplugin-vue-macros` - Vue macros support (props destructure, defineModel)
+  - `unplugin-auto-import` - Auto-import for APIs and composables
+  - `unplugin-vue-components` - Auto-import for components
+  - `unocss/vite` - Atomic CSS engine
+  - `vite-plugin-vue-devtools` - Enhanced Vue DevTools
 
 ## Development Guidelines
 
@@ -92,6 +131,8 @@ This is a Vue 3 frontend sandbox project used for running demo code and debuggin
 - Uses pnpm workspace with catalog-based dependency management
 - Dependencies organized in catalogs: `build`, `dev`, `frontend`
 - Centralized version management across dependencies
+- Package manager: pnpm@10.20.0
+- Resolutions for `unplugin` and `vite` to ensure version consistency
 
 ## Project Structure & Development Patterns
 
@@ -259,6 +300,51 @@ This project has access to several Model Context Protocol (MCP) services that ex
 - **Usage**: Automated testing, web scraping, performance analysis
 - **Features**: Page navigation, screenshots, element interaction, network monitoring
 
+## Demo Pages
+
+The project includes several fully functional demo pages showcasing different technologies:
+
+### 1. 蓝牙信标解析 (Bluetooth Beacon Parser)
+
+- **Path**: `/bluetooth-json`
+- **Features**: Parse and analyze Bluetooth advertising packets, AD structure analysis,
+  iBeacon data parsing
+- **Technologies**: JSON parsing, data visualization
+
+### 2. 室内蓝牙定位模拟器 (Indoor Bluetooth Positioning Simulator)
+
+- **Path**: `/ibeacon-simulator`
+- **Features**: Triangulation-based positioning simulation, interactive canvas,
+  real-time calculations
+- **Technologies**: Canvas API, geometric algorithms, signal strength simulation
+- **Components**: BeaconCanvas, ControlPanel, FormulaPanel, InfoPanel
+
+### 3. 智能输液监控 (Infusion Monitoring)
+
+- **Path**: `/infusion-monitoring`
+- **Features**: Healthcare monitoring system for infusion management
+- **Technologies**: Real-time data monitoring, alert systems
+
+### 4. MNIST数据预览 (MNIST Data Preview)
+
+- **Path**: `/mnist-data-preview`
+- **Features**: Preview MNIST handwritten digit dataset
+- **Technologies**: TensorFlow.js, data visualization
+
+### 5. 手写数字识别 (Handwritten Digit Recognition)
+
+- **Path**: `/mnist-recognition`
+- **Features**: Train and test neural networks for digit recognition, interactive drawing canvas,
+  model management
+- **Technologies**: TensorFlow.js with WebGL backend, Canvas API, neural network training
+- **Components**: DrawingCanvas, ModelControls, ModelManager, PredictionList, TrainingPanel
+
+### 6. 多算法定位引擎对比 (Multi-Algorithm Positioning Engine Comparison)
+
+- **Path**: `/positioning-algorithms`
+- **Features**: Compare different positioning algorithms and their performance
+- **Technologies**: Algorithm visualization, performance metrics
+
 ## Important Notes
 
 - **Purpose**: This is a sandbox project for demo development and component debugging
@@ -267,7 +353,8 @@ This project has access to several Model Context Protocol (MCP) services that ex
 - Auto-import system eliminates need for manual imports in most cases
 - Git hooks enforce code quality standards
 - MCP services available for enhanced capabilities (web search, visual analysis, browser automation)
-- Create new demo pages by copying the template structure from `bluetooth-json/index.vue`
+- Create new demo pages by copying the template structure from existing demo pages
+- Each demo page is self-contained with its own components and composables in subdirectories
 
 ## Git Commit Guidelines
 

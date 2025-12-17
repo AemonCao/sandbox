@@ -1,5 +1,7 @@
+import type { ModelMetadata } from '../services/modelStorage'
 import * as tf from '@tensorflow/tfjs'
 import { useMnistStore } from '~/stores/mnist'
+import { listModels, loadModelWithMetadata, saveModelWithMetadata } from '../services/modelStorage'
 
 export function useModel() {
   const store = useMnistStore()
@@ -36,13 +38,26 @@ export function useModel() {
     return model
   }
 
-  async function saveModel(name = 'mnist-model') {
+  async function saveModel(name?: string, startTime?: Date, totalTime?: number, batches?: number) {
     if (!store.model)
-      return
+      return false
+
+    const modelName = name || `mnist-model-${Date.now()}`
 
     try {
-      await store.model.save(`indexeddb://${name}`)
-      localStorage.setItem(`${name}-metadata`, JSON.stringify(store.modelMetadata))
+      const metadata: ModelMetadata = {
+        name: modelName,
+        startTime: startTime?.toISOString() || new Date().toISOString(),
+        totalTime: totalTime || 0,
+        epochs: store.modelMetadata.epochs,
+        batches: batches || 0,
+        trainLoss: store.trainingProgress.loss,
+        trainAccuracy: store.trainingProgress.accuracy,
+        valLoss: store.trainingProgress.valLoss,
+        valAccuracy: store.trainingProgress.valAccuracy,
+      }
+
+      await saveModelWithMetadata(store.model as tf.LayersModel, metadata)
       return true
     }
     catch (error) {
@@ -53,15 +68,15 @@ export function useModel() {
 
   async function loadModel(name = 'mnist-model') {
     try {
-      const model = await tf.loadLayersModel(`indexeddb://${name}`)
-      const metadataStr = localStorage.getItem(`${name}-metadata`)
-      const metadata = metadataStr ? JSON.parse(metadataStr) : {}
+      const result = await loadModelWithMetadata(name)
+      if (!result)
+        return false
 
-      store.setModel(model, 'custom')
+      store.setModel(result.model, 'custom')
       store.modelMetadata = {
-        accuracy: metadata.accuracy || 0,
-        trainedAt: metadata.trainedAt ? new Date(metadata.trainedAt) : null,
-        epochs: metadata.epochs || 0,
+        accuracy: result.metadata.valAccuracy,
+        trainedAt: new Date(result.metadata.startTime),
+        epochs: result.metadata.epochs,
       }
       return true
     }
@@ -73,8 +88,8 @@ export function useModel() {
 
   async function checkModelExists(name = 'mnist-model') {
     try {
-      const models = await tf.io.listModels()
-      return `indexeddb://${name}` in models
+      const models = await listModels()
+      return models.some(m => m.name === name)
     }
     catch {
       return false

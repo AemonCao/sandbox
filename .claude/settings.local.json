@@ -18,7 +18,10 @@
       "Bash(pnpm build:*)",
       "Bash(npx vue-tsc:*)",
       "Bash(git remote set-url:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(pnpm list:*)",
+      "Bash(gunzip:*)",
+      "Bash(pnpm exec vue-tsc:*)"
     ],
     "deny": [],
     "ask": []

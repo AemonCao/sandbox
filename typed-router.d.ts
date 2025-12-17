@@ -93,6 +93,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/mnist-data-preview/': RouteRecordInfo<
+      '/mnist-data-preview/',
+      '/mnist-data-preview',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/mnist-recognition/': RouteRecordInfo<
       '/mnist-recognition/',
       '/mnist-recognition',
@@ -110,6 +117,13 @@ declare module 'vue-router/auto-routes' {
     '/mnist-recognition/components/ModelControls': RouteRecordInfo<
       '/mnist-recognition/components/ModelControls',
       '/mnist-recognition/components/ModelControls',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/mnist-recognition/components/ModelManager': RouteRecordInfo<
+      '/mnist-recognition/components/ModelManager',
+      '/mnist-recognition/components/ModelManager',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -236,6 +250,12 @@ declare module 'vue-router/auto-routes' {
       views:
         | never
     }
+    'src/pages/mnist-data-preview/index.vue': {
+      routes:
+        | '/mnist-data-preview/'
+      views:
+        | never
+    }
     'src/pages/mnist-recognition/index.vue': {
       routes:
         | '/mnist-recognition/'
@@ -251,6 +271,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/mnist-recognition/components/ModelControls.vue': {
       routes:
         | '/mnist-recognition/components/ModelControls'
+      views:
+        | never
+    }
+    'src/pages/mnist-recognition/components/ModelManager.vue': {
+      routes:
+        | '/mnist-recognition/components/ModelManager'
       views:
         | never
     }

@@ -1,85 +1,83 @@
+import type { LoadComplete, LoadError, LoadProgress } from '../workers/dataLoader.worker'
 import * as tf from '@tensorflow/tfjs'
 import { useMnistStore } from '~/stores/mnist'
+import DataLoaderWorker from '../workers/dataLoader.worker?worker'
+import '@tensorflow/tfjs-backend-webgl'
 
 export interface TrainingParams {
   epochs?: number
   batchSize?: number
   validationSplit?: number
+  onProgress?: (stage: string, progress: number) => void
 }
+
+let abortController: AbortController | null = null
 
 export function useTraining() {
   const store = useMnistStore()
 
-  async function loadMnistData() {
-    const MNIST_IMAGES_SPRITE_PATH = 'https://storage.googleapis.com/tfjs-tutorials/mnist_images.png'
-    const MNIST_LABELS_PATH = 'https://storage.googleapis.com/tfjs-tutorials/mnist_labels_uint8'
+  async function loadMnistData(onProgress?: (stage: string, progress: number) => void) {
+    return new Promise<{ images: tf.Tensor4D, labels: tf.Tensor2D }>((resolve, reject) => {
+      const worker = new DataLoaderWorker()
 
-    const img = new Image()
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')!
+      worker.onmessage = (e: MessageEvent<LoadProgress | LoadComplete | LoadError>) => {
+        const msg = e.data
 
-    await new Promise((resolve) => {
-      img.crossOrigin = ''
-      img.onload = () => {
-        img.width = img.naturalWidth
-        img.height = img.naturalHeight
-        resolve(null)
-      }
-      img.src = MNIST_IMAGES_SPRITE_PATH
-    })
-
-    canvas.width = img.width
-    canvas.height = img.height
-    ctx.drawImage(img, 0, 0)
-
-    const imagesData = ctx.getImageData(0, 0, img.width, img.height)
-    const numImages = img.height / 28
-
-    const images = new Float32Array(numImages * 28 * 28)
-    for (let i = 0; i < numImages; i++) {
-      for (let y = 0; y < 28; y++) {
-        for (let x = 0; x < 28; x++) {
-          const srcIdx = ((i * 28 + y) * img.width + x) * 4
-          const dstIdx = i * 28 * 28 + y * 28 + x
-          images[dstIdx] = imagesData.data[srcIdx] / 255
+        if (msg.type === 'progress') {
+          onProgress?.(msg.stage, msg.progress)
+        }
+        else if (msg.type === 'complete') {
+          const images = tf.tensor4d(msg.images, [msg.numImages, 28, 28, 1])
+          const labels = tf.oneHot(tf.tensor1d(Array.from(msg.labels), 'int32'), 10) as tf.Tensor2D
+          worker.terminate()
+          resolve({ images, labels })
+        }
+        else if (msg.type === 'error') {
+          worker.terminate()
+          reject(new Error(msg.message))
         }
       }
-    }
 
-    const labelsResponse = await fetch(MNIST_LABELS_PATH)
-    const labelsData = new Uint8Array(await labelsResponse.arrayBuffer())
+      worker.onerror = (error) => {
+        worker.terminate()
+        reject(error)
+      }
 
-    return {
-      images: tf.tensor4d(images, [numImages, 28, 28, 1]),
-      labels: tf.oneHot(tf.tensor1d(Array.from(labelsData), 'int32'), 10),
-    }
+      worker.postMessage({ maxImages: 5000 })
+    })
   }
 
   async function trainModel(params: TrainingParams = {}) {
-    const {
-      epochs = 10,
-      batchSize = 128,
-      validationSplit = 0.15,
-    } = params
+    const { epochs = 10, batchSize = 128, validationSplit = 0.15, onProgress } = params
 
     if (!store.model) {
       console.error('No model to train')
       return false
     }
 
+    abortController = new AbortController()
     store.isTraining = true
     store.resetTrainingProgress()
 
     try {
-      const { images, labels } = await loadMnistData()
+      const data = await loadMnistData(onProgress)
 
-      await store.model.fit(images, labels, {
+      if (abortController.signal.aborted) {
+        data.images.dispose()
+        data.labels.dispose()
+        return false
+      }
+
+      await store.model.fit(data.images, data.labels, {
         epochs,
         batchSize,
         validationSplit,
         shuffle: true,
         callbacks: {
           onEpochEnd: (epoch, logs) => {
+            if (abortController?.signal.aborted)
+              return
+
             store.updateTrainingProgress({
               epoch: epoch + 1,
               loss: logs?.loss || 0,
@@ -93,10 +91,18 @@ export function useTraining() {
             store.trainingProgress.history.valAccuracy.push(logs?.val_acc || 0)
           },
           onBatchEnd: (batch) => {
+            if (abortController?.signal.aborted)
+              return
             store.updateTrainingProgress({ batch })
           },
         },
       })
+
+      data.images.dispose()
+      data.labels.dispose()
+
+      if (abortController.signal.aborted)
+        return false
 
       store.modelMetadata = {
         accuracy: store.trainingProgress.valAccuracy,
@@ -104,20 +110,26 @@ export function useTraining() {
         epochs,
       }
 
-      images.dispose()
-      labels.dispose()
-
       store.isTraining = false
+      abortController = null
       return true
     }
     catch (error) {
       console.error('Training error:', error)
       store.isTraining = false
+      abortController = null
       return false
     }
   }
 
+  function cancelTraining() {
+    abortController?.abort()
+    store.isTraining = false
+    abortController = null
+  }
+
   return {
     trainModel,
+    cancelTraining,
   }
 }

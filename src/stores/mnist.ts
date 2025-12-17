@@ -1,5 +1,8 @@
 import type * as tf from '@tensorflow/tfjs'
 import { defineStore } from 'pinia'
+import { markRaw } from 'vue'
+
+const MAX_HISTORY_SIZE = 100
 
 export interface TrainingProgress {
   epoch: number
@@ -52,7 +55,7 @@ export const useMnistStore = defineStore('mnist', {
 
   actions: {
     setModel(model: tf.LayersModel, type: 'pretrained' | 'custom') {
-      this.model = model
+      this.model = markRaw(model)
       this.modelType = type
     },
 
@@ -66,6 +69,15 @@ export const useMnistStore = defineStore('mnist', {
 
     updateTrainingProgress(progress: Partial<TrainingProgress>) {
       Object.assign(this.trainingProgress, progress)
+
+      // 限制历史数组大小
+      const { history } = this.trainingProgress
+      if (history.loss.length > MAX_HISTORY_SIZE) {
+        history.loss = history.loss.slice(-MAX_HISTORY_SIZE)
+        history.accuracy = history.accuracy.slice(-MAX_HISTORY_SIZE)
+        history.valLoss = history.valLoss.slice(-MAX_HISTORY_SIZE)
+        history.valAccuracy = history.valAccuracy.slice(-MAX_HISTORY_SIZE)
+      }
     },
 
     resetTrainingProgress() {

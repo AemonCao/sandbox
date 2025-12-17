@@ -50,6 +50,7 @@
     "esbuild",
     "ibeacon",
     "iconify",
+    "indexeddb",
     "jsdom",
     "Mian",
     "mnist",

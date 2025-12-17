@@ -1,5 +1,9 @@
 import type { Ref } from 'vue'
 
+// 复用临时 canvas
+let tempCanvas: HTMLCanvasElement | null = null
+let tempCtx: CanvasRenderingContext2D | null = null
+
 export function useDrawing(canvasRef: Ref<HTMLCanvasElement | null>) {
   const isDrawing = ref(false)
   const ctx = computed(() => canvasRef.value?.getContext('2d'))
@@ -36,25 +40,38 @@ export function useDrawing(canvasRef: Ref<HTMLCanvasElement | null>) {
     ctx.value.fillRect(0, 0, canvasRef.value.width, canvasRef.value.height)
   }
 
-  function getImageData(): number[] {
+  function isCanvasEmpty(): boolean {
     if (!canvasRef.value)
+      return true
+
+    const ctx = canvasRef.value.getContext('2d')
+    if (!ctx)
+      return true
+
+    const imageData = ctx.getImageData(0, 0, canvasRef.value.width, canvasRef.value.height)
+    return imageData.data.every((value, index) => index % 4 === 3 || value === 0)
+  }
+
+  function getImageData(): number[] {
+    if (!canvasRef.value || isCanvasEmpty())
       return []
 
-    const tempCanvas = document.createElement('canvas')
-    tempCanvas.width = 28
-    tempCanvas.height = 28
-    const tempCtx = tempCanvas.getContext('2d')!
+    if (!tempCanvas) {
+      tempCanvas = document.createElement('canvas')
+      tempCanvas.width = 28
+      tempCanvas.height = 28
+      tempCtx = tempCanvas.getContext('2d')!
+    }
 
-    tempCtx.fillStyle = '#000'
-    tempCtx.fillRect(0, 0, 28, 28)
-    tempCtx.drawImage(canvasRef.value, 0, 0, 28, 28)
+    tempCtx!.fillStyle = '#000'
+    tempCtx!.fillRect(0, 0, 28, 28)
+    tempCtx!.drawImage(canvasRef.value, 0, 0, 28, 28)
 
-    const imageData = tempCtx.getImageData(0, 0, 28, 28)
+    const imageData = tempCtx!.getImageData(0, 0, 28, 28)
     const grayscale: number[] = []
 
-    for (let i = 0; i < imageData.data.length; i += 4) {
+    for (let i = 0; i < imageData.data.length; i += 4)
       grayscale.push(imageData.data[i])
-    }
 
     return grayscale
   }
@@ -69,6 +86,11 @@ export function useDrawing(canvasRef: Ref<HTMLCanvasElement | null>) {
     ctx.value.lineCap = 'round'
     ctx.value.lineJoin = 'round'
   }
+
+  onUnmounted(() => {
+    tempCanvas = null
+    tempCtx = null
+  })
 
   return {
     isDrawing,

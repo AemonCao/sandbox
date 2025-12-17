@@ -11,15 +11,17 @@ export function usePrediction() {
     store.isProcessing = true
 
     try {
-      await tf.tidy(() => {
-        const tensor = tf.tensor4d(imageData, [1, 28, 28, 1])
-        const normalized = tensor.div(255.0)
-        const predictions = store.model!.predict(normalized) as tf.Tensor
-        predictions.data().then((probabilities) => {
-          store.updatePredictions(Array.from(probabilities))
-          store.isProcessing = false
-        })
-      })
+      const normalized = imageData.map(v => v / 255)
+      const tensor = tf.tensor4d(normalized, [1, 28, 28, 1])
+      const predictions = store.model.predict(tensor) as tf.Tensor
+      const probabilities = await predictions.data()
+
+      store.updatePredictions(Array.from(probabilities))
+
+      tensor.dispose()
+      predictions.dispose()
+
+      store.isProcessing = false
     }
     catch (error) {
       console.error('Prediction error:', error)

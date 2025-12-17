@@ -40,7 +40,7 @@ export function useModel() {
 
   async function saveModel(name?: string, startTime?: Date, totalTime?: number, batches?: number) {
     if (!store.model)
-      return false
+      return null
 
     const modelName = name || `mnist-model-${Date.now()}`
 
@@ -58,11 +58,11 @@ export function useModel() {
       }
 
       await saveModelWithMetadata(store.model as tf.LayersModel, metadata)
-      return true
+      return modelName
     }
     catch (error) {
       console.error('Failed to save model:', error)
-      return false
+      return null
     }
   }
 

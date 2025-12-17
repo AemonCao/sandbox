@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ModelMetadata } from '../services/modelStorage'
 import * as tf from '@tensorflow/tfjs'
+import { NButton } from 'naive-ui'
 import { deleteModel, listModels, saveModelWithMetadata } from '../services/modelStorage'
 
 const emit = defineEmits<{
@@ -36,13 +37,13 @@ const columns = computed(() => [
     title: '操作',
     key: 'actions',
     width: 180,
+    fixed: 'right' as const,
     render: (row: ModelMetadata) => {
       const isSelected = selectedModel.value === row.name
-      const Button = resolveComponent('NButton')
       return h('div', { class: 'flex gap-2' }, [
-        h(Button, { size: 'small', type: isSelected ? 'primary' : 'default', onClick: () => handleSelect(row) }, { default: () => '选择' }),
-        h(Button, { size: 'small', onClick: () => handleExport(row) }, { default: () => '导出' }),
-        h(Button, { size: 'small', type: 'error', onClick: () => handleDelete(row) }, { default: () => '删除' }),
+        h(NButton, { size: 'small', type: isSelected ? 'primary' : 'default', onClick: () => handleSelect(row) }, { default: () => isSelected ? '当前' : '选择' }),
+        h(NButton, { size: 'small', onClick: () => handleExport(row) }, { default: () => '导出' }),
+        h(NButton, { size: 'small', type: 'error', onClick: () => handleDelete(row) }, { default: () => '删除' }),
       ])
     },
   },
@@ -62,7 +63,7 @@ async function handleExport(model: ModelMetadata) {
 function handleImport() {
   const input = document.createElement('input')
   input.type = 'file'
-  input.accept = '.json'
+  input.accept = '.json,.bin'
   input.multiple = true
   input.onchange = async (e) => {
     const files = (e.target as HTMLInputElement).files
@@ -73,8 +74,8 @@ function handleImport() {
       const fileArray = Array.from(files)
 
       // 验证文件
-      const hasModelJson = fileArray.some(f => f.name === 'model.json')
-      const hasWeights = fileArray.some(f => f.name.includes('.bin'))
+      const hasModelJson = fileArray.some(f => f.name.endsWith('.json'))
+      const hasWeights = fileArray.some(f => f.name.endsWith('.bin'))
 
       if (!hasModelJson || !hasWeights) {
         message.error('请选择完整的模型文件（model.json 和 .bin 文件）')
@@ -82,6 +83,11 @@ function handleImport() {
       }
 
       const model = await tf.loadLayersModel(tf.io.browserFiles(fileArray))
+      model.compile({
+        optimizer: 'adam',
+        loss: 'categoricalCrossentropy',
+        metrics: ['accuracy'],
+      })
       const name = `mnist-model-imported-${Date.now()}`
 
       const metadata: ModelMetadata = {
@@ -130,14 +136,19 @@ async function handleSelect(model: ModelMetadata) {
   selectedModel.value = model.name
   emit('select', model.name)
 }
+
+defineExpose({
+  refresh: () => refreshTrigger.value++,
+  setSelected: (name: string) => selectedModel.value = name,
+})
 </script>
 
 <template>
   <div>
     <div mb-4>
-      <n-button size="small" block @click="handleImport">
+      <NButton size="small" block @click="handleImport">
         导入模型
-      </n-button>
+      </NButton>
     </div>
 
     <n-data-table
@@ -147,7 +158,7 @@ async function handleSelect(model: ModelMetadata) {
       :pagination="false"
       size="small"
       :max-height="600"
-      :scroll-x="1200"
+      :scroll-x="1600"
     />
 
     <n-empty v-else description="暂无保存的模型" />

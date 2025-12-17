@@ -18,6 +18,7 @@ const message = useMessage()
 const showTraining = ref(true)
 const loading = ref(true)
 const initError = ref('')
+const modelManagerRef = ref<InstanceType<typeof ModelManager>>()
 
 onMounted(async () => {
   try {
@@ -69,6 +70,11 @@ async function handleSelectModel(name: string) {
     message.error('加载模型失败')
   }
 }
+
+function handleModelSaved(modelName: string) {
+  modelManagerRef.value?.refresh()
+  modelManagerRef.value?.setSelected(modelName)
+}
 </script>
 
 <template>
@@ -87,38 +93,43 @@ async function handleSelectModel(name: string) {
         初始化错误: {{ initError }}
       </div>
 
-      <div mx-auto gap-4 max-w-7xl flex="~ col xl:row">
-        <!-- 左侧：模型管理 -->
-        <div w="full xl:300px" p-4 rounded-lg bg-white flex-shrink-0 shadow-lg>
-          <h2 text-lg font-semibold mb-4>
-            模型管理
-          </h2>
-          <ModelManager @select="handleSelectModel" />
-        </div>
-
-        <div flex-1 gap-4 flex="~ col lg:row xl:col">
-          <!-- 中间：绘图区 -->
+      <div mx-auto gap-4 max-w-7xl flex="~ col">
+        <!-- 第一行：绘图区 + 训练模块 -->
+        <div gap-4 flex="~ col lg:row">
+          <!-- 绘图区 -->
           <div p-6 rounded-lg bg-white flex-1 shadow-lg>
             <h2 text-xl font-semibold mb-4>
               绘制数字
             </h2>
             <DrawingCanvas @update="handleDrawingUpdate" />
-            <div mt-6>
-              <ModelControls @start-training="handleStartTraining" />
-            </div>
           </div>
 
-          <!-- 右侧：识别结果 + 训练面板 -->
+          <!-- 训练模块 -->
           <div p-6 rounded-lg bg-white flex-1 shadow-lg>
             <h2 text-xl font-semibold mb-4>
-              识别结果
+              模型训练
             </h2>
-            <PredictionList :predictions="store.predictions" />
-
+            <ModelControls @start-training="handleStartTraining" />
             <div v-if="showTraining" mt-6>
-              <TrainingPanel />
+              <TrainingPanel @saved="handleModelSaved" />
             </div>
           </div>
+        </div>
+
+        <!-- 第二行：识别结果 -->
+        <div p-6 rounded-lg bg-white shadow-lg>
+          <h2 text-xl font-semibold mb-4>
+            识别结果
+          </h2>
+          <PredictionList :predictions="store.predictions" />
+        </div>
+
+        <!-- 第三行：模型列表 -->
+        <div p-6 rounded-lg bg-white shadow-lg>
+          <h2 text-xl font-semibold mb-4>
+            模型列表
+          </h2>
+          <ModelManager ref="modelManagerRef" @select="handleSelectModel" />
         </div>
       </div>
     </NSpin>

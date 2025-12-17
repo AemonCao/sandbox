@@ -4,6 +4,8 @@ import { useMnistStore } from '~/stores/mnist'
 import { useModel } from '../composables/useModel'
 import { useTraining } from '../composables/useTraining'
 
+const emit = defineEmits<{ saved: [modelName: string] }>()
+
 const store = useMnistStore()
 const { trainModel, cancelTraining } = useTraining()
 const { saveModel } = useModel()
@@ -39,8 +41,10 @@ async function handleStartTraining() {
   if (success) {
     const endTime = new Date()
     const totalTime = endTime.getTime() - startTime.value.getTime()
-    await saveModel(undefined, startTime.value, totalTime, totalBatches.value)
+    const modelName = await saveModel(undefined, startTime.value, totalTime, totalBatches.value)
     message.success('模型训练完成并已保存！')
+    if (modelName)
+      emit('saved', modelName)
   }
   else {
     message.error('模型训练失败或已取消')
@@ -62,103 +66,111 @@ watch(() => store.trainingProgress.history, (history) => {
   if (!chartRef.value)
     return
 
-  if (chart) {
-    chart.dispose()
-    chart = null
+  if (!chart) {
+    chart = echarts.init(chartRef.value)
+    chart.setOption({
+      title: {
+        text: '训练进度',
+        left: 'center',
+      },
+      tooltip: {
+        trigger: 'axis',
+        formatter: (params: any) => {
+          let result = `${params[0].axisValue}<br/>`
+          params.forEach((item: any) => {
+            const value = item.seriesName.includes('准确率')
+              ? `${(item.value * 100).toFixed(2)}%`
+              : item.value.toFixed(4)
+            result += `${item.marker}${item.seriesName}: ${value}<br/>`
+          })
+          return result
+        },
+      },
+      legend: {
+        data: ['训练损失', '训练准确率', '验证损失', '验证准确率'],
+        top: 30,
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true,
+      },
+      xAxis: {
+        type: 'category',
+        data: [],
+        boundaryGap: false,
+      },
+      yAxis: [
+        {
+          type: 'value',
+          name: '损失',
+          position: 'left',
+          axisLabel: {
+            formatter: (value: number) => value.toFixed(2),
+          },
+        },
+        {
+          type: 'value',
+          name: '准确率',
+          position: 'right',
+          axisLabel: {
+            formatter: (value: number) => `${(value * 100).toFixed(0)}%`,
+          },
+          min: 0,
+          max: 1,
+        },
+      ],
+      series: [
+        {
+          name: '训练损失',
+          type: 'line',
+          yAxisIndex: 0,
+          data: [],
+          smooth: true,
+          itemStyle: { color: '#ef4444' },
+          lineStyle: { width: 2 },
+        },
+        {
+          name: '验证损失',
+          type: 'line',
+          yAxisIndex: 0,
+          data: [],
+          smooth: true,
+          itemStyle: { color: '#f97316' },
+          lineStyle: { width: 2 },
+        },
+        {
+          name: '训练准确率',
+          type: 'line',
+          yAxisIndex: 1,
+          data: [],
+          smooth: true,
+          itemStyle: { color: '#3b82f6' },
+          lineStyle: { width: 2 },
+        },
+        {
+          name: '验证准确率',
+          type: 'line',
+          yAxisIndex: 1,
+          data: [],
+          smooth: true,
+          itemStyle: { color: '#10b981' },
+          lineStyle: { width: 2 },
+        },
+      ],
+    })
   }
 
-  chart = echarts.init(chartRef.value)
-
   chart.setOption({
-    title: {
-      text: '训练进度',
-      left: 'center',
-    },
-    tooltip: {
-      trigger: 'axis',
-      formatter: (params: any) => {
-        let result = `${params[0].axisValue}<br/>`
-        params.forEach((item: any) => {
-          const value = item.seriesName.includes('准确率')
-            ? `${(item.value * 100).toFixed(2)}%`
-            : item.value.toFixed(4)
-          result += `${item.marker}${item.seriesName}: ${value}<br/>`
-        })
-        return result
-      },
-    },
-    legend: {
-      data: ['训练损失', '训练准确率', '验证损失', '验证准确率'],
-      top: 30,
-    },
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '3%',
-      containLabel: true,
-    },
     xAxis: {
-      type: 'category',
       data: history.loss.map((_, i) => `Epoch ${i + 1}`),
-      boundaryGap: false,
     },
-    yAxis: [
-      {
-        type: 'value',
-        name: '损失',
-        position: 'left',
-        axisLabel: {
-          formatter: (value: number) => value.toFixed(2),
-        },
-      },
-      {
-        type: 'value',
-        name: '准确率',
-        position: 'right',
-        axisLabel: {
-          formatter: (value: number) => `${(value * 100).toFixed(0)}%`,
-        },
-        min: 0,
-        max: 1,
-      },
-    ],
     series: [
-      {
-        name: '训练损失',
-        type: 'line',
-        yAxisIndex: 0,
-        data: history.loss,
-        smooth: true,
-        itemStyle: { color: '#ef4444' },
-        lineStyle: { width: 2 },
-      },
-      {
-        name: '验证损失',
-        type: 'line',
-        yAxisIndex: 0,
-        data: history.valLoss,
-        smooth: true,
-        itemStyle: { color: '#f97316' },
-        lineStyle: { width: 2 },
-      },
-      {
-        name: '训练准确率',
-        type: 'line',
-        yAxisIndex: 1,
-        data: history.accuracy,
-        smooth: true,
-        itemStyle: { color: '#3b82f6' },
-        lineStyle: { width: 2 },
-      },
-      {
-        name: '验证准确率',
-        type: 'line',
-        yAxisIndex: 1,
-        data: history.valAccuracy,
-        smooth: true,
-        itemStyle: { color: '#10b981' },
-        lineStyle: { width: 2 },
-      },
+      { data: history.loss },
+      { data: history.valLoss },
+      { data: history.accuracy },
+      { data: history.valAccuracy },
     ],
   })
 }, { deep: true })

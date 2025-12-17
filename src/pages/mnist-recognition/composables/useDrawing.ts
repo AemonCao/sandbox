@@ -7,6 +7,7 @@ let tempCtx: CanvasRenderingContext2D | null = null
 export function useDrawing(canvasRef: Ref<HTMLCanvasElement | null>) {
   const isDrawing = ref(false)
   const ctx = computed(() => canvasRef.value?.getContext('2d'))
+  const isDark = useDark()
 
   function handleMouseDown(e: MouseEvent) {
     if (!ctx.value)
@@ -36,7 +37,7 @@ export function useDrawing(canvasRef: Ref<HTMLCanvasElement | null>) {
   function clear() {
     if (!ctx.value || !canvasRef.value)
       return
-    ctx.value.fillStyle = '#000'
+    ctx.value.fillStyle = isDark.value ? '#fff' : '#000'
     ctx.value.fillRect(0, 0, canvasRef.value.width, canvasRef.value.height)
   }
 
@@ -63,15 +64,17 @@ export function useDrawing(canvasRef: Ref<HTMLCanvasElement | null>) {
       tempCtx = tempCanvas.getContext('2d')!
     }
 
-    tempCtx!.fillStyle = '#000'
+    tempCtx!.fillStyle = isDark.value ? '#fff' : '#000'
     tempCtx!.fillRect(0, 0, 28, 28)
     tempCtx!.drawImage(canvasRef.value, 0, 0, 28, 28)
 
     const imageData = tempCtx!.getImageData(0, 0, 28, 28)
     const grayscale: number[] = []
 
-    for (let i = 0; i < imageData.data.length; i += 4)
-      grayscale.push(imageData.data[i])
+    for (let i = 0; i < imageData.data.length; i += 4) {
+      const value = isDark.value ? 255 - imageData.data[i] : imageData.data[i]
+      grayscale.push(value)
+    }
 
     return { data: grayscale, imageData28: imageData }
   }
@@ -79,13 +82,30 @@ export function useDrawing(canvasRef: Ref<HTMLCanvasElement | null>) {
   function initCanvas() {
     if (!ctx.value || !canvasRef.value)
       return
-    ctx.value.fillStyle = '#000'
+    ctx.value.fillStyle = isDark.value ? '#fff' : '#000'
     ctx.value.fillRect(0, 0, canvasRef.value.width, canvasRef.value.height)
-    ctx.value.strokeStyle = '#fff'
+    ctx.value.strokeStyle = isDark.value ? '#000' : '#fff'
     ctx.value.lineWidth = 20
     ctx.value.lineCap = 'round'
     ctx.value.lineJoin = 'round'
   }
+
+  watch(isDark, () => {
+    if (!canvasRef.value || !ctx.value)
+      return
+
+    const imageData = ctx.value.getImageData(0, 0, canvasRef.value.width, canvasRef.value.height)
+    for (let i = 0; i < imageData.data.length; i += 4) {
+      imageData.data[i] = 255 - imageData.data[i]
+      imageData.data[i + 1] = 255 - imageData.data[i + 1]
+      imageData.data[i + 2] = 255 - imageData.data[i + 2]
+    }
+
+    ctx.value.fillStyle = isDark.value ? '#fff' : '#000'
+    ctx.value.fillRect(0, 0, canvasRef.value.width, canvasRef.value.height)
+    ctx.value.putImageData(imageData, 0, 0)
+    ctx.value.strokeStyle = isDark.value ? '#000' : '#fff'
+  })
 
   onUnmounted(() => {
     tempCanvas = null

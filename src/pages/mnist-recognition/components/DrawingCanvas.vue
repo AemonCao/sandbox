@@ -12,6 +12,7 @@ const { handleMouseDown, handleMouseMove, handleMouseUp, clear, getImageData, in
 
 onMounted(() => {
   initCanvas()
+  clearPreviews()
 })
 
 function handleClear() {
@@ -20,22 +21,52 @@ function handleClear() {
   emit('update', [])
 }
 
+const isDark = useDark()
+
 function clearPreviews() {
+  const bgColor = isDark.value ? '#fff' : '#000'
   if (preview28Ref.value) {
     const ctx = preview28Ref.value.getContext('2d')
     if (ctx) {
-      ctx.fillStyle = '#000'
+      ctx.fillStyle = bgColor
       ctx.fillRect(0, 0, 28, 28)
     }
   }
   if (preview784Ref.value) {
     const ctx = preview784Ref.value.getContext('2d')
     if (ctx) {
-      ctx.fillStyle = '#000'
+      ctx.fillStyle = bgColor
       ctx.fillRect(0, 0, 784, 1)
     }
   }
 }
+
+watch(isDark, () => {
+  if (preview28Ref.value) {
+    const ctx = preview28Ref.value.getContext('2d')
+    if (ctx) {
+      const imageData = ctx.getImageData(0, 0, 28, 28)
+      for (let i = 0; i < imageData.data.length; i += 4) {
+        imageData.data[i] = 255 - imageData.data[i]
+        imageData.data[i + 1] = 255 - imageData.data[i + 1]
+        imageData.data[i + 2] = 255 - imageData.data[i + 2]
+      }
+      ctx.putImageData(imageData, 0, 0)
+    }
+  }
+  if (preview784Ref.value) {
+    const ctx = preview784Ref.value.getContext('2d')
+    if (ctx) {
+      const imageData = ctx.getImageData(0, 0, 784, 1)
+      for (let i = 0; i < imageData.data.length; i += 4) {
+        imageData.data[i] = 255 - imageData.data[i]
+        imageData.data[i + 1] = 255 - imageData.data[i + 1]
+        imageData.data[i + 2] = 255 - imageData.data[i + 2]
+      }
+      ctx.putImageData(imageData, 0, 0)
+    }
+  }
+})
 
 function handleDrawEnd() {
   const { data, imageData28 } = getImageData()
@@ -53,9 +84,10 @@ function handleDrawEnd() {
       const imageData = ctx.createImageData(784, 1)
       for (let i = 0; i < data.length; i++) {
         const idx = i * 4
-        imageData.data[idx] = data[i]
-        imageData.data[idx + 1] = data[i]
-        imageData.data[idx + 2] = data[i]
+        const value = isDark.value ? 255 - data[i] : data[i]
+        imageData.data[idx] = value
+        imageData.data[idx + 1] = value
+        imageData.data[idx + 2] = value
         imageData.data[idx + 3] = 255
       }
       ctx.putImageData(imageData, 0, 0)
@@ -74,7 +106,7 @@ function handleDrawEnd() {
       height="280"
 
       rounded-lg cursor-crosshair shadow-md
-      border="2 solid gray-300"
+      border="2 solid gray-300 dark:border-gray-600"
       @mousedown="handleMouseDown"
       @mousemove="handleMouseMove"
       @mouseup="handleMouseUp(); handleDrawEnd()"
@@ -86,7 +118,7 @@ function handleDrawEnd() {
 
     <div flex gap-4 items-center>
       <div flex flex-col gap-2 items-center>
-        <div text-sm text-gray-600>
+        <div text-sm text-gray-600 dark:text-gray-400>
           28×28 预览
         </div>
         <canvas
@@ -94,12 +126,12 @@ function handleDrawEnd() {
           width="28"
           height="28"
           style="width: 140px; height: 140px; image-rendering: pixelated;"
-          rounded border="1 solid gray-300"
+          rounded border="1 solid gray-300 dark:border-gray-600"
         />
       </div>
 
       <div flex flex-col gap-2 items-center>
-        <div text-sm text-gray-600>
+        <div text-sm text-gray-600 dark:text-gray-400>
           1×784 预览
         </div>
         <canvas
@@ -107,7 +139,7 @@ function handleDrawEnd() {
           width="784"
           height="1"
           style="width: 280px; height: 28px; image-rendering: pixelated;"
-          rounded border="1 solid gray-300"
+          rounded border="1 solid gray-300 dark:border-gray-600"
         />
       </div>
     </div>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ModelMetadata } from '../services/modelStorage'
 import * as tf from '@tensorflow/tfjs'
+import JSZip from 'jszip'
 import { NButton } from 'naive-ui'
 import { deleteModel, listModels, saveModelWithMetadata } from '../services/modelStorage'
 
@@ -52,18 +53,27 @@ const columns = computed(() => [
 async function handleExport(model: ModelMetadata) {
   try {
     const tfModel = await tf.loadLayersModel(`indexeddb://${model.name}`)
-    await tfModel.save(`downloads://${model.name}`)
+    const zip = new JSZip()
 
-    // 导出元数据
-    const metadataBlob = new Blob([JSON.stringify(model, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(metadataBlob)
+    // 保存模型到内存
+    await tfModel.save(tf.io.withSaveHandler(async (artifacts) => {
+      const modelTopology = { modelTopology: artifacts.modelTopology, weightsManifest: [{ paths: ['weights.bin'], weights: artifacts.weightSpecs! }] }
+      zip.file('model.json', JSON.stringify(modelTopology))
+      zip.file('weights.bin', artifacts.weightData as ArrayBuffer)
+      zip.file('metadata.json', JSON.stringify(model, null, 2))
+      return { modelArtifactsInfo: { dateSaved: new Date(), modelTopologyType: 'JSON' } }
+    }))
+
+    // 生成并下载 ZIP
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `${model.name}-metadata.json`
+    a.download = `${model.name}.zip`
     a.click()
     URL.revokeObjectURL(url)
 
-    message.success('模型和元数据已导出')
+    message.success('模型已导出为 ZIP 文件')
   }
   catch {
     message.error('导出失败')
@@ -73,7 +83,7 @@ async function handleExport(model: ModelMetadata) {
 function handleImport() {
   const input = document.createElement('input')
   input.type = 'file'
-  input.accept = '.json,.bin'
+  input.accept = '.zip,.json,.bin'
   input.multiple = true
   input.onchange = async (e) => {
     const files = (e.target as HTMLInputElement).files
@@ -82,56 +92,87 @@ function handleImport() {
 
     try {
       const fileArray = Array.from(files)
+      const zipFile = fileArray.find(f => f.name.endsWith('.zip'))
 
-      // 查找元数据文件
-      const metadataFile = fileArray.find(f => f.name.includes('metadata'))
-      const modelFiles = fileArray.filter(f => !f.name.includes('metadata'))
+      if (zipFile) {
+        // ZIP 文件导入
+        const zip = await JSZip.loadAsync(zipFile)
+        const modelJsonStr = await zip.file('model.json')?.async('string')
+        const weightsBlob = await zip.file('weights.bin')?.async('blob')
+        const metadataJson = await zip.file('metadata.json')?.async('string')
 
-      // 验证模型文件
-      const hasModelJson = modelFiles.some(f => f.name.endsWith('.json'))
-      const hasWeights = modelFiles.some(f => f.name.endsWith('.bin'))
-
-      if (!hasModelJson || !hasWeights) {
-        message.error('请选择完整的模型文件（model.json 和 .bin 文件）')
-        return
-      }
-
-      const model = await tf.loadLayersModel(tf.io.browserFiles(modelFiles))
-      model.compile({
-        optimizer: 'adam',
-        loss: 'categoricalCrossentropy',
-        metrics: ['accuracy'],
-      })
-
-      let metadata: ModelMetadata
-
-      // 如果有元数据文件，读取它
-      if (metadataFile) {
-        const metadataText = await metadataFile.text()
-        const importedMetadata = JSON.parse(metadataText)
-        metadata = {
-          ...importedMetadata,
-          name: `${importedMetadata.name}-imported-${Date.now()}`,
+        if (!modelJsonStr || !weightsBlob) {
+          message.error('ZIP 文件中缺少模型文件')
+          return
         }
+
+        const weightsFile = new File([weightsBlob], 'weights.bin')
+        const modelJsonBlob = new Blob([modelJsonStr], { type: 'application/json' })
+        const modelJsonFile = new File([modelJsonBlob], 'model.json')
+
+        const model = await tf.loadLayersModel(tf.io.browserFiles([modelJsonFile, weightsFile]))
+        model.compile({
+          optimizer: 'adam',
+          loss: 'categoricalCrossentropy',
+          metrics: ['accuracy'],
+        })
+
+        const metadata: ModelMetadata = metadataJson
+          ? { ...JSON.parse(metadataJson), name: `${JSON.parse(metadataJson).name}-imported-${Date.now()}` }
+          : {
+              name: `mnist-model-imported-${Date.now()}`,
+              startTime: new Date().toISOString(),
+              totalTime: 0,
+              epochs: 0,
+              batches: 0,
+              trainLoss: 0,
+              trainAccuracy: 0,
+              valLoss: 0,
+              valAccuracy: 0,
+            }
+
+        await saveModelWithMetadata(model, metadata)
+        message.success('模型已从 ZIP 导入')
+        refreshTrigger.value++
       }
       else {
-        // 没有元数据文件，创建默认元数据
-        metadata = {
-          name: `mnist-model-imported-${Date.now()}`,
-          startTime: new Date().toISOString(),
-          totalTime: 0,
-          epochs: 0,
-          batches: 0,
-          trainLoss: 0,
-          trainAccuracy: 0,
-          valLoss: 0,
-          valAccuracy: 0,
-        }
-      }
+        // 传统多文件导入
+        const metadataFile = fileArray.find(f => f.name.includes('metadata'))
+        const modelFiles = fileArray.filter(f => !f.name.includes('metadata'))
 
-      await saveModelWithMetadata(model, metadata)
-      message.success('模型已导入')
-      refreshTrigger.value++
+        const hasModelJson = modelFiles.some(f => f.name.endsWith('.json'))
+        const hasWeights = modelFiles.some(f => f.name.endsWith('.bin'))
+
+        if (!hasModelJson || !hasWeights) {
+          message.error('请选择完整的模型文件（model.json 和 .bin 文件）或 ZIP 文件')
+          return
+        }
+
+        const model = await tf.loadLayersModel(tf.io.browserFiles(modelFiles))
+        model.compile({
+          optimizer: 'adam',
+          loss: 'categoricalCrossentropy',
+          metrics: ['accuracy'],
+        })
+
+        const metadata: ModelMetadata = metadataFile
+          ? { ...JSON.parse(await metadataFile.text()), name: `${JSON.parse(await metadataFile.text()).name}-imported-${Date.now()}` }
+          : {
+              name: `mnist-model-imported-${Date.now()}`,
+              startTime: new Date().toISOString(),
+              totalTime: 0,
+              epochs: 0,
+              batches: 0,
+              trainLoss: 0,
+              trainAccuracy: 0,
+              valLoss: 0,
+              valAccuracy: 0,
+            }
+
+        await saveModelWithMetadata(model, metadata)
+        message.success('模型已导入')
+        refreshTrigger.value++
+      }
     }
     catch (error) {
       message.error(`导入失败: ${error instanceof Error ? error.message : '未知错误'}`)

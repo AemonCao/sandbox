@@ -38,9 +38,10 @@ catalogs:
     '@tensorflow/tfjs': ^4.22.0
     '@tensorflow/tfjs-backend-webgl': ^4.22.0
     '@unhead/vue': ^2.0.19
-    '@vueuse/core': catalog:frontend
+    '@vueuse/core': ^14.1.0
     echarts: ^6.0.0
     echarts-gl: ^2.0.9
+    jszip: ^3.10.1
     lodash: ^4.17.21
     naive-ui: ^2.43.1
     nanoid: ^5.1.6

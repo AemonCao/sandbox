@@ -23,6 +23,7 @@
     "@vueuse/core": "catalog:frontend",
     "echarts": "catalog:frontend",
     "echarts-gl": "catalog:frontend",
+    "jszip": "catalog:frontend",
     "lodash": "catalog:frontend",
     "nanoid": "catalog:frontend",
     "normalize.css": "catalog:frontend",

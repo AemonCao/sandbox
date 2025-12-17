@@ -52,9 +52,9 @@ export function useDrawing(canvasRef: Ref<HTMLCanvasElement | null>) {
     return imageData.data.every((value, index) => index % 4 === 3 || value === 0)
   }
 
-  function getImageData(): number[] {
+  function getImageData(): { data: number[], imageData28: ImageData | null } {
     if (!canvasRef.value || isCanvasEmpty())
-      return []
+      return { data: [], imageData28: null }
 
     if (!tempCanvas) {
       tempCanvas = document.createElement('canvas')
@@ -73,7 +73,7 @@ export function useDrawing(canvasRef: Ref<HTMLCanvasElement | null>) {
     for (let i = 0; i < imageData.data.length; i += 4)
       grayscale.push(imageData.data[i])
 
-    return grayscale
+    return { data: grayscale, imageData28: imageData }
   }
 
   function initCanvas() {

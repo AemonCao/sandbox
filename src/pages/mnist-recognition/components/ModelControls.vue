@@ -4,6 +4,7 @@ import { useModel } from '../composables/useModel'
 
 const emit = defineEmits<{
   startTraining: []
+  modelLoaded: []
 }>()
 
 const store = useMnistStore()
@@ -20,6 +21,7 @@ async function handleLoadSaved() {
   const success = await loadModel()
   if (success) {
     message.success('模型加载成功')
+    emit('modelLoaded')
   }
   else {
     message.error('模型加载失败')

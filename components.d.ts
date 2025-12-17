@@ -17,6 +17,7 @@ declare module 'vue' {
     NDataTable: typeof import('naive-ui')['NDataTable']
     NEmpty: typeof import('naive-ui')['NEmpty']
     NInputNumber: typeof import('naive-ui')['NInputNumber']
+    NModal: typeof import('naive-ui')['NModal']
     NProgress: typeof import('naive-ui')['NProgress']
     NSpace: typeof import('naive-ui')['NSpace']
     NSpin: typeof import('naive-ui')['NSpin']

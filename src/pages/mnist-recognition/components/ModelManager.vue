@@ -26,14 +26,14 @@ onMounted(loadModels)
 
 const columns = computed(() => [
   { title: '名称', key: 'name', width: 150, ellipsis: { tooltip: true } },
-  { title: '开始时间', key: 'startTime', width: 160, render: (row: ModelMetadata) => new Date(row.startTime).toLocaleString() },
-  { title: '训练时长', key: 'totalTime', width: 100, render: (row: ModelMetadata) => row.totalTime ? `${(row.totalTime / 1000).toFixed(1)}s` : '-' },
-  { title: '轮次', key: 'epochs', width: 70, render: (row: ModelMetadata) => row.epochs || '-' },
-  { title: '批次', key: 'batches', width: 70, render: (row: ModelMetadata) => row.batches || '-' },
-  { title: '训练损失', key: 'trainLoss', width: 100, render: (row: ModelMetadata) => row.trainLoss ? row.trainLoss.toFixed(4) : '-' },
-  { title: '训练准确率', key: 'trainAccuracy', width: 110, render: (row: ModelMetadata) => row.trainAccuracy ? `${(row.trainAccuracy * 100).toFixed(2)}%` : '-' },
-  { title: '验证损失', key: 'valLoss', width: 100, render: (row: ModelMetadata) => row.valLoss ? row.valLoss.toFixed(4) : '-' },
-  { title: '验证准确率', key: 'valAccuracy', width: 110, render: (row: ModelMetadata) => row.valAccuracy ? `${(row.valAccuracy * 100).toFixed(2)}%` : '-' },
+  { title: '训练时长', key: 'totalTime', width: 100, render: (row: ModelMetadata) => row.totalTime ? `${(row.totalTime / 1000).toFixed(1)}s` : '-', sorter: (a: ModelMetadata, b: ModelMetadata) => (a.totalTime || 0) - (b.totalTime || 0) },
+  { title: '轮次', key: 'epochs', width: 70, render: (row: ModelMetadata) => row.epochs || '-', sorter: (a: ModelMetadata, b: ModelMetadata) => (a.epochs || 0) - (b.epochs || 0) },
+  { title: '批次', key: 'batches', width: 70, render: (row: ModelMetadata) => row.batches || '-', sorter: (a: ModelMetadata, b: ModelMetadata) => (a.batches || 0) - (b.batches || 0) },
+  { title: '训练损失', key: 'trainLoss', width: 100, render: (row: ModelMetadata) => row.trainLoss ? row.trainLoss.toFixed(4) : '-', sorter: (a: ModelMetadata, b: ModelMetadata) => (a.trainLoss || 0) - (b.trainLoss || 0) },
+  { title: '训练准确率', key: 'trainAccuracy', width: 110, render: (row: ModelMetadata) => row.trainAccuracy ? `${(row.trainAccuracy * 100).toFixed(2)}%` : '-', sorter: (a: ModelMetadata, b: ModelMetadata) => (a.trainAccuracy || 0) - (b.trainAccuracy || 0) },
+  { title: '验证损失', key: 'valLoss', width: 100, render: (row: ModelMetadata) => row.valLoss ? row.valLoss.toFixed(4) : '-', sorter: (a: ModelMetadata, b: ModelMetadata) => (a.valLoss || 0) - (b.valLoss || 0) },
+  { title: '验证准确率', key: 'valAccuracy', width: 110, render: (row: ModelMetadata) => row.valAccuracy ? `${(row.valAccuracy * 100).toFixed(2)}%` : '-', sorter: (a: ModelMetadata, b: ModelMetadata) => (a.valAccuracy || 0) - (b.valAccuracy || 0) },
+  { title: '开始时间', key: 'startTime', width: 160, render: (row: ModelMetadata) => new Date(row.startTime).toLocaleString(), sorter: (a: ModelMetadata, b: ModelMetadata) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime() },
   {
     title: '操作',
     key: 'actions',
@@ -208,17 +208,12 @@ async function handleSelect(model: ModelMetadata) {
 defineExpose({
   refresh: () => refreshTrigger.value++,
   setSelected: (name: string) => selectedModel.value = name,
+  handleImport,
 })
 </script>
 
 <template>
   <div>
-    <div mb-4>
-      <NButton size="small" block @click="handleImport">
-        导入模型
-      </NButton>
-    </div>
-
     <n-data-table
       v-if="models.length > 0"
       :columns="columns"

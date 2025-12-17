@@ -15,10 +15,11 @@ const { createModel, loadModel, checkModelExists } = useModel()
 const { predict } = usePrediction()
 const message = useMessage()
 
-const showTraining = ref(true)
+const showTrainingModal = ref(false)
 const loading = ref(true)
 const initError = ref('')
 const modelManagerRef = ref<InstanceType<typeof ModelManager>>()
+const currentImageData = ref<number[]>([])
 
 onMounted(async () => {
   try {
@@ -49,6 +50,7 @@ onMounted(async () => {
 })
 
 function handleDrawingUpdate(imageData: number[]) {
+  currentImageData.value = imageData
   if (imageData.length > 0) {
     predict(imageData)
   }
@@ -58,13 +60,16 @@ function handleDrawingUpdate(imageData: number[]) {
 }
 
 function handleStartTraining() {
-  showTraining.value = true
+  showTrainingModal.value = true
 }
 
 async function handleSelectModel(name: string) {
   const success = await loadModel(name)
   if (success) {
     message.success('已加载模型')
+    if (currentImageData.value.length > 0) {
+      predict(currentImageData.value)
+    }
   }
   else {
     message.error('加载模型失败')
@@ -74,6 +79,7 @@ async function handleSelectModel(name: string) {
 function handleModelSaved(modelName: string) {
   modelManagerRef.value?.refresh()
   modelManagerRef.value?.setSelected(modelName)
+  showTrainingModal.value = false
 }
 </script>
 
@@ -94,7 +100,25 @@ function handleModelSaved(modelName: string) {
       </div>
 
       <div mx-auto gap-4 max-w-7xl flex="~ col">
-        <!-- 第一行：绘图区 + 训练模块 -->
+        <!-- 第一行：模型列表 -->
+        <div p-6 rounded-lg bg-white shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
+          <div mb-4 flex items-center justify-between>
+            <h2 text-xl font-semibold dark:text-white>
+              模型列表
+            </h2>
+            <div flex gap-2>
+              <NButton @click="modelManagerRef?.handleImport()">
+                导入模型
+              </NButton>
+              <NButton type="primary" @click="showTrainingModal = true">
+                训练新模型
+              </NButton>
+            </div>
+          </div>
+          <ModelManager ref="modelManagerRef" @select="handleSelectModel" />
+        </div>
+
+        <!-- 第二行：绘图区 + 识别结果 -->
         <div gap-4 flex="~ col lg:row">
           <!-- 绘图区 -->
           <div p-6 rounded-lg bg-white flex-1 shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
@@ -104,34 +128,21 @@ function handleModelSaved(modelName: string) {
             <DrawingCanvas @update="handleDrawingUpdate" />
           </div>
 
-          <!-- 训练模块 -->
+          <!-- 识别结果 -->
           <div p-6 rounded-lg bg-white flex-1 shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
             <h2 text-xl font-semibold mb-4 dark:text-white>
-              模型训练
+              识别结果
             </h2>
-            <ModelControls @start-training="handleStartTraining" />
-            <div v-if="showTraining" mt-6>
-              <TrainingPanel @saved="handleModelSaved" />
-            </div>
+            <PredictionList :predictions="store.predictions" />
           </div>
         </div>
-
-        <!-- 第二行：识别结果 -->
-        <div p-6 rounded-lg bg-white shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
-          <h2 text-xl font-semibold mb-4 dark:text-white>
-            识别结果
-          </h2>
-          <PredictionList :predictions="store.predictions" />
-        </div>
-
-        <!-- 第三行：模型列表 -->
-        <div p-6 rounded-lg bg-white shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
-          <h2 text-xl font-semibold mb-4 dark:text-white>
-            模型列表
-          </h2>
-          <ModelManager ref="modelManagerRef" @select="handleSelectModel" />
-        </div>
       </div>
+
+      <!-- 训练弹窗 -->
+      <NModal v-model:show="showTrainingModal" preset="card" title="模型训练" w-800px>
+        <ModelControls @start-training="handleStartTraining" @model-loaded="handleDrawingUpdate(currentImageData)" />
+        <TrainingPanel @saved="handleModelSaved" />
+      </NModal>
     </NSpin>
   </div>
 </template>

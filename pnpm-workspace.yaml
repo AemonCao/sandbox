@@ -1,5 +1,7 @@
 packages: []
 
+catalog:
+  '@tensorflow/tfjs': ^4.22.0
 catalogs:
   build:
     '@iconify-json/carbon': ^1.2.14

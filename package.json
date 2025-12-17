@@ -15,6 +15,7 @@
     "postinstall": "npx simple-git-hooks"
   },
   "dependencies": {
+    "@tensorflow/tfjs": "catalog:",
     "@types/echarts": "catalog:dev",
     "@types/three": "catalog:dev",
     "@unhead/vue": "catalog:frontend",

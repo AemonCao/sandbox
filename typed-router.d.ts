@@ -93,6 +93,41 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/mnist-recognition/': RouteRecordInfo<
+      '/mnist-recognition/',
+      '/mnist-recognition',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/mnist-recognition/components/DrawingCanvas': RouteRecordInfo<
+      '/mnist-recognition/components/DrawingCanvas',
+      '/mnist-recognition/components/DrawingCanvas',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/mnist-recognition/components/ModelControls': RouteRecordInfo<
+      '/mnist-recognition/components/ModelControls',
+      '/mnist-recognition/components/ModelControls',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/mnist-recognition/components/PredictionList': RouteRecordInfo<
+      '/mnist-recognition/components/PredictionList',
+      '/mnist-recognition/components/PredictionList',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/mnist-recognition/components/TrainingPanel': RouteRecordInfo<
+      '/mnist-recognition/components/TrainingPanel',
+      '/mnist-recognition/components/TrainingPanel',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/positioning-algorithms/': RouteRecordInfo<
       '/positioning-algorithms/',
       '/positioning-algorithms',
@@ -198,6 +233,36 @@ declare module 'vue-router/auto-routes' {
     'src/pages/infusion-monitoring/index.vue': {
       routes:
         | '/infusion-monitoring/'
+      views:
+        | never
+    }
+    'src/pages/mnist-recognition/index.vue': {
+      routes:
+        | '/mnist-recognition/'
+      views:
+        | never
+    }
+    'src/pages/mnist-recognition/components/DrawingCanvas.vue': {
+      routes:
+        | '/mnist-recognition/components/DrawingCanvas'
+      views:
+        | never
+    }
+    'src/pages/mnist-recognition/components/ModelControls.vue': {
+      routes:
+        | '/mnist-recognition/components/ModelControls'
+      views:
+        | never
+    }
+    'src/pages/mnist-recognition/components/PredictionList.vue': {
+      routes:
+        | '/mnist-recognition/components/PredictionList'
+      views:
+        | never
+    }
+    'src/pages/mnist-recognition/components/TrainingPanel.vue': {
+      routes:
+        | '/mnist-recognition/components/TrainingPanel'
       views:
         | never
     }

@@ -22,7 +22,8 @@
       "Bash(pnpm list:*)",
       "Bash(gunzip:*)",
       "Bash(pnpm exec vue-tsc:*)",
-      "Bash(pnpm install:*)"
+      "Bash(pnpm install:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "ask": []

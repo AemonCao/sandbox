@@ -26,13 +26,13 @@ onMounted(loadModels)
 const columns = computed(() => [
   { title: '名称', key: 'name', width: 150, ellipsis: { tooltip: true } },
   { title: '开始时间', key: 'startTime', width: 160, render: (row: ModelMetadata) => new Date(row.startTime).toLocaleString() },
-  { title: '训练时长', key: 'totalTime', width: 100, render: (row: ModelMetadata) => `${(row.totalTime / 1000).toFixed(1)}s` },
-  { title: '轮次', key: 'epochs', width: 70 },
-  { title: '批次', key: 'batches', width: 70 },
-  { title: '训练损失', key: 'trainLoss', width: 100, render: (row: ModelMetadata) => row.trainLoss.toFixed(4) },
-  { title: '训练准确率', key: 'trainAccuracy', width: 110, render: (row: ModelMetadata) => `${(row.trainAccuracy * 100).toFixed(2)}%` },
-  { title: '验证损失', key: 'valLoss', width: 100, render: (row: ModelMetadata) => row.valLoss.toFixed(4) },
-  { title: '验证准确率', key: 'valAccuracy', width: 110, render: (row: ModelMetadata) => `${(row.valAccuracy * 100).toFixed(2)}%` },
+  { title: '训练时长', key: 'totalTime', width: 100, render: (row: ModelMetadata) => row.totalTime ? `${(row.totalTime / 1000).toFixed(1)}s` : '-' },
+  { title: '轮次', key: 'epochs', width: 70, render: (row: ModelMetadata) => row.epochs || '-' },
+  { title: '批次', key: 'batches', width: 70, render: (row: ModelMetadata) => row.batches || '-' },
+  { title: '训练损失', key: 'trainLoss', width: 100, render: (row: ModelMetadata) => row.trainLoss ? row.trainLoss.toFixed(4) : '-' },
+  { title: '训练准确率', key: 'trainAccuracy', width: 110, render: (row: ModelMetadata) => row.trainAccuracy ? `${(row.trainAccuracy * 100).toFixed(2)}%` : '-' },
+  { title: '验证损失', key: 'valLoss', width: 100, render: (row: ModelMetadata) => row.valLoss ? row.valLoss.toFixed(4) : '-' },
+  { title: '验证准确率', key: 'valAccuracy', width: 110, render: (row: ModelMetadata) => row.valAccuracy ? `${(row.valAccuracy * 100).toFixed(2)}%` : '-' },
   {
     title: '操作',
     key: 'actions',
@@ -53,7 +53,17 @@ async function handleExport(model: ModelMetadata) {
   try {
     const tfModel = await tf.loadLayersModel(`indexeddb://${model.name}`)
     await tfModel.save(`downloads://${model.name}`)
-    message.success('模型已导出')
+
+    // 导出元数据
+    const metadataBlob = new Blob([JSON.stringify(model, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(metadataBlob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${model.name}-metadata.json`
+    a.click()
+    URL.revokeObjectURL(url)
+
+    message.success('模型和元数据已导出')
   }
   catch {
     message.error('导出失败')
@@ -73,33 +83,50 @@ function handleImport() {
     try {
       const fileArray = Array.from(files)
 
-      // 验证文件
-      const hasModelJson = fileArray.some(f => f.name.endsWith('.json'))
-      const hasWeights = fileArray.some(f => f.name.endsWith('.bin'))
+      // 查找元数据文件
+      const metadataFile = fileArray.find(f => f.name.includes('metadata'))
+      const modelFiles = fileArray.filter(f => !f.name.includes('metadata'))
+
+      // 验证模型文件
+      const hasModelJson = modelFiles.some(f => f.name.endsWith('.json'))
+      const hasWeights = modelFiles.some(f => f.name.endsWith('.bin'))
 
       if (!hasModelJson || !hasWeights) {
         message.error('请选择完整的模型文件（model.json 和 .bin 文件）')
         return
       }
 
-      const model = await tf.loadLayersModel(tf.io.browserFiles(fileArray))
+      const model = await tf.loadLayersModel(tf.io.browserFiles(modelFiles))
       model.compile({
         optimizer: 'adam',
         loss: 'categoricalCrossentropy',
         metrics: ['accuracy'],
       })
-      const name = `mnist-model-imported-${Date.now()}`
 
-      const metadata: ModelMetadata = {
-        name,
-        startTime: new Date().toISOString(),
-        totalTime: 0,
-        epochs: 0,
-        batches: 0,
-        trainLoss: 0,
-        trainAccuracy: 0,
-        valLoss: 0,
-        valAccuracy: 0,
+      let metadata: ModelMetadata
+
+      // 如果有元数据文件，读取它
+      if (metadataFile) {
+        const metadataText = await metadataFile.text()
+        const importedMetadata = JSON.parse(metadataText)
+        metadata = {
+          ...importedMetadata,
+          name: `${importedMetadata.name}-imported-${Date.now()}`,
+        }
+      }
+      else {
+        // 没有元数据文件，创建默认元数据
+        metadata = {
+          name: `mnist-model-imported-${Date.now()}`,
+          startTime: new Date().toISOString(),
+          totalTime: 0,
+          epochs: 0,
+          batches: 0,
+          trainLoss: 0,
+          trainAccuracy: 0,
+          valLoss: 0,
+          valAccuracy: 0,
+        }
       }
 
       await saveModelWithMetadata(model, metadata)

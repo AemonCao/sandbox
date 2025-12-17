@@ -76,7 +76,7 @@ function handleTrainNew() {
       </NButton>
     </NSpace>
 
-    <div v-if="store.modelType" text-sm text-gray-600 mt-2>
+    <div v-if="store.modelType" text-sm text-gray-600 mt-2 dark:text-gray-400>
       <div>模型类型: {{ store.modelType === 'pretrained' ? '预训练' : '自定义' }}</div>
       <div v-if="store.modelMetadata.trainedAt">
         训练时间: {{ new Date(store.modelMetadata.trainedAt).toLocaleString() }}

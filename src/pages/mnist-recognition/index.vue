@@ -78,18 +78,18 @@ function handleModelSaved(modelName: string) {
 </script>
 
 <template>
-  <div p-4 min-h-screen from-blue-50 to-indigo-100 bg-gradient-to-br>
+  <div p-4 min-h-screen from-blue-50 to-indigo-100 bg-gradient-to-br dark:from-gray-900 dark:to-blue-900>
     <div mb-6>
-      <h1 text-3xl font-bold text-center>
+      <h1 text-3xl font-bold text-center dark:text-white>
         手写数字识别
       </h1>
-      <p text-gray-600 mt-2 text-center>
+      <p text-gray-600 mt-2 text-center dark:text-gray-300>
         使用神经网络识别手写数字 (MNIST)
       </p>
     </div>
 
     <NSpin :show="loading" description="初始化中...">
-      <div v-if="initError" text-red-600 mb-4 p-4 rounded-lg bg-red-50>
+      <div v-if="initError" text-red-600 mb-4 p-4 rounded-lg bg-red-50 dark:text-red-300 dark:bg-red-900>
         初始化错误: {{ initError }}
       </div>
 
@@ -97,16 +97,16 @@ function handleModelSaved(modelName: string) {
         <!-- 第一行：绘图区 + 训练模块 -->
         <div gap-4 flex="~ col lg:row">
           <!-- 绘图区 -->
-          <div p-6 rounded-lg bg-white flex-1 shadow-lg>
-            <h2 text-xl font-semibold mb-4>
+          <div p-6 rounded-lg bg-white flex-1 shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
+            <h2 text-xl font-semibold mb-4 dark:text-white>
               绘制数字
             </h2>
             <DrawingCanvas @update="handleDrawingUpdate" />
           </div>
 
           <!-- 训练模块 -->
-          <div p-6 rounded-lg bg-white flex-1 shadow-lg>
-            <h2 text-xl font-semibold mb-4>
+          <div p-6 rounded-lg bg-white flex-1 shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
+            <h2 text-xl font-semibold mb-4 dark:text-white>
               模型训练
             </h2>
             <ModelControls @start-training="handleStartTraining" />
@@ -117,16 +117,16 @@ function handleModelSaved(modelName: string) {
         </div>
 
         <!-- 第二行：识别结果 -->
-        <div p-6 rounded-lg bg-white shadow-lg>
-          <h2 text-xl font-semibold mb-4>
+        <div p-6 rounded-lg bg-white shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
+          <h2 text-xl font-semibold mb-4 dark:text-white>
             识别结果
           </h2>
           <PredictionList :predictions="store.predictions" />
         </div>
 
         <!-- 第三行：模型列表 -->
-        <div p-6 rounded-lg bg-white shadow-lg>
-          <h2 text-xl font-semibold mb-4>
+        <div p-6 rounded-lg bg-white shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
+          <h2 text-xl font-semibold mb-4 dark:text-white>
             模型列表
           </h2>
           <ModelManager ref="modelManagerRef" @select="handleSelectModel" />

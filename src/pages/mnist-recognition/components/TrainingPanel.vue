@@ -182,17 +182,17 @@ onUnmounted(() => {
 
 <template>
   <div flex flex-col gap-4>
-    <div p-4 rounded-lg bg-blue-50>
-      <h3 text-lg font-semibold mb-3>
+    <div p-4 rounded-lg bg-blue-50 dark:bg-blue-900>
+      <h3 text-lg font-semibold mb-3 dark:text-white>
         训练参数
       </h3>
       <NSpace vertical>
         <div flex gap-3 items-center>
-          <span w-24>训练轮数:</span>
+          <span w-24 dark:text-gray-200>训练轮数:</span>
           <NInputNumber v-model:value="epochs" :min="1" :max="50" />
         </div>
         <div flex gap-3 items-center>
-          <span w-24>批次大小:</span>
+          <span w-24 dark:text-gray-200>批次大小:</span>
           <NInputNumber v-model:value="batchSize" :min="32" :max="512" :step="32" />
         </div>
       </NSpace>
@@ -217,18 +217,18 @@ onUnmounted(() => {
       </NButton>
     </div>
 
-    <div v-if="loadingStage" mb-4 p-4 rounded-lg bg-blue-50>
-      <div text-sm mb-2>
+    <div v-if="loadingStage" mb-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-900>
+      <div text-sm mb-2 dark:text-gray-200>
         {{ loadingStage }}
       </div>
       <NProgress :percentage="loadingProgress" />
     </div>
 
-    <div v-if="store.isTraining || store.trainingProgress.epoch > 0" p-4 rounded-lg bg-gray-50>
-      <h3 text-lg font-semibold mb-3>
+    <div v-if="store.isTraining || store.trainingProgress.epoch > 0" p-4 rounded-lg bg-gray-50 dark:bg-gray-700>
+      <h3 text-lg font-semibold mb-3 dark:text-white>
         训练进度
       </h3>
-      <div text-sm flex flex-col gap-2>
+      <div text-sm flex flex-col gap-2 dark:text-gray-200>
         <div>当前轮次: {{ store.trainingProgress.epoch }} / {{ epochs }}</div>
         <div>当前批次: {{ store.trainingProgress.batch }}</div>
         <div>训练损失: {{ store.trainingProgress.loss.toFixed(4) }}</div>

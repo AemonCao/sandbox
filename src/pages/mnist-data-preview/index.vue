@@ -92,33 +92,33 @@ function jump() {
 </script>
 
 <template>
-  <div p-4 min-h-screen from-blue-50 to-indigo-100 bg-gradient-to-br>
+  <div p-4 min-h-screen from-blue-50 to-indigo-100 bg-gradient-to-br dark:from-gray-900 dark:to-blue-900>
     <div mb-6>
-      <h1 text-3xl font-bold text-center>
+      <h1 text-3xl font-bold text-center dark:text-white>
         MNIST 数据集预览
       </h1>
-      <p text-gray-600 mt-2 text-center>
+      <p text-gray-600 mt-2 text-center dark:text-gray-300>
         查看训练集图片和标签是否正确
       </p>
     </div>
 
-    <div mx-auto p-6 rounded-lg bg-white max-w-2xl shadow-lg>
+    <div mx-auto p-6 rounded-lg bg-white max-w-2xl shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
       <div flex flex-col gap-6 items-center>
         <!-- 画布 -->
         <canvas
           ref="canvasRef"
           width="280"
           height="280"
-          border="2 solid gray-300"
+          border="2 solid gray-300 dark:border-gray-600"
           rounded-lg
         />
 
         <!-- 标签显示 -->
         <div text-center>
-          <div text-sm text-gray-600>
+          <div text-sm text-gray-600 dark:text-gray-400>
             当前标签
           </div>
-          <div text-4xl text-blue-600 font-bold>
+          <div text-4xl text-blue-600 font-bold dark:text-blue-400>
             {{ label ?? '-' }}
           </div>
         </div>
@@ -147,7 +147,7 @@ function jump() {
         </div>
 
         <!-- 信息显示 -->
-        <div text-sm text-gray-600 text-center>
+        <div text-sm text-gray-600 text-center dark:text-gray-400>
           <div>当前索引: {{ currentIndex }}</div>
           <div v-if="labels">
             总数: {{ labels.length }}
@@ -155,7 +155,7 @@ function jump() {
         </div>
 
         <!-- 调试信息 -->
-        <div text-xs font-mono p-4 rounded bg-gray-100 w-full whitespace-pre-wrap>
+        <div text-xs font-mono p-4 rounded bg-gray-100 w-full whitespace-pre-wrap dark:text-gray-200 dark:bg-gray-700>
           {{ debugInfo }}
         </div>
       </div>

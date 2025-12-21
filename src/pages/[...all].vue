@@ -12,6 +12,9 @@ const { start, remaining } = useCountdown(countdownSeconds, {
   },
 })
 
+/**
+ * 返回首页
+ */
 function backIndex() {
   router.replace('/')
 }

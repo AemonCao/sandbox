@@ -67,6 +67,12 @@ const messageInfo = ref({
 const splitSize = ref(0.75)
 
 // 消息提示函数
+/**
+ * 显示消息提示
+ *
+ * @param {string} content 消息内容
+ * @param {'info'|'success'|'warning'|'error'} type 消息类型，默认为'info'
+ */
 function showMessage(content: string, type: 'info' | 'success' | 'warning' | 'error' = 'info'): void {
   messageInfo.value = {
     content,
@@ -78,15 +84,32 @@ function showMessage(content: string, type: 'info' | 'success' | 'warning' | 'er
   }, 3000)
 }
 
+/**
+ * 显示错误消息
+ *
+ * @param {string} message 错误消息内容
+ */
 function showError(message: string): void {
   showMessage(message, 'error')
 }
 
+/**
+ * 显示成功消息
+ *
+ * @param {string} message 成功消息内容
+ */
 function showSuccess(message: string): void {
   showMessage(message, 'success')
 }
 
 // 画布事件处理
+/**
+ * 处理画布对象点击事件
+ *
+ * @param {any} object 被点击的对象
+ * @param {string} object.id 对象ID
+ * @param {string} object.type 对象类型
+ */
 function handleObjectClick(object: any): void {
   if (!object) {
     clearSelection()
@@ -110,6 +133,13 @@ function handleObjectClick(object: any): void {
   setMultiSelection(selectedObjects.value)
 }
 
+/**
+ * 处理对象拖拽事件
+ *
+ * @param {any} object 被拖拽的对象
+ * @param {number} deltaX X轴移动距离
+ * @param {number} deltaY Y轴移动距离
+ */
 function handleObjectDrag(object: any, deltaX: number, deltaY: number): void {
   if (selectedObjects.value.length > 1) {
     // 多选拖拽 - 移动所有选中的对象
@@ -125,19 +155,35 @@ function handleObjectDrag(object: any, deltaX: number, deltaY: number): void {
   }
 }
 
+/**
+ * 处理多选事件
+ *
+ * @param {any[]} objects 选中的对象数组
+ */
 function handleMultiSelect(objects: any[]): void {
   setMultiSelection(objects)
 }
 
+/**
+ * 处理对象删除事件
+ *
+ * @param {any} object 要删除的对象
+ */
 function handleObjectDelete(object: any): void {
   deleteObject(object)
 }
 
 // 控制面板事件处理
+/**
+ * 清除所有选中对象
+ */
 function handleClearSelection(): void {
   clearSelection()
 }
 
+/**
+ * 删除选中的对象
+ */
 function handleDeleteSelected(): void {
   if (selectedObjects.value.length > 0) {
     deleteMultipleObjects(selectedObjects.value)
@@ -148,6 +194,9 @@ function handleDeleteSelected(): void {
 }
 
 // 数据导入导出功能
+/**
+ * 导出当前场景数据为JSON文件
+ */
 function exportScene(): void {
   try {
     const sceneData = {
@@ -189,6 +238,9 @@ function exportScene(): void {
   }
 }
 
+/**
+ * 从JSON文件导入场景数据
+ */
 function importScene(): void {
   const input = document.createElement('input')
   input.type = 'file'
@@ -253,6 +305,11 @@ function importScene(): void {
 }
 
 // 加载预设场景
+/**
+ * 加载预设场景
+ *
+ * @param {string} sceneType 场景类型
+ */
 function loadPresetScene(sceneType: string): void {
   loadPresetSceneFromComposable(sceneType, {
     clearAll: () => {
@@ -288,6 +345,9 @@ function loadPresetScene(sceneType: string): void {
 }
 
 // 本地存储功能
+/**
+ * 保存场景数据到本地存储
+ */
 function saveToLocalStorage(): void {
   try {
     const sceneData = {
@@ -316,6 +376,9 @@ function saveToLocalStorage(): void {
   }
 }
 
+/**
+ * 从本地存储加载场景数据
+ */
 function loadFromLocalStorage(): void {
   try {
     const savedData = localStorage.getItem('ibeacon-scene')

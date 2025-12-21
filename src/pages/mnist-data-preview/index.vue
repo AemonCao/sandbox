@@ -8,7 +8,7 @@ const debugInfo = ref('')
 
 onMounted(async () => {
   // 加载标签文件
-  const response = await fetch('/data/train-labels-idx1-ubyte')
+  const response = await fetch('https://iot.ipalmap.com/uploads/data/train-labels-idx1-ubyte')
   const buffer = await response.arrayBuffer()
   const data = new Uint8Array(buffer)
   labels.value = data.slice(8)
@@ -17,7 +17,7 @@ onMounted(async () => {
   debugInfo.value += `前10个标签: ${Array.from(labels.value.slice(0, 10)).join(', ')}\n`
 
   // 加载图片
-  const imgResponse = await fetch('/data/train-images-idx3-ubyte')
+  const imgResponse = await fetch('https://iot.ipalmap.com/uploads/data/train-images-idx3-ubyte')
   const imgBuffer = await imgResponse.arrayBuffer()
   imgData.value = new Uint8Array(imgBuffer)
 

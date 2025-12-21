@@ -25,8 +25,8 @@ globalThis.onmessage = async (e: MessageEvent<{ maxImages: number }>) => {
     postMessage({ type: 'progress', stage: 'fetching', progress: 0 } as LoadProgress)
 
     const [imagesBuffer, labelsBuffer] = await Promise.all([
-      fetch('/data/train-images-idx3-ubyte').then(r => r.arrayBuffer()),
-      fetch('/data/train-labels-idx1-ubyte').then(r => r.arrayBuffer()),
+      fetch('https://iot.ipalmap.com/uploads/data/train-images-idx3-ubyte').then(r => r.arrayBuffer()),
+      fetch('https://iot.ipalmap.com/uploads/data/train-labels-idx1-ubyte').then(r => r.arrayBuffer()),
     ])
 
     postMessage({ type: 'progress', stage: 'fetching', progress: 100 } as LoadProgress)

@@ -1,5 +1,13 @@
 import type { Beacon, Client } from './types'
 
+/**
+ * 提供iBeacon定位相关的计算功能
+ *
+ * @return {object} 计算函数集合
+ * @return {Function} return.calculateReceivedRSSI 计算接收到的RSSI值
+ * @return {Function} return.calculate3DDistanceFromRSSI 根据RSSI计算3D距离
+ * @return {Function} return.calculate2DDistance 计算2D平面距离
+ */
 export function useCalculations() {
   // 记忆化优化 - 缓存RSSI计算结果
   const cachedRSSICalculation = (() => {
@@ -28,11 +36,28 @@ export function useCalculations() {
     }
   })()
 
-  // 核心计算函数
+  /**
+   * 计算客户端接收到的RSSI值（带缓存优化）
+   *
+   * @param {Beacon} beacon 信标对象
+   * @param {Client} client 客户端对象
+   * @param {number} scale 缩放比例
+   * @param {number} beaconN 路径损耗指数
+   * @return {number} 计算得到的RSSI值
+   */
   function calculateReceivedRSSI(beacon: Beacon, client: Client, scale: number, beaconN: number): number {
     return cachedRSSICalculation(beacon, client, scale, beaconN)
   }
 
+  /**
+   * 执行RSSI计算（无缓存）
+   *
+   * @param {Beacon} beacon 信标对象
+   * @param {Client} client 客户端对象
+   * @param {number} scale 缩放比例
+   * @param {number} beaconN 路径损耗指数
+   * @return {number} 计算得到的RSSI值
+   */
   function performRSSICalculation(beacon: Beacon, client: Client, scale: number, beaconN: number): number {
     try {
       // 参数验证
@@ -69,6 +94,14 @@ export function useCalculations() {
     }
   }
 
+  /**
+   * 根据RSSI值计算3D空间距离
+   *
+   * @param {Beacon} beacon 信标对象
+   * @param {number} rssi 接收信号强度指示
+   * @param {number} beaconN 路径损耗指数
+   * @return {number} 3D空间距离（米）
+   */
   function calculate3DDistanceFromRSSI(beacon: Beacon, rssi: number, beaconN: number): number {
     try {
       // 参数验证
@@ -98,6 +131,13 @@ export function useCalculations() {
     }
   }
 
+  /**
+   * 根据3D距离和高度差计算2D平面距离
+   *
+   * @param {number} distance3D 3D空间距离
+   * @param {number} heightDiff 高度差
+   * @return {number} 2D平面距离（米）
+   */
   function calculate2DDistance(distance3D: number, heightDiff: number): number {
     try {
       // 参数验证

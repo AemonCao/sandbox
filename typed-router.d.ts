@@ -177,6 +177,41 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/sensor-dashboard/': RouteRecordInfo<
+      '/sensor-dashboard/',
+      '/sensor-dashboard',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/sensor-dashboard/components/DeviceTypeIndicator': RouteRecordInfo<
+      '/sensor-dashboard/components/DeviceTypeIndicator',
+      '/sensor-dashboard/components/DeviceTypeIndicator',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/sensor-dashboard/components/PermissionButton': RouteRecordInfo<
+      '/sensor-dashboard/components/PermissionButton',
+      '/sensor-dashboard/components/PermissionButton',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/sensor-dashboard/components/SensorCard': RouteRecordInfo<
+      '/sensor-dashboard/components/SensorCard',
+      '/sensor-dashboard/components/SensorCard',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/sensor-dashboard/components/SensorGrid': RouteRecordInfo<
+      '/sensor-dashboard/components/SensorGrid',
+      '/sensor-dashboard/components/SensorGrid',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
   }
 
   /**
@@ -319,6 +354,36 @@ declare module 'vue-router/auto-routes' {
     'src/pages/positioning-algorithms/components/TestPanel.vue': {
       routes:
         | '/positioning-algorithms/components/TestPanel'
+      views:
+        | never
+    }
+    'src/pages/sensor-dashboard/index.vue': {
+      routes:
+        | '/sensor-dashboard/'
+      views:
+        | never
+    }
+    'src/pages/sensor-dashboard/components/DeviceTypeIndicator.vue': {
+      routes:
+        | '/sensor-dashboard/components/DeviceTypeIndicator'
+      views:
+        | never
+    }
+    'src/pages/sensor-dashboard/components/PermissionButton.vue': {
+      routes:
+        | '/sensor-dashboard/components/PermissionButton'
+      views:
+        | never
+    }
+    'src/pages/sensor-dashboard/components/SensorCard.vue': {
+      routes:
+        | '/sensor-dashboard/components/SensorCard'
+      views:
+        | never
+    }
+    'src/pages/sensor-dashboard/components/SensorGrid.vue': {
+      routes:
+        | '/sensor-dashboard/components/SensorGrid'
       views:
         | never
     }

@@ -49,6 +49,11 @@ onMounted(async () => {
   }
 })
 
+/**
+ * 处理绘图更新事件，触发预测
+ *
+ * @param {number[]} imageData 图像数据数组
+ */
 function handleDrawingUpdate(imageData: number[]) {
   currentImageData.value = imageData
   if (imageData.length > 0) {
@@ -59,10 +64,18 @@ function handleDrawingUpdate(imageData: number[]) {
   }
 }
 
+/**
+ * 打开训练模态框
+ */
 function handleStartTraining() {
   showTrainingModal.value = true
 }
 
+/**
+ * 加载选中的模型
+ *
+ * @param {string} name 模型名称
+ */
 async function handleSelectModel(name: string) {
   const success = await loadModel(name)
   if (success) {
@@ -76,6 +89,11 @@ async function handleSelectModel(name: string) {
   }
 }
 
+/**
+ * 模型保存后刷新模型列表
+ *
+ * @param {string} modelName 保存的模型名称
+ */
 function handleModelSaved(modelName: string) {
   modelManagerRef.value?.refresh()
   modelManagerRef.value?.setSelected(modelName)

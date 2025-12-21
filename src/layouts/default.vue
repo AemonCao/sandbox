@@ -18,7 +18,7 @@ const isHomePage = computed(() => router.currentRoute.value.path === '/')
 </script>
 
 <template>
-  <div flex flex-col min-h-screen relative>
+  <div flex flex-col h-screen relative>
     <!-- 返回按钮 -->
     <button
       v-if="!isHomePage"
@@ -46,7 +46,7 @@ const isHomePage = computed(() => router.currentRoute.value.path === '/')
     <div flex-1>
       <RouterView />
     </div>
-    <footer text-sm text-gray-500 py-4 text-center border-t border-gray-200 dark:border-gray-700>
+    <footer text-xs text-gray-400 py-2 text-center border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900>
       <div>构建时间: {{ buildTime }}</div>
       <div>
         Commit: <a :href="commitUrl" target="_blank" text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300>{{ commitId }}</a>

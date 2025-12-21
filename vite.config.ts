@@ -17,7 +17,7 @@ import Layouts from 'vite-plugin-vue-layouts'
 
 function getGitCommitId() {
   try {
-    return execSync('git rev-parse --short HEAD').toString().trim()
+    return execSync('git rev-parse HEAD').toString().trim()
   }
   catch {
     return 'unknown'

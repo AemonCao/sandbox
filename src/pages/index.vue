@@ -25,6 +25,11 @@ interface RouteInfo {
 // 扁平化路由，获取所有有效的页面路由
 const pageRoutes: RouteInfo[] = []
 
+/**
+ * 扁平化并提取所有有效的页面路由
+ *
+ * @param {readonly RouteRecordRaw[]} routeList 路由列表
+ */
 function extractRoutes(routeList: readonly RouteRecordRaw[]) {
   routeList.forEach((route: any) => {
     // 处理有children的路由（通常是布局路由）

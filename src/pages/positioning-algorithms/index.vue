@@ -63,6 +63,9 @@ const visualizationMode = ref('overlay')
 const showBeaconCoverage = ref(true)
 const showTestPaths = ref(false)
 
+/**
+ * 清除所有测试数据
+ */
 function clearData() {
   beacons.value = []
   testPoints.value = []
@@ -72,6 +75,11 @@ function clearData() {
   })
 }
 
+/**
+ * 加载预设测试场景
+ *
+ * @param {string} _sceneType 场景类型
+ */
 function loadPresetData(_sceneType: string) {
   // 临时实现 - 可以根据sceneType加载不同的预设数据
 }
@@ -160,14 +168,30 @@ const statistics = computed(() => {
 })
 
 // 事件处理
+/**
+ * 处理算法切换事件
+ *
+ * @param {string} algorithm 算法名称
+ */
 function handleAlgorithmChange(algorithm: string) {
   selectedAlgorithm.value = algorithm
 }
 
+/**
+ * 处理可视化模式切换事件
+ *
+ * @param {string} mode 可视化模式
+ */
 function handleVisualizationChange(mode: string) {
   visualizationMode.value = mode
 }
 
+/**
+ * 处理算法配置变更事件
+ *
+ * @param {string} algorithm 算法名称
+ * @param {any} config 配置对象
+ */
 function handleConfigChange(algorithm: string, config: any) {
   if (algorithm in algorithmConfigs.value) {
     algorithmConfigs.value[algorithm as keyof typeof algorithmConfigs.value] = {
@@ -179,10 +203,16 @@ function handleConfigChange(algorithm: string, config: any) {
   startComparison()
 }
 
+/**
+ * 运行自动化测试
+ */
 function handleRunTest() {
   runAutomatedTest(activeTestScenario.value)
 }
 
+/**
+ * 生成并导出对比报告
+ */
 function handleGenerateReport() {
   const report = generateComparisonReport()
   if (report) {
@@ -198,6 +228,9 @@ function handleGenerateReport() {
 }
 
 // 自动保存功能
+/**
+ * 保存数据到本地存储
+ */
 function saveToLocalStorage() {
   const data = {
     beacons: beacons.value,
@@ -210,6 +243,9 @@ function saveToLocalStorage() {
   localStorage.setItem('positioning-algorithms-data', JSON.stringify(data))
 }
 
+/**
+ * 从本地存储加载数据
+ */
 function loadFromLocalStorage() {
   try {
     const savedData = localStorage.getItem('positioning-algorithms-data')

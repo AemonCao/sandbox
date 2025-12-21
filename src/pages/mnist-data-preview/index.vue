@@ -26,6 +26,9 @@ onMounted(async () => {
   drawImage()
 })
 
+/**
+ * 在画布上渲染当前图像
+ */
 function drawImage() {
   if (!canvasRef.value || !labels.value || !imgData.value)
     return
@@ -72,6 +75,9 @@ function drawImage() {
   label.value = labels.value[currentIndex.value]
 }
 
+/**
+ * 显示上一张图像
+ */
 function prev() {
   if (currentIndex.value > 0) {
     currentIndex.value--
@@ -79,6 +85,9 @@ function prev() {
   }
 }
 
+/**
+ * 显示下一张图像
+ */
 function next() {
   if (labels.value && currentIndex.value < labels.value.length - 1) {
     currentIndex.value++
@@ -86,6 +95,9 @@ function next() {
   }
 }
 
+/**
+ * 跳转到指定索引的图像
+ */
 function jump() {
   drawImage()
 }

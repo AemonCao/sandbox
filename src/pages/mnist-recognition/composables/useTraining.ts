@@ -19,6 +19,8 @@ export function useTraining() {
   async function loadMnistData(onProgress?: (stage: string, progress: number, loaded?: number, total?: number) => void) {
     return new Promise<{ images: tf.Tensor4D, labels: tf.Tensor2D }>((resolve, reject) => {
       const worker = new DataLoaderWorker()
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+      const maxImages = isMobile ? 1000 : 5000
 
       worker.onmessage = (e: MessageEvent<LoadProgress | LoadComplete | LoadError>) => {
         const msg = e.data
@@ -43,7 +45,7 @@ export function useTraining() {
         reject(error)
       }
 
-      worker.postMessage({ maxImages: 5000 })
+      worker.postMessage({ maxImages })
     })
   }
 

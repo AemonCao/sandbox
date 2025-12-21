@@ -1,5 +1,6 @@
 /// <reference types="vitest" />
 
+import { execSync } from 'node:child_process'
 import path from 'node:path'
 import { unheadVueComposablesImports } from '@unhead/vue'
 import Vue from '@vitejs/plugin-vue'
@@ -14,8 +15,25 @@ import { defineConfig } from 'vite'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import Layouts from 'vite-plugin-vue-layouts'
 
+function getGitCommitId() {
+  try {
+    return execSync('git rev-parse --short HEAD').toString().trim()
+  }
+  catch {
+    return 'unknown'
+  }
+}
+
+function getBuildTime() {
+  return new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })
+}
+
 export default defineConfig({
   base: './',
+  define: {
+    __BUILD_TIME__: JSON.stringify(getBuildTime()),
+    __GIT_COMMIT_ID__: JSON.stringify(getGitCommitId()),
+  },
   resolve: {
     alias: {
       '~/': `${path.resolve(__dirname, 'src')}/`,

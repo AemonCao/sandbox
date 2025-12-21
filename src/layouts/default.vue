@@ -9,10 +9,14 @@ watchEffect(() => {
       : import.meta.env.VITE_APP_NAME,
   })
 })
+
+const buildTime = __BUILD_TIME__
+const commitId = __GIT_COMMIT_ID__
+const commitUrl = `${import.meta.env.VITE_GIT_REPO_URL}/commit/${commitId}`
 </script>
 
 <template>
-  <div min-h-screen relative>
+  <div flex flex-col min-h-screen relative>
     <!-- 主题切换按钮 -->
     <button
       z="1000"
@@ -25,7 +29,15 @@ watchEffect(() => {
       <span v-if="isDark" text-xl leading-none>🌙</span>
       <span v-else text-xl leading-none>☀️</span>
     </button>
-    <RouterView />
+    <div flex-1>
+      <RouterView />
+    </div>
+    <footer text-sm text-gray-500 py-4 text-center border-t border-gray-200 dark:border-gray-700>
+      <div>构建时间: {{ buildTime }}</div>
+      <div>
+        Commit: <a :href="commitUrl" target="_blank" text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300>{{ commitId }}</a>
+      </div>
+    </footer>
   </div>
 </template>
 

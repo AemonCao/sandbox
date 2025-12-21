@@ -25,7 +25,8 @@
       "Bash(pnpm install:*)",
       "Bash(git fetch:*)",
       "Bash(grep:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []

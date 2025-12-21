@@ -52,6 +52,15 @@ export interface ComparisonResults {
   standardDeviation: number
 }
 
+/**
+ * 提供多算法定位引擎对比功能
+ *
+ * @param {any} beacons 信标数组
+ * @param {any} testPoints 测试点数组
+ * @param {any} truePositions 真实位置数组
+ * @param {any} algorithmResults 算法结果对象
+ * @return {object} 对比分析功能集合
+ */
 export function useAlgorithmComparison(
   beacons: any,
   testPoints: any,
@@ -114,10 +123,15 @@ export function useAlgorithmComparison(
     })).sort((a, b) => a.averageError - b.averageError)
   })
 
-  // 三角定位算法
+  /**
+   * 三角定位算法实现
+   *
+   * @param {Beacon[]} beacons 信标数组
+   * @param {Record<string, number>} rssiData RSSI数据映射
+   * @return {AlgorithmResult} 算法执行结果
+   */
   function trilateration(beacons: Beacon[], rssiData: Record<string, number>): AlgorithmResult {
     const startTime = performance.now()
-    const positions: Position[] = []
 
     // 过滤有效信标
     const validBeacons = beacons.filter(beacon =>
@@ -157,7 +171,7 @@ export function useAlgorithmComparison(
         confidence: calculateConfidence(distances),
       }
     }
-    catch (error) {
+    catch {
       return {
         algorithm: 'trilateration',
         position: { x: 0, y: 0 },
@@ -168,7 +182,13 @@ export function useAlgorithmComparison(
     }
   }
 
-  // 指纹定位算法
+  /**
+   * 指纹定位算法实现
+   *
+   * @param {TestPoint} testPoint 测试点
+   * @param {Array<{x: number, y: number, rssi: Record<string, number>}>} fingerprintDB 指纹数据库
+   * @return {AlgorithmResult} 算法执行结果
+   */
   function fingerprinting(testPoint: TestPoint, fingerprintDB: Array<{ x: number, y: number, rssi: Record<string, number> }>): AlgorithmResult {
     const startTime = performance.now()
 
@@ -230,7 +250,13 @@ export function useAlgorithmComparison(
     }
   }
 
-  // 质心算法
+  /**
+   * 质心算法实现
+   *
+   * @param {Beacon[]} beacons 信标数组
+   * @param {Record<string, number>} rssiData RSSI数据映射
+   * @return {AlgorithmResult} 算法执行结果
+   */
   function centroid(beacons: Beacon[], rssiData: Record<string, number>): AlgorithmResult {
     const startTime = performance.now()
 
@@ -260,7 +286,14 @@ export function useAlgorithmComparison(
     }
   }
 
-  // 加权质心算法
+  /**
+   * 加权质心算法实现
+   *
+   * @param {Beacon[]} beacons 信标数组
+   * @param {Record<string, number>} rssiData RSSI数据映射
+   * @param {number} signalPower 信号功率参数
+   * @return {AlgorithmResult} 算法执行结果
+   */
   function weightedCentroid(beacons: Beacon[], rssiData: Record<string, number>, signalPower: number = 2.0): AlgorithmResult {
     const startTime = performance.now()
 
@@ -303,7 +336,14 @@ export function useAlgorithmComparison(
     }
   }
 
-  // 卡尔曼滤波算法
+  /**
+   * 卡尔曼滤波算法实现
+   *
+   * @param {Position[]} measurements 测量位置数组
+   * @param {number} processNoise 过程噪声
+   * @param {number} measurementNoise 测量噪声
+   * @return {AlgorithmResult} 算法执行结果
+   */
   function kalmanFilter(measurements: Position[], processNoise: number = 0.1, measurementNoise: number = 1.0): AlgorithmResult {
     const startTime = performance.now()
 
@@ -413,7 +453,14 @@ export function useAlgorithmComparison(
     }
   }
 
-  // 粒子滤波算法
+  /**
+   * 粒子滤波算法实现
+   *
+   * @param {Beacon[]} beacons 信标数组
+   * @param {Record<string, number>} rssiData RSSI数据映射
+   * @param {number} particleCount 粒子数量
+   * @return {AlgorithmResult} 算法执行结果
+   */
   function particleFilter(beacons: Beacon[], rssiData: Record<string, number>, particleCount: number = 100): AlgorithmResult {
     const startTime = performance.now()
 
@@ -499,16 +546,38 @@ export function useAlgorithmComparison(
     }
   }
 
-  // 辅助函数
+  /**
+   * 根据RSSI计算距离
+   *
+   * @param {number} rssi 接收信号强度指示
+   * @param {number} txPower 发射功率
+   * @param {number} n 路径损耗指数
+   * @return {number} 计算得到的距离
+   */
   function calculateDistance(rssi: number, txPower: number, n: number): number {
     return 10 ** ((txPower - rssi) / (10 * n))
   }
 
+  /**
+   * 根据位置和信标计算RSSI
+   *
+   * @param {Position} position 位置坐标
+   * @param {Beacon} beacon 信标对象
+   * @param {number} txPower 发射功率
+   * @param {number} n 路径损耗指数
+   * @return {number} 计算得到的RSSI值
+   */
   function calculateRssi(position: Position, beacon: Beacon, txPower: number, n: number): number {
     const distance = Math.sqrt((position.x - beacon.x) ** 2 + (position.y - beacon.y) ** 2)
     return txPower - 10 * n * Math.log10(distance)
   }
 
+  /**
+   * 计算定位置信度
+   *
+   * @param {Array<{beacon: Beacon, distance: number}>} distances 信标距离数组
+   * @return {number} 置信度值（0-100）
+   */
   function calculateConfidence(distances: Array<{ beacon: Beacon, distance: number }>): number {
     if (distances.length === 0)
       return 0
@@ -519,6 +588,12 @@ export function useAlgorithmComparison(
     return Math.max(0, 100 - Math.sqrt(variance))
   }
 
+  /**
+   * 最小二乘法三角定位
+   *
+   * @param {Array<{beacon: Beacon, distance: number}>} distances 信标距离数组
+   * @return {Position} 计算得到的位置坐标
+   */
   function leastSquaresTrilateration(distances: Array<{ beacon: Beacon, distance: number }>): Position {
     if (distances.length < 2) {
       return { x: 0, y: 0 }
@@ -577,7 +652,11 @@ export function useAlgorithmComparison(
     }
   }
 
-  // 开始对比计算
+  /**
+   * 开始算法对比计算
+   *
+   * @return {Promise<void>}
+   */
   async function startComparison() {
     isCalculating.value = true
 
@@ -648,12 +727,17 @@ export function useAlgorithmComparison(
     }
   }
 
-  // 计算对比结果
+  /**
+   * 计算算法对比结果统计
+   *
+   * @param {Record<string, AlgorithmResult[]>} results 各算法的结果数组
+   * @return {ComparisonResults} 对比结果统计数据
+   */
   function calculateComparisonResults(results: Record<string, AlgorithmResult[]>): ComparisonResults {
     const algorithms: Record<string, any> = {}
     let totalTests = 0
     let totalError = 0
-    let allErrors: number[] = []
+    const allErrors: number[] = []
 
     Object.entries(results).forEach(([algorithm, algorithmResults]) => {
       const errors = algorithmResults.map(r => r.error).filter(e => e < Infinity)
@@ -715,7 +799,11 @@ export function useAlgorithmComparison(
     }
   }
 
-  // 生成对比报告
+  /**
+   * 生成算法对比报告（Markdown格式）
+   *
+   * @return {string} Markdown格式的对比报告
+   */
   function generateComparisonReport(): string {
     if (!comparisonResults.value)
       return ''
@@ -783,7 +871,11 @@ ${Object.entries(comparisonResults.value.algorithms).map(([algorithm, metrics]) 
     return report
   }
 
-  // 导出结果
+  /**
+   * 导出对比结果为JSON文件
+   *
+   * @return {void}
+   */
   function exportResults() {
     if (!comparisonResults.value)
       return

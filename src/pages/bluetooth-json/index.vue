@@ -81,6 +81,12 @@ interface ParsedPacket {
 }
 
 // 解析单个广播包
+/**
+ * 数据包解析主入口
+ *
+ * @param {string} hexString 十六进制字符串
+ * @return {ParsedPacket} 解析后的数据包对象
+ */
 function parsePacket(hexString: string): ParsedPacket {
   // 移除空格和换行符
   const cleanHex = hexString.replace(/\s+/g, '').toLowerCase()
@@ -124,6 +130,12 @@ function parsePacket(hexString: string): ParsedPacket {
 }
 
 // 解析扫描返回包 (04开头)
+/**
+ * 处理 0x04 扫描响应包
+ *
+ * @param {string} hexString 十六进制字符串
+ * @return {ParsedPacket} 解析后的数据包对象
+ */
 function parseScanResponsePacket(hexString: string): ParsedPacket {
   const cleanHex = hexString.replace(/\s+/g, '').toLowerCase()
 
@@ -182,6 +194,12 @@ function parseScanResponsePacket(hexString: string): ParsedPacket {
 }
 
 // 解析扫描返回包内容
+/**
+ * 从扫描响应数据提取字段
+ *
+ * @param {string} hexData 十六进制数据字符串
+ * @return {ParsedContent} 解析后的内容对象
+ */
 function parseScanResponseContent(hexData: string): ParsedContent {
   const parsed: ParsedContent = {
     adStructures: [],
@@ -353,6 +371,12 @@ function parseScanResponseContent(hexData: string): ParsedContent {
 }
 
 // 十六进制字符串转ASCII字符串
+/**
+ * 十六进制转 ASCII 字符串
+ *
+ * @param {string} hex 十六进制字符串
+ * @return {string} ASCII 字符串
+ */
 function hexToString(hex: string): string {
   let result = ''
   for (let i = 0; i < hex.length; i += 2) {
@@ -365,6 +389,12 @@ function hexToString(hex: string): string {
 }
 
 // 计算电量百分比 (2.6V~3.65V线性范围)
+/**
+ * 从电压计算电池百分比
+ *
+ * @param {number} voltage 电压值（伏特）
+ * @return {number} 电池百分比 (0-100)
+ */
 function calculateBatteryPercentage(voltage: number): number {
   const minVoltage = 2.6
   const maxVoltage = 3.65
@@ -382,6 +412,12 @@ function calculateBatteryPercentage(voltage: number): number {
 }
 
 // 解析普通广播包
+/**
+ * 处理标准 BLE 广告包
+ *
+ * @param {string} hexString 十六进制字符串
+ * @return {ParsedPacket} 解析后的数据包对象
+ */
 function parseNormalAdvertisementPacket(hexString: string): ParsedPacket {
   const cleanHex = hexString.replace(/\s+/g, '').toLowerCase()
 
@@ -470,6 +506,12 @@ const adTypeDescriptions: Record<string, string> = {
 }
 
 // 解析广播包内容
+/**
+ * 从广告数据解析 AD 结构
+ *
+ * @param {string} content 广告数据内容
+ * @return {ParsedContent} 解析后的内容对象
+ */
 function parsePacketContent(content: string): ParsedContent {
   const parsed: ParsedContent = {
     adStructures: [],
@@ -728,6 +770,9 @@ const filteredResults = computed(() => {
 })
 
 // 添加广播包
+/**
+ * 添加数据包（支持 JSON 数组或换行分隔）
+ */
 function addPackets() {
   let dataArray: string[] = []
 
@@ -757,17 +802,30 @@ function addPackets() {
 }
 
 // 删除广播包
+/**
+ * 按索引删除数据包
+ *
+ * @param {number} index 数据包索引
+ */
 function removePacket(index: number) {
   packets.value.splice(index, 1)
 }
 
 // 清空所有
+/**
+ * 清除所有数据包和输入
+ */
 function clearAll() {
   packets.value = []
   inputText.value = ''
 }
 
 // 滚动到指定广播包
+/**
+ * 滚动到结果中的特定数据包
+ *
+ * @param {number} index 数据包索引
+ */
 function scrollToPacket(index: number) {
   const element = document.getElementById(`packet-${index}`)
   if (element) {
@@ -776,6 +834,9 @@ function scrollToPacket(index: number) {
 }
 
 // 滚动到顶部
+/**
+ * 滚动结果到顶部
+ */
 function scrollToTop() {
   const container = document.querySelector('.overflow-y-auto')
   if (container) {
@@ -792,6 +853,12 @@ const typeDescriptions: Record<string, string> = {
   4: 'Scan Response (扫描响应)',
 }
 
+/**
+ * 映射广告类型代码到描述
+ *
+ * @param {string} type 类型代码（十六进制字符串）
+ * @return {string} 类型描述
+ */
 function getTypeDescription(type: string): string {
   // 将十六进制字符串转换为数字，然后查找对应的描述
   const typeCode = Number.parseInt(type, 16)
@@ -799,6 +866,9 @@ function getTypeDescription(type: string): string {
 }
 
 // 重置过滤器
+/**
+ * 重置过滤器状态
+ */
 function resetFilters() {
   filters.value = {
     packetType: '',

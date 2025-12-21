@@ -21,6 +21,7 @@ export function useTraining() {
       const worker = new DataLoaderWorker()
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
       const maxImages = isMobile ? 1000 : 5000
+      const isDev = import.meta.env.DEV
 
       worker.onmessage = (e: MessageEvent<LoadProgress | LoadComplete | LoadError>) => {
         const msg = e.data
@@ -45,7 +46,7 @@ export function useTraining() {
         reject(error)
       }
 
-      worker.postMessage({ maxImages })
+      worker.postMessage({ maxImages, isDev })
     })
   }
 

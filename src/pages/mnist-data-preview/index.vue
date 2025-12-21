@@ -5,25 +5,84 @@ const labels = ref<Uint8Array | null>(null)
 const imgData = ref<Uint8Array | null>(null)
 const canvasRef = ref<HTMLCanvasElement>()
 const debugInfo = ref('')
+const loading = ref(true)
+const progress = ref(0)
+const loadedSize = ref(0)
+const totalSize = ref(0)
+
+function formatBytes(bytes: number) {
+  return (bytes / 1024 / 1024).toFixed(2)
+}
+
+async function fetchWithProgress(url: string, onProgress: (percent: number, loaded: number, total: number) => void) {
+  const response = await fetch(url)
+  const reader = response.body!.getReader()
+  const contentLength = Number(response.headers.get('Content-Length'))
+
+  let receivedLength = 0
+  const chunks: Uint8Array[] = []
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done)
+      break
+
+    chunks.push(value)
+    receivedLength += value.length
+    onProgress((receivedLength / contentLength) * 100, receivedLength, contentLength)
+  }
+
+  const allChunks = new Uint8Array(receivedLength)
+  let position = 0
+  for (const chunk of chunks) {
+    allChunks.set(chunk, position)
+    position += chunk.length
+  }
+
+  return allChunks.buffer
+}
 
 onMounted(async () => {
-  // 加载标签文件
-  const response = await fetch('https://iot.ipalmap.com/uploads/data/train-labels-idx1-ubyte')
-  const buffer = await response.arrayBuffer()
-  const data = new Uint8Array(buffer)
-  labels.value = data.slice(8)
+  try {
+    loading.value = true
 
-  debugInfo.value = `标签文件大小: ${labels.value.length} 个标签\n`
-  debugInfo.value += `前10个标签: ${Array.from(labels.value.slice(0, 10)).join(', ')}\n`
+    const isDev = import.meta.env.DEV
+    const labelsUrl = isDev ? '/data/train-labels-idx1-ubyte' : 'https://iot.ipalmap.com/uploads/data/train-labels-idx1-ubyte'
+    const imagesUrl = isDev ? '/data/train-images-idx3-ubyte' : 'https://iot.ipalmap.com/uploads/data/train-images-idx3-ubyte'
 
-  // 加载图片
-  const imgResponse = await fetch('https://iot.ipalmap.com/uploads/data/train-images-idx3-ubyte')
-  const imgBuffer = await imgResponse.arrayBuffer()
-  imgData.value = new Uint8Array(imgBuffer)
+    // 加载标签文件
+    const buffer = await fetchWithProgress(
+      labelsUrl,
+      (p, loaded, total) => {
+        progress.value = Math.floor(p * 0.1)
+        loadedSize.value = loaded
+        totalSize.value = total
+      },
+    )
+    const data = new Uint8Array(buffer)
+    labels.value = data.slice(8)
 
-  debugInfo.value += `图片数据大小: ${imgData.value.length} 字节\n`
+    debugInfo.value = `标签文件大小: ${labels.value.length} 个标签\n`
+    debugInfo.value += `前10个标签: ${Array.from(labels.value.slice(0, 10)).join(', ')}\n`
 
-  drawImage()
+    // 加载图片
+    const imgBuffer = await fetchWithProgress(
+      imagesUrl,
+      (p, loaded, total) => {
+        progress.value = Math.floor(10 + p * 0.9)
+        loadedSize.value = loaded
+        totalSize.value = total
+      },
+    )
+    imgData.value = new Uint8Array(imgBuffer)
+
+    debugInfo.value += `图片数据大小: ${imgData.value.length} 字节\n`
+
+    drawImage()
+  }
+  finally {
+    loading.value = false
+  }
 })
 
 /**
@@ -114,7 +173,14 @@ function jump() {
       </p>
     </div>
 
-    <div mx-auto p-6 rounded-lg bg-white max-w-2xl shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
+    <div v-if="loading" mx-auto p-6 rounded-lg bg-white max-w-2xl shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
+      <div mb-4 text-center>
+        加载数据集中... {{ formatBytes(loadedSize) }} MB / {{ formatBytes(totalSize) }} MB
+      </div>
+      <NProgress type="line" :percentage="progress" :show-indicator="false" />
+    </div>
+
+    <div v-else mx-auto p-6 rounded-lg bg-white max-w-2xl shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
       <div flex flex-col gap-6 items-center>
         <!-- 画布 -->
         <canvas

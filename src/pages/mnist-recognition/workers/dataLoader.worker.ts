@@ -45,9 +45,12 @@ async function fetchWithProgress(url: string, onProgress: (loaded: number, total
   return buffer.buffer
 }
 
-globalThis.onmessage = async (e: MessageEvent<{ maxImages: number }>) => {
+globalThis.onmessage = async (e: MessageEvent<{ maxImages: number, isDev?: boolean }>) => {
   try {
-    const { maxImages } = e.data
+    const { maxImages, isDev = false } = e.data
+
+    const imagesUrl = isDev ? '/data/train-images-idx3-ubyte' : 'https://iot.ipalmap.com/uploads/data/train-images-idx3-ubyte'
+    const labelsUrl = isDev ? '/data/train-labels-idx1-ubyte' : 'https://iot.ipalmap.com/uploads/data/train-labels-idx1-ubyte'
 
     postMessage({ type: 'progress', stage: 'fetching', progress: 0, loaded: 0, total: 0 } as LoadProgress)
 
@@ -63,12 +66,12 @@ globalThis.onmessage = async (e: MessageEvent<{ maxImages: number }>) => {
     }
 
     const [imagesBuffer, labelsBuffer] = await Promise.all([
-      fetchWithProgress('https://iot.ipalmap.com/uploads/data/train-images-idx3-ubyte', (loaded, total) => {
+      fetchWithProgress(imagesUrl, (loaded, total) => {
         imagesLoaded = loaded
         imagesTotal = total
         updateProgress()
       }),
-      fetchWithProgress('https://iot.ipalmap.com/uploads/data/train-labels-idx1-ubyte', (loaded, total) => {
+      fetchWithProgress(labelsUrl, (loaded, total) => {
         labelsLoaded = loaded
         labelsTotal = total
         updateProgress()

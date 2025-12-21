@@ -1,10 +1,18 @@
 import type { SensorCategory } from './types'
 import { useBattery } from './useBattery'
 import { useBluetooth } from './useBluetooth'
+import { useDeviceMemory } from './useDeviceMemory'
 import { useDeviceMotion } from './useDeviceMotion'
+import { useFullscreen } from './useFullscreen'
 import { useGeolocation } from './useGeolocation'
+import { useHardwareConcurrency } from './useHardwareConcurrency'
 import { useMediaDevices } from './useMediaDevices'
 import { useNetworkInfo } from './useNetworkInfo'
+import { useOnlineStatus } from './useOnlineStatus'
+import { usePageVisibility } from './usePageVisibility'
+import { useScreenOrientation } from './useScreenOrientation'
+import { useStorageQuota } from './useStorageQuota'
+import { useVibration } from './useVibration'
 
 export function useSensorManager() {
   const geolocation = useGeolocation()
@@ -13,6 +21,14 @@ export function useSensorManager() {
   const mediaDevices = useMediaDevices()
   const bluetooth = useBluetooth()
   const networkInfo = useNetworkInfo()
+  const screenOrientation = useScreenOrientation()
+  const onlineStatus = useOnlineStatus()
+  const pageVisibility = usePageVisibility()
+  const deviceMemory = useDeviceMemory()
+  const hardwareConcurrency = useHardwareConcurrency()
+  const storageQuota = useStorageQuota()
+  const fullscreen = useFullscreen()
+  const vibration = useVibration()
 
   const categories = computed<SensorCategory[]>(() => [
     {
@@ -40,12 +56,25 @@ export function useSensorManager() {
       sensors: [
         bluetooth.sensorData.value,
         networkInfo.sensorData.value,
+        onlineStatus.sensorData.value,
+      ],
+    },
+    {
+      name: '🖥️ 显示',
+      sensors: [
+        screenOrientation.sensorData.value,
+        pageVisibility.sensorData.value,
+        fullscreen.sensorData.value,
       ],
     },
     {
       name: '⚡ 系统',
       sensors: [
         battery.sensorData.value,
+        deviceMemory.sensorData.value,
+        hardwareConcurrency.sensorData.value,
+        storageQuota.sensorData.value,
+        vibration.sensorData.value,
       ],
     },
   ])
@@ -57,6 +86,14 @@ export function useSensorManager() {
     mediaDevices.start()
     bluetooth.start()
     networkInfo.start()
+    screenOrientation.start()
+    onlineStatus.start()
+    pageVisibility.start()
+    deviceMemory.start()
+    hardwareConcurrency.start()
+    storageQuota.start()
+    fullscreen.start()
+    vibration.start()
   }
 
   function stopAll() {
@@ -64,6 +101,10 @@ export function useSensorManager() {
     deviceMotion.stop()
     battery.stop()
     networkInfo.stop()
+    screenOrientation.stop()
+    onlineStatus.stop()
+    pageVisibility.stop()
+    fullscreen.stop()
   }
 
   function requestPermission(sensorId: string) {

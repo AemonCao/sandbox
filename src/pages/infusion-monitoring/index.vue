@@ -50,6 +50,12 @@ const devices = computed(() => mockData.value.result)
 const statistics = computed(() => mockData.value.statistics)
 
 // 获取护理等级文本
+/**
+ * 映射护理等级到文本描述
+ *
+ * @param {number} level 护理等级 (0-4)
+ * @return {string} 护理等级文本描述
+ */
 function getNursingLevelText(level: number) {
   const levels: Record<number, string> = {
     0: '无',
@@ -62,6 +68,12 @@ function getNursingLevelText(level: number) {
 }
 
 // 获取护理等级颜色
+/**
+ * 映射护理等级到颜色标识
+ *
+ * @param {number} level 护理等级 (0-4)
+ * @return {string} 颜色标识 (gray/red/orange/blue/green)
+ */
 function getNursingLevelColor(level: number) {
   const colors: Record<number, string> = {
     0: 'gray',
@@ -74,6 +86,18 @@ function getNursingLevelColor(level: number) {
 }
 
 // 获取设备状态
+/**
+ * 确定设备连接状态和输液状态
+ *
+ * @param {Device} device 设备对象
+ * @param {string} device.tagID 设备标签ID
+ * @param {number|null} device.status 设备状态码
+ * @param {string} device.device_status 设备状态描述
+ * @param {number} device.current_speed 当前滴速
+ * @return {object} 状态对象
+ * @return {string} return.text 状态文本描述
+ * @return {string} return.color 状态颜色标识
+ */
 function getDeviceStatus(device: Device) {
   if (!device.tagID)
     return { text: '未连接', color: 'gray' }
@@ -92,11 +116,23 @@ function getDeviceStatus(device: Device) {
 }
 
 // 格式化输液进度
+/**
+ * 格式化输液进度百分比
+ *
+ * @param {number} percent 进度百分比
+ * @return {number} 四舍五入后的整数百分比
+ */
 function formatInfusionProgress(percent: number) {
   return Math.round(percent)
 }
 
 // 格式化剩余时间
+/**
+ * 格式化剩余时间为可读格式
+ *
+ * @param {number|string} time 剩余时间（秒数或字符串）
+ * @return {string} 格式化后的时间字符串
+ */
 function formatRemainingTime(time: number | string) {
   if (!time || time === 0)
     return '无'

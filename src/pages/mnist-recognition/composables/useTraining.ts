@@ -8,7 +8,7 @@ export interface TrainingParams {
   epochs?: number
   batchSize?: number
   validationSplit?: number
-  onProgress?: (stage: string, progress: number) => void
+  onProgress?: (stage: string, progress: number, loaded?: number, total?: number) => void
 }
 
 let abortController: AbortController | null = null
@@ -16,7 +16,7 @@ let abortController: AbortController | null = null
 export function useTraining() {
   const store = useMnistStore()
 
-  async function loadMnistData(onProgress?: (stage: string, progress: number) => void) {
+  async function loadMnistData(onProgress?: (stage: string, progress: number, loaded?: number, total?: number) => void) {
     return new Promise<{ images: tf.Tensor4D, labels: tf.Tensor2D }>((resolve, reject) => {
       const worker = new DataLoaderWorker()
 
@@ -24,7 +24,7 @@ export function useTraining() {
         const msg = e.data
 
         if (msg.type === 'progress') {
-          onProgress?.(msg.stage, msg.progress)
+          onProgress?.(msg.stage, msg.progress, msg.loaded, msg.total)
         }
         else if (msg.type === 'complete') {
           const images = tf.tensor4d(msg.images, [msg.numImages, 28, 28, 1])

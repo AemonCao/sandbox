@@ -2,6 +2,8 @@ export interface LoadProgress {
   type: 'progress'
   stage: 'fetching' | 'parsing'
   progress: number
+  loaded?: number
+  total?: number
 }
 
 export interface LoadComplete {
@@ -18,15 +20,59 @@ export interface LoadError {
 
 // type WorkerMessage = LoadProgress | LoadComplete | LoadError
 
+async function fetchWithProgress(url: string, onProgress: (loaded: number, total: number) => void) {
+  const response = await fetch(url)
+  const total = Number(response.headers.get('content-length'))
+  const reader = response.body!.getReader()
+  const chunks: Uint8Array[] = []
+  let loaded = 0
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done)
+      break
+    chunks.push(value)
+    loaded += value.length
+    onProgress(loaded, total)
+  }
+
+  const buffer = new Uint8Array(loaded)
+  let offset = 0
+  for (const chunk of chunks) {
+    buffer.set(chunk, offset)
+    offset += chunk.length
+  }
+  return buffer.buffer
+}
+
 globalThis.onmessage = async (e: MessageEvent<{ maxImages: number }>) => {
   try {
     const { maxImages } = e.data
 
-    postMessage({ type: 'progress', stage: 'fetching', progress: 0 } as LoadProgress)
+    postMessage({ type: 'progress', stage: 'fetching', progress: 0, loaded: 0, total: 0 } as LoadProgress)
+
+    let imagesLoaded = 0
+    let labelsLoaded = 0
+    let imagesTotal = 0
+    let labelsTotal = 0
+    const updateProgress = () => {
+      const loaded = imagesLoaded + labelsLoaded
+      const total = imagesTotal + labelsTotal
+      const progress = total > 0 ? (loaded / total) * 100 : 0
+      postMessage({ type: 'progress', stage: 'fetching', progress, loaded, total } as LoadProgress)
+    }
 
     const [imagesBuffer, labelsBuffer] = await Promise.all([
-      fetch('https://iot.ipalmap.com/uploads/data/train-images-idx3-ubyte').then(r => r.arrayBuffer()),
-      fetch('https://iot.ipalmap.com/uploads/data/train-labels-idx1-ubyte').then(r => r.arrayBuffer()),
+      fetchWithProgress('https://iot.ipalmap.com/uploads/data/train-images-idx3-ubyte', (loaded, total) => {
+        imagesLoaded = loaded
+        imagesTotal = total
+        updateProgress()
+      }),
+      fetchWithProgress('https://iot.ipalmap.com/uploads/data/train-labels-idx1-ubyte', (loaded, total) => {
+        labelsLoaded = loaded
+        labelsTotal = total
+        updateProgress()
+      }),
     ])
 
     postMessage({ type: 'progress', stage: 'fetching', progress: 100 } as LoadProgress)

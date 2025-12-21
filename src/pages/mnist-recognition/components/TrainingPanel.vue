@@ -20,11 +20,36 @@ const startTime = ref<Date>()
 const totalBatches = ref(0)
 const loadingStage = ref('')
 const loadingProgress = ref(0)
+const loadingSize = ref({ loaded: 0, total: 0 })
+const trainingStartTime = ref<number>()
+const estimatedTimeLeft = ref('')
+
+function formatBytes(bytes: number) {
+  if (bytes === 0)
+    return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return `${(bytes / k ** i).toFixed(1)} ${sizes[i]}`
+}
+
+function formatTime(ms: number) {
+  const seconds = Math.floor(ms / 1000)
+  const minutes = Math.floor(seconds / 60)
+  const hours = Math.floor(minutes / 60)
+  if (hours > 0)
+    return `${hours}小时${minutes % 60}分钟`
+  if (minutes > 0)
+    return `${minutes}分钟${seconds % 60}秒`
+  return `${seconds}秒`
+}
 
 async function handleStartTraining() {
   message.info('开始训练模型，这可能需要5-15分钟...')
   startTime.value = new Date()
   totalBatches.value = 0
+  trainingStartTime.value = undefined
+  estimatedTimeLeft.value = ''
 
   const model = createModel()
   store.setModel(model, 'custom')
@@ -32,14 +57,17 @@ async function handleStartTraining() {
   const success = await trainModel({
     epochs: epochs.value,
     batchSize: batchSize.value,
-    onProgress: (stage, progress) => {
-      loadingStage.value = stage === 'fetching' ? '加载数据' : '解析数据'
+    onProgress: (stage, progress, loaded, total) => {
+      loadingStage.value = stage === 'fetching' ? '下载数据集' : '解析数据'
       loadingProgress.value = progress
+      if (loaded !== undefined && total !== undefined)
+        loadingSize.value = { loaded, total }
     },
   })
 
   loadingStage.value = ''
   loadingProgress.value = 0
+  loadingSize.value = { loaded: 0, total: 0 }
 
   if (success) {
     const endTime = new Date()
@@ -58,6 +86,19 @@ function handleCancelTraining() {
   cancelTraining()
   message.warning('训练已取消')
 }
+
+watch(() => store.trainingProgress.epoch, (epoch) => {
+  if (epoch === 1 && !trainingStartTime.value) {
+    trainingStartTime.value = Date.now()
+  }
+  if (epoch > 0 && trainingStartTime.value) {
+    const elapsed = Date.now() - trainingStartTime.value
+    const avgTimePerEpoch = elapsed / epoch
+    const remainingEpochs = epochs.value - epoch
+    const estimated = avgTimePerEpoch * remainingEpochs
+    estimatedTimeLeft.value = formatTime(estimated)
+  }
+})
 
 watch(() => store.trainingProgress.batch, (batch) => {
   if (batch > totalBatches.value) {
@@ -221,16 +262,26 @@ onUnmounted(() => {
     </div>
 
     <div v-if="loadingStage" mb-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-900>
-      <div text-sm mb-2 dark:text-gray-200>
-        {{ loadingStage }}
+      <div text-sm mb-2 flex items-center justify-between dark:text-gray-200>
+        <span>{{ loadingStage }}</span>
+        <span v-if="loadingSize.total > 0" whitespace-nowrap>{{ formatBytes(loadingSize.loaded) }} / {{ formatBytes(loadingSize.total) }}</span>
       </div>
-      <NProgress :percentage="loadingProgress" />
+      <NProgress :percentage="Number(loadingProgress.toFixed(1))" :show-indicator="false" />
     </div>
 
     <div v-if="store.isTraining || store.trainingProgress.epoch > 0" p-4 rounded-lg bg-gray-50 dark:bg-gray-700>
       <h3 text-lg font-semibold mb-3 dark:text-white>
         训练进度
       </h3>
+
+      <div v-if="store.isTraining" mb-4>
+        <div text-sm mb-2 flex items-center justify-between dark:text-gray-200>
+          <span>训练轮次进度</span>
+          <span whitespace-nowrap>{{ store.trainingProgress.epoch }} / {{ epochs }} {{ estimatedTimeLeft ? `(剩余 ${estimatedTimeLeft})` : '' }}</span>
+        </div>
+        <NProgress :percentage="Number(((store.trainingProgress.epoch / epochs) * 100).toFixed(1))" :show-indicator="false" />
+      </div>
+
       <div text-sm flex flex-col gap-2 dark:text-gray-200>
         <div>当前轮次: {{ store.trainingProgress.epoch }} / {{ epochs }}</div>
         <div>当前批次: {{ store.trainingProgress.batch }}</div>

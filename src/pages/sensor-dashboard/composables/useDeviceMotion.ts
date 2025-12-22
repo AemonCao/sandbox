@@ -9,6 +9,7 @@ export function useDeviceMotion() {
     unit: 'm/s²',
     lastUpdate: 0,
     supportsPermissionAPI: false,
+    chartFields: ['x', 'y', 'z'],
   })
 
   const gyroscope = ref<SensorData>({
@@ -19,6 +20,7 @@ export function useDeviceMotion() {
     unit: '°/s',
     lastUpdate: 0,
     supportsPermissionAPI: false,
+    chartFields: ['alpha', 'beta', 'gamma'],
   })
 
   const magnetometer = ref<SensorData>({
@@ -39,7 +41,19 @@ export function useDeviceMotion() {
     unit: '°',
     lastUpdate: 0,
     supportsPermissionAPI: false,
+    chartFields: ['alpha', 'beta', 'gamma'],
   })
+
+  const MAX_HISTORY = 30
+  const accXHistory = ref<number[]>([])
+  const accYHistory = ref<number[]>([])
+  const accZHistory = ref<number[]>([])
+  const gyroAlphaHistory = ref<number[]>([])
+  const gyroBetaHistory = ref<number[]>([])
+  const gyroGammaHistory = ref<number[]>([])
+  const oriAlphaHistory = ref<number[]>([])
+  const oriBetaHistory = ref<number[]>([])
+  const oriGammaHistory = ref<number[]>([])
 
   let motionHandler: ((event: DeviceMotionEvent) => void) | null = null
   let orientationHandler: ((event: DeviceOrientationEvent) => void) | null = null
@@ -62,22 +76,54 @@ export function useDeviceMotion() {
     if ('ondevicemotion' in window) {
       motionHandler = (event: DeviceMotionEvent) => {
         if (event.acceleration) {
+          const x = event.acceleration.x || 0
+          const y = event.acceleration.y || 0
+          const z = event.acceleration.z || 0
+
+          accXHistory.value.push(x)
+          accYHistory.value.push(y)
+          accZHistory.value.push(z)
+          if (accXHistory.value.length > MAX_HISTORY) {
+            accXHistory.value.shift()
+            accYHistory.value.shift()
+            accZHistory.value.shift()
+          }
+
           accelerometer.value.status = 'available'
           accelerometer.value.value = {
-            x: event.acceleration.x?.toFixed(2) || '0',
-            y: event.acceleration.y?.toFixed(2) || '0',
-            z: event.acceleration.z?.toFixed(2) || '0',
+            x: x.toFixed(2),
+            y: y.toFixed(2),
+            z: z.toFixed(2),
           }
+          ;(accelerometer.value as any).xHistory = accXHistory.value
+          ;(accelerometer.value as any).yHistory = accYHistory.value
+          ;(accelerometer.value as any).zHistory = accZHistory.value
           accelerometer.value.lastUpdate = Date.now()
         }
 
         if (event.rotationRate) {
+          const alpha = event.rotationRate.alpha || 0
+          const beta = event.rotationRate.beta || 0
+          const gamma = event.rotationRate.gamma || 0
+
+          gyroAlphaHistory.value.push(alpha)
+          gyroBetaHistory.value.push(beta)
+          gyroGammaHistory.value.push(gamma)
+          if (gyroAlphaHistory.value.length > MAX_HISTORY) {
+            gyroAlphaHistory.value.shift()
+            gyroBetaHistory.value.shift()
+            gyroGammaHistory.value.shift()
+          }
+
           gyroscope.value.status = 'available'
           gyroscope.value.value = {
-            alpha: event.rotationRate.alpha?.toFixed(2) || '0',
-            beta: event.rotationRate.beta?.toFixed(2) || '0',
-            gamma: event.rotationRate.gamma?.toFixed(2) || '0',
+            alpha: alpha.toFixed(2),
+            beta: beta.toFixed(2),
+            gamma: gamma.toFixed(2),
           }
+          ;(gyroscope.value as any).alphaHistory = gyroAlphaHistory.value
+          ;(gyroscope.value as any).betaHistory = gyroBetaHistory.value
+          ;(gyroscope.value as any).gammaHistory = gyroGammaHistory.value
           gyroscope.value.lastUpdate = Date.now()
         }
       }
@@ -91,12 +137,28 @@ export function useDeviceMotion() {
     if ('ondeviceorientation' in window) {
       orientationHandler = (event: DeviceOrientationEvent) => {
         if (event.alpha !== null) {
+          const alpha = event.alpha
+          const beta = event.beta || 0
+          const gamma = event.gamma || 0
+
+          oriAlphaHistory.value.push(alpha)
+          oriBetaHistory.value.push(beta)
+          oriGammaHistory.value.push(gamma)
+          if (oriAlphaHistory.value.length > MAX_HISTORY) {
+            oriAlphaHistory.value.shift()
+            oriBetaHistory.value.shift()
+            oriGammaHistory.value.shift()
+          }
+
           orientation.value.status = 'available'
           orientation.value.value = {
-            alpha: event.alpha.toFixed(1),
-            beta: event.beta?.toFixed(1) || '0',
-            gamma: event.gamma?.toFixed(1) || '0',
+            alpha: alpha.toFixed(1),
+            beta: beta.toFixed(1),
+            gamma: gamma.toFixed(1),
           }
+          ;(orientation.value as any).alphaHistory = oriAlphaHistory.value
+          ;(orientation.value as any).betaHistory = oriBetaHistory.value
+          ;(orientation.value as any).gammaHistory = oriGammaHistory.value
           orientation.value.lastUpdate = Date.now()
         }
       }

@@ -11,6 +11,8 @@ export interface SensorData {
   error?: string
   permission?: PermissionState
   supportsPermissionAPI: boolean
+  history?: number[]
+  chartFields?: string[]
 }
 
 export interface SensorCategory {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { SensorData } from '../composables/types'
+import MiniChart from './MiniChart.vue'
 import PermissionButton from './PermissionButton.vue'
 
 interface Props {
@@ -7,10 +8,21 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
 const emit = defineEmits<{
   requestPermission: [sensorId: string]
 }>()
-
+const chartData = computed(() => {
+  if (!props.sensor.chartFields || !props.sensor.value)
+    return null
+  const data: Record<string, number[]> = {}
+  props.sensor.chartFields.forEach((field) => {
+    const history = (props.sensor as any)[`${field}History`]
+    if (history && Array.isArray(history))
+      data[field] = history
+  })
+  return Object.keys(data).length > 0 ? data : null
+})
 const statusColor = computed(() => {
   switch (props.sensor.status) {
     case 'available': return 'bg-green-500'
@@ -88,15 +100,25 @@ function formatValue(value: any) {
       </span>
     </div>
 
-    <div v-if="sensor.status === 'available'" py-4 text-center>
-      <div
+    <div v-if="sensor.status === 'available'">
+      <div py-4 text-center>
+        <div
 
-        text-2xl text-blue-600 font-bold whitespace-pre-line dark:text-blue-400
-      >
-        {{ formatValue(sensor.value) }}
+          text-2xl text-blue-600 font-bold whitespace-pre-line dark:text-blue-400
+        >
+          {{ formatValue(sensor.value) }}
+        </div>
+        <div v-if="sensor.unit" text-sm text-gray-500 mt-1 dark:text-gray-400>
+          {{ sensor.unit }}
+        </div>
       </div>
-      <div v-if="sensor.unit" text-sm text-gray-500 mt-1 dark:text-gray-400>
-        {{ sensor.unit }}
+      <div v-if="chartData" mt-2 space-y-2>
+        <div v-for="(data, field) in chartData" :key="field">
+          <div text-xs text-gray-500 mb-1 dark:text-gray-400>
+            {{ field }}
+          </div>
+          <MiniChart :data="data" />
+        </div>
       </div>
     </div>
 

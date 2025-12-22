@@ -8,7 +8,11 @@ export function useBattery() {
     value: null,
     lastUpdate: 0,
     supportsPermissionAPI: false,
+    chartFields: ['level'],
   })
+
+  const levelHistory = ref<number[]>([])
+  const MAX_HISTORY = 30
 
   let battery: any = null
 
@@ -37,12 +41,18 @@ export function useBattery() {
 
   function updateBatteryInfo() {
     if (battery) {
+      const level = battery.level * 100
+      levelHistory.value.push(level)
+      if (levelHistory.value.length > MAX_HISTORY)
+        levelHistory.value.shift()
+
       sensorData.value.value = {
-        level: `${(battery.level * 100).toFixed(0)}%`,
+        level: `${level.toFixed(0)}%`,
         charging: battery.charging ? '充电中' : '未充电',
         chargingTime: battery.chargingTime === Infinity ? '∞' : `${battery.chargingTime}s`,
         dischargingTime: battery.dischargingTime === Infinity ? '∞' : `${battery.dischargingTime}s`,
       }
+      ;(sensorData.value as any).levelHistory = levelHistory.value
       sensorData.value.lastUpdate = Date.now()
     }
   }

@@ -8,7 +8,11 @@ export function useGeolocation() {
     value: null,
     lastUpdate: 0,
     supportsPermissionAPI: false,
+    chartFields: ['accuracy'],
   })
+
+  const MAX_HISTORY = 30
+  const accuracyHistory = ref<number[]>([])
 
   let watchId: number | null = null
 
@@ -40,12 +44,19 @@ export function useGeolocation() {
 
     watchId = navigator.geolocation.watchPosition(
       (position) => {
+        const accuracy = position.coords.accuracy
+
+        accuracyHistory.value.push(accuracy)
+        if (accuracyHistory.value.length > MAX_HISTORY)
+          accuracyHistory.value.shift()
+
         sensorData.value.status = 'available'
         sensorData.value.value = {
           latitude: position.coords.latitude.toFixed(6),
           longitude: position.coords.longitude.toFixed(6),
-          accuracy: `${position.coords.accuracy.toFixed(0)}m`,
+          accuracy: `${accuracy.toFixed(0)}m`,
         }
+        ;(sensorData.value as any).accuracyHistory = accuracyHistory.value
         sensorData.value.lastUpdate = Date.now()
         sensorData.value.error = undefined
       },

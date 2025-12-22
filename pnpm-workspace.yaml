@@ -4,6 +4,7 @@ catalogs:
   build:
     '@iconify-json/carbon': ^1.2.14
     '@vitejs/plugin-vue': ^6.0.1
+    conventional-changelog-cli: ^5.0.0
     jsdom: ^27.1.0
     unocss: ^66.5.4
     unplugin: ^2.3.10

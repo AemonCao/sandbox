@@ -126,6 +126,26 @@ src/
 
 ## Development Guidelines
 
+### Version Management
+
+The project uses automated version management with conventional-changelog:
+
+- **Auto-increment**: Patch version increments automatically on each commit (0.0.1 → 0.0.2)
+- **CHANGELOG generation**: Automatically generated based on Conventional Commits
+- **Manual control**: Use `pnpm version minor/major` for feature/breaking releases
+
+**Version increment rules**:
+
+- Patch (0.0.1 → 0.0.2): Automatic on every commit
+- Minor (0.1.0 → 0.2.0): Use `pnpm version minor` for new features
+- Major (1.0.0 → 2.0.0): Use `pnpm version major` for breaking changes
+
+**Workflow**:
+
+1. Daily development: Normal commits auto-increment patch version
+2. Feature release: `pnpm version minor` + `pnpm changelog` + commit CHANGELOG
+3. Breaking changes: `pnpm version major` + `pnpm changelog` + commit CHANGELOG
+
 ### Catalog-based Dependency Management
 
 - Uses pnpm workspace with catalog-based dependency management

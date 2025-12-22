@@ -360,6 +360,48 @@ pnpm test --watch
 
 欢迎提交 Issue 和 Pull Request！
 
+### 版本管理
+
+项目使用自动化版本管理系统：
+
+- **自动递增**：每次提交时自动递增补丁版本号（0.0.1 → 0.0.2）
+- **CHANGELOG 生成**：基于 Conventional Commits 规范自动生成变更日志
+- **手动控制**：使用 `pnpm version minor/major` 递增次版本或主版本
+
+#### 版本递增规则
+
+- **补丁版本（Patch）**：每次提交自动递增（0.0.1 → 0.0.2）
+- **次版本（Minor）**：新功能发布时使用 `pnpm version minor`（0.1.0 → 0.2.0）
+- **主版本（Major）**：重大更新时使用 `pnpm version major`（1.0.0 → 2.0.0）
+
+#### 工作流程示例
+
+**日常开发（补丁版本）**：
+
+```bash
+git add .
+git commit -m "fix: 🐛 修复已知问题"
+# 版本号自动从 0.0.1 → 0.0.2
+```
+
+**新功能发布（次版本）**：
+
+```bash
+pnpm version minor  # 0.1.0 → 0.2.0
+pnpm changelog      # 生成 CHANGELOG
+git add CHANGELOG.md
+git commit -m "docs: 📝 更新 CHANGELOG"
+```
+
+**重大更新（主版本）**：
+
+```bash
+pnpm version major  # 1.0.0 → 2.0.0
+pnpm changelog      # 生成 CHANGELOG
+git add CHANGELOG.md
+git commit -m "docs: 📝 更新 CHANGELOG"
+```
+
 ### Git 提交规范
 
 提交代码时请遵循以下规范：

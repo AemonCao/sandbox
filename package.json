@@ -1,7 +1,7 @@
 {
   "name": "sandbox",
   "type": "module",
-  "version": "0.0.0",
+  "version": "0.0.2",
   "private": true,
   "packageManager": "pnpm@10.20.0",
   "scripts": {
@@ -17,6 +17,7 @@
     "preview": "vite preview",
     "test": "vitest",
     "up": "taze major -I",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "postinstall": "npx simple-git-hooks"
   },
   "dependencies": {
@@ -49,6 +50,7 @@
     "@vue-macros/volar": "catalog:dev",
     "@vue/test-utils": "catalog:dev",
     "archiver": "catalog:dev",
+    "conventional-changelog-cli": "catalog:build",
     "eslint": "catalog:dev",
     "eslint-plugin-format": "catalog:dev",
     "jsdom": "catalog:build",
@@ -75,7 +77,7 @@
     "vite": "catalog:build"
   },
   "simple-git-hooks": {
-    "pre-commit": "pnpm lint-staged"
+    "pre-commit": "node scripts/bump-version.js && pnpm lint-staged"
   },
   "lint-staged": {
     "*": "eslint --fix"

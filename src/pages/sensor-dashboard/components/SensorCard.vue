@@ -113,11 +113,11 @@ function formatValue(value: any) {
         </div>
       </div>
       <div v-if="chartData" mt-2 space-y-2>
-        <div v-for="(data, field) in chartData" :key="field">
+        <div v-for="(data, field, index) in chartData" :key="field">
           <div text-xs text-gray-500 mb-1 dark:text-gray-400>
             {{ field }}
           </div>
-          <MiniChart :data="data" />
+          <MiniChart :data="data" :color-index="index" />
         </div>
       </div>
     </div>

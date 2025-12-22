@@ -1,12 +1,20 @@
 <script setup lang="ts">
 interface Props {
   data: number[]
-  color?: string
+  colorIndex?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  color: '#3b82f6',
+  colorIndex: 0,
 })
+
+const isDark = useDark()
+
+const colors = computed(() => isDark.value
+  ? ['#60a5fa', '#34d399', '#fbbf24', '#f87171', '#a78bfa', '#fb923c']
+  : ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#f97316'])
+
+const color = computed(() => colors.value[props.colorIndex % colors.value.length])
 
 const points = computed(() => {
   if (!props.data || props.data.length < 2)

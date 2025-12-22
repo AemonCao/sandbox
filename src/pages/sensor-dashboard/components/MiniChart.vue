@@ -21,10 +21,8 @@ const color = computed(() => colors.value[props.colorIndex % colors.value.length
 const points = computed(() => {
   if (!props.data || props.data.length < 2)
     return ''
-  const dataMax = Math.max(...props.data)
-  const dataMin = Math.min(...props.data)
-  const max = props.max !== undefined ? Math.max(props.max, dataMax) : dataMax
-  const min = props.min !== undefined ? Math.min(props.min, dataMin) : dataMin
+  const max = props.max ?? Math.max(...props.data)
+  const min = props.min ?? Math.min(...props.data)
   const range = max - min || 1
   return props.data.map((v, i) => {
     const x = (i / (props.data.length - 1)) * 100
@@ -40,7 +38,7 @@ const points = computed(() => {
       :points="points"
       fill="none"
       :stroke="color"
-      stroke-width="4"
+      stroke-width="2"
       vector-effect="non-scaling-stroke"
     />
   </svg>

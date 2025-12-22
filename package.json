@@ -24,6 +24,7 @@
     "echarts": "catalog:frontend",
     "echarts-gl": "catalog:frontend",
     "jszip": "catalog:frontend",
+    "lil-gui": "catalog:frontend",
     "lodash": "catalog:frontend",
     "nanoid": "catalog:frontend",
     "normalize.css": "catalog:frontend",

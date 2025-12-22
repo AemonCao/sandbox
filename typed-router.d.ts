@@ -44,6 +44,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/boids-flocking/': RouteRecordInfo<
+      '/boids-flocking/',
+      '/boids-flocking',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/ibeacon-simulator/': RouteRecordInfo<
       '/ibeacon-simulator/',
       '/ibeacon-simulator',
@@ -254,6 +261,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/bluetooth-json/index.vue': {
       routes:
         | '/bluetooth-json/'
+      views:
+        | never
+    }
+    'src/pages/boids-flocking/index.vue': {
+      routes:
+        | '/boids-flocking/'
       views:
         | never
     }

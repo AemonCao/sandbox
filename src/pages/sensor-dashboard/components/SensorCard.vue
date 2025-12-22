@@ -62,12 +62,46 @@ function formatTimestamp(timestamp: number) {
 function formatValue(value: any) {
   if (value === null || value === undefined)
     return '-'
-  if (typeof value === 'object') {
-    return Object.entries(value)
-      .map(([key, val]) => `${key}: ${val}`)
-      .join('\n')
-  }
+  if (typeof value === 'object')
+    return null
   return String(value)
+}
+
+function getValueEntries(value: any) {
+  if (typeof value === 'object' && value !== null)
+    return Object.entries(value)
+  return null
+}
+
+const keyLabels: Record<string, string> = {
+  // 加速度计/陀螺仪/方向
+  x: 'X轴',
+  y: 'Y轴',
+  z: 'Z轴',
+  alpha: 'Alpha',
+  beta: 'Beta',
+  gamma: 'Gamma',
+  // 电池
+  level: '电量',
+  charging: '充电状态',
+  chargingTime: '充满时间',
+  dischargingTime: '放电时间',
+  // 网络
+  effectiveType: '网络类型',
+  downlink: '下行速度',
+  rtt: '往返时延',
+  saveData: '省流模式',
+  // 地理位置
+  latitude: '纬度',
+  longitude: '经度',
+  accuracy: '精度',
+  altitude: '海拔',
+  speed: '速度',
+  heading: '方向',
+}
+
+function getKeyLabel(key: string) {
+  return keyLabels[key] || key
 }
 </script>
 
@@ -99,10 +133,14 @@ function formatValue(value: any) {
       </span>
     </div>
     <div v-if="sensor.status === 'available'">
-      <div py-4 text-center>
-        <div
-          text-2xl text-blue-600 font-bold whitespace-pre-line dark:text-blue-400
-        >
+      <div v-if="getValueEntries(sensor.value)" py-4 space-y-2>
+        <div v-for="[key, val] in getValueEntries(sensor.value)" :key="key" px-4 flex items-center justify-between>
+          <span text-sm text-gray-600 dark:text-gray-400>{{ getKeyLabel(key) }} ({{ key }}):</span>
+          <span text-xl text-blue-600 font-bold dark:text-blue-400>{{ val }}</span>
+        </div>
+      </div>
+      <div v-else py-4 text-center>
+        <div text-2xl text-blue-600 font-bold dark:text-blue-400>
           {{ formatValue(sensor.value) }}
         </div>
         <div v-if="sensor.unit" text-sm text-gray-500 mt-1 dark:text-gray-400>

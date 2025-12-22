@@ -30,8 +30,8 @@ const deviceTypeLabel = computed(() => {
 
 <template>
   <div
-    bg-gradient-to-r="from-blue-500 to-purple-600"
-    text-white p-4 rounded-lg shadow-lg
+    bg-gradient-to-r="dark:from-blue-500 dark:to-purple-600 from-blue-100 to-purple-100"
+    text="dark:white gray-800" p-4 rounded-lg shadow-lg
   >
     <div flex gap-3 items-center>
       <div text-4xl>

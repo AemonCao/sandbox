@@ -53,7 +53,7 @@ onBeforeUnmount(() => {
         关闭预览
       </button>
     </div>
-    <div v-if="isActive" rounded-lg bg-black overflow-hidden>
+    <div rounded-lg bg-black overflow-hidden>
       <video
         ref="videoRef"
         autoplay playsinline min-h-48 w-full

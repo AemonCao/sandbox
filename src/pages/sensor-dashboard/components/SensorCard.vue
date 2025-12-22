@@ -73,7 +73,6 @@ function formatValue(value: any) {
 
 <template>
   <div
-
     border="2 transparent"
     p-4 rounded-lg bg-white shadow-md transition-all duration-300 hover:border-blue-400 dark:bg-gray-800 hover:shadow-lg hover:scale-102
   >
@@ -91,21 +90,17 @@ function formatValue(value: any) {
         {{ formatTimestamp(sensor.lastUpdate) }}
       </div>
     </div>
-
     <div mb-2>
       <span
-
         :class="statusColor"
         text-xs text-white font-medium px-2 py-1 rounded
       >
         {{ statusText }}
       </span>
     </div>
-
     <div v-if="sensor.status === 'available'">
       <div py-4 text-center>
         <div
-
           text-2xl text-blue-600 font-bold whitespace-pre-line dark:text-blue-400
         >
           {{ formatValue(sensor.value) }}
@@ -124,18 +119,15 @@ function formatValue(value: any) {
         </div>
       </div>
     </div>
-
     <div v-else-if="sensor.status === 'unavailable'" py-4 text-center>
       <div text-gray-400 dark:text-gray-500>
         传感器不可用
       </div>
     </div>
-
     <PermissionButton
       v-if="sensor.status === 'permission-needed'"
       @request="emit('requestPermission', sensor.id)"
     />
-
     <div v-if="sensor.error" text-sm text-red-500 mt-2 dark:text-red-400>
       {{ sensor.error }}
     </div>

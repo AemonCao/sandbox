@@ -2,7 +2,6 @@ import type { SensorData } from './types'
 import { MAX_HISTORY_POINTS, SAMPLE_INTERVAL } from './useSensorConfig'
 
 export function useGeolocation() {
-  let lastUpdateTime = 0
   const sensorData = ref<SensorData>({
     id: 'geolocation',
     name: '地理位置',
@@ -16,6 +15,9 @@ export function useGeolocation() {
   })
 
   const accuracyHistory = ref<number[]>(Array.from({ length: MAX_HISTORY_POINTS }, () => 0))
+
+  let intervalId: number | null = null
+  let currentPosition: GeolocationPosition | null = null
 
   let watchId: number | null = null
 
@@ -47,26 +49,7 @@ export function useGeolocation() {
 
     watchId = navigator.geolocation.watchPosition(
       (position) => {
-        const now = Date.now()
-        if (now - lastUpdateTime < SAMPLE_INTERVAL)
-          return
-        lastUpdateTime = now
-
-        const accuracy = position.coords.accuracy
-
-        accuracyHistory.value.push(accuracy)
-        if (accuracyHistory.value.length > MAX_HISTORY_POINTS)
-          accuracyHistory.value.shift()
-
-        sensorData.value.status = 'available'
-        sensorData.value.value = {
-          latitude: position.coords.latitude.toFixed(6),
-          longitude: position.coords.longitude.toFixed(6),
-          accuracy: `${accuracy.toFixed(0)}m`,
-        }
-        ;(sensorData.value as any).accuracyHistory = accuracyHistory.value
-        sensorData.value.lastUpdate = Date.now()
-        sensorData.value.error = undefined
+        currentPosition = position
       },
       (error) => {
         sensorData.value.status = 'error'
@@ -89,12 +72,38 @@ export function useGeolocation() {
         timeout: 10000,
       },
     )
+
+    intervalId = window.setInterval(updatePosition, SAMPLE_INTERVAL)
+  }
+
+  function updatePosition() {
+    if (currentPosition) {
+      const accuracy = currentPosition.coords.accuracy
+
+      accuracyHistory.value.push(accuracy)
+      if (accuracyHistory.value.length > MAX_HISTORY_POINTS)
+        accuracyHistory.value.shift()
+
+      sensorData.value.status = 'available'
+      sensorData.value.value = {
+        latitude: currentPosition.coords.latitude.toFixed(6),
+        longitude: currentPosition.coords.longitude.toFixed(6),
+        accuracy: `${accuracy.toFixed(0)}m`,
+      }
+      ;(sensorData.value as any).accuracyHistory = accuracyHistory.value
+      sensorData.value.lastUpdate = Date.now()
+      sensorData.value.error = undefined
+    }
   }
 
   function stop() {
     if (watchId !== null) {
       navigator.geolocation.clearWatch(watchId)
       watchId = null
+    }
+    if (intervalId !== null) {
+      clearInterval(intervalId)
+      intervalId = null
     }
   }
 

@@ -80,10 +80,12 @@ src/
 ├── pages/           # 页面组件 (文件路由)
 │   ├── index.vue                      # 主页 (显示所有可用路由)
 │   ├── bluetooth-json/                # 蓝牙信标解析
+│   ├── boids-flocking/                # 鸟群算法模拟
 │   ├── ibeacon-simulator/             # 室内蓝牙定位模拟器
 │   ├── infusion-monitoring/           # 智能输液监控
 │   ├── mnist-data-preview/            # MNIST数据预览
 │   ├── mnist-recognition/             # 手写数字识别
+│   ├── perlin-noise/                  # Perlin噪声地图生成器
 │   ├── positioning-algorithms/        # 多算法定位引擎对比
 │   ├── sensor-dashboard/              # 传感器数据仪表盘
 │   └── [...all].vue                   # 404 捕获路由
@@ -318,6 +320,40 @@ pnpm test --watch
 - 响应式布局
 
 **技术栈**: ECharts、实时数据可视化
+
+### 8. 🐦 鸟群算法模拟 (Boids Flocking)
+
+**路径**: `/boids-flocking`
+
+基于 Boids 算法的鸟群行为模拟，展示分离、对齐、聚集三大规则的群体智能行为。
+
+**功能特性**:
+
+- 实时鸟群行为模拟
+- 捕食者追逐行为
+- 光源吸引效果
+- 边界行为控制 (反弹/环绕)
+- 可调节的群体参数
+- 交互式 GUI 控制面板
+
+**技术栈**: Canvas API、群体智能算法、lil-gui
+
+### 9. 🗺️ Perlin噪声地图生成器 (Perlin Noise Map Generator)
+
+**路径**: `/perlin-noise`
+
+使用 Simplex 噪声算法生成类似 Minecraft 的程序化 3D 地形。
+
+**功能特性**:
+
+- 实时 3D 地形生成
+- 多层噪声叠加 (Octaves)
+- 可调节的噪声参数
+- 多种显示模式 (实体/线框/混合)
+- 多种颜色方案 (地形/热力图)
+- 交互式 3D 视图 (旋转/缩放)
+
+**技术栈**: Three.js、Simplex Noise、lil-gui
 
 ## 🤝 贡献
 

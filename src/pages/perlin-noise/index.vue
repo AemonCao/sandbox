@@ -119,5 +119,6 @@ onUnmounted(() => {
 <route lang="yaml">
 meta:
   layout: default
-  title: 'Perlin噪声地图生成器'
+  title: 'Perlin 噪声地图生成器'
+  description: '使用 Simplex 噪声算法生成类似 Minecraft 的程序化 3D 地形，支持多种显示模式和颜色方案'
 </route>

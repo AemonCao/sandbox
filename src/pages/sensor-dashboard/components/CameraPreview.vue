@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const videoRef = ref<HTMLVideoElement>()
-const stream = ref<MediaStream>()
+const stream = ref<MediaStream | null>(null)
 const isActive = ref(false)
 
 async function startPreview() {
@@ -17,16 +17,16 @@ async function startPreview() {
 }
 
 function stopPreview() {
-  if (stream.value) {
-    stream.value.getTracks().forEach(track => track.stop())
-    stream.value = undefined
-  }
   if (videoRef.value)
     videoRef.value.srcObject = null
+  if (stream.value) {
+    stream.value.getTracks().forEach(track => track.stop())
+    stream.value = null
+  }
   isActive.value = false
 }
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
   stopPreview()
 })
 </script>
@@ -52,7 +52,7 @@ onUnmounted(() => {
     <div v-if="isActive" rounded-lg bg-black overflow-hidden>
       <video
         ref="videoRef"
-        autoplay playsinline h-auto w-full
+        autoplay playsinline min-h-48 w-full
       />
     </div>
   </div>

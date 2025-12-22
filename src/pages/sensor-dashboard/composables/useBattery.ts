@@ -1,7 +1,7 @@
 import type { SensorData } from './types'
+import { MAX_HISTORY_POINTS } from './useSensorConfig'
 
 export function useBattery() {
-  const MAX_HISTORY = 10
   const sensorData = ref<SensorData>({
     id: 'battery',
     name: '电池状态',
@@ -14,7 +14,7 @@ export function useBattery() {
     chartMax: 100,
   })
 
-  const levelHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }, () => 0))
+  const levelHistory = ref<number[]>(Array.from({ length: MAX_HISTORY_POINTS }, () => 0))
 
   let battery: any = null
 
@@ -45,7 +45,7 @@ export function useBattery() {
     if (battery) {
       const level = battery.level * 100
       levelHistory.value.push(level)
-      if (levelHistory.value.length > MAX_HISTORY)
+      if (levelHistory.value.length > MAX_HISTORY_POINTS)
         levelHistory.value.shift()
 
       sensorData.value.value = {

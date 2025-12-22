@@ -1,11 +1,8 @@
 import type { SensorData } from './types'
+import { MAX_HISTORY_POINTS, SAMPLE_INTERVAL } from './useSensorConfig'
 
 export function useDeviceMotion() {
-  const HISTORY_DURATION = 10000
-  let maxHistory = 600
-  let lastTimestamp = 0
-  let updateCount = 0
-  let isCalibrated = false
+  let lastUpdateTime = 0
 
   const accelerometer = ref<SensorData>({
     id: 'accelerometer',
@@ -86,18 +83,12 @@ export function useDeviceMotion() {
   function start() {
     if ('ondevicemotion' in window) {
       motionHandler = (event: DeviceMotionEvent) => {
-        if (event.acceleration) {
-          if (!isCalibrated) {
-            const now = Date.now()
-            if (lastTimestamp === 0)
-              lastTimestamp = now
-            updateCount++
-            if (now - lastTimestamp >= HISTORY_DURATION) {
-              maxHistory = Math.max(100, Math.ceil(updateCount * 1.2))
-              isCalibrated = true
-            }
-          }
+        const now = Date.now()
+        if (now - lastUpdateTime < SAMPLE_INTERVAL)
+          return
+        lastUpdateTime = now
 
+        if (event.acceleration) {
           const x = event.acceleration.x || 0
           const y = event.acceleration.y || 0
           const z = event.acceleration.z || 0
@@ -105,7 +96,7 @@ export function useDeviceMotion() {
           accXHistory.value.push(x)
           accYHistory.value.push(y)
           accZHistory.value.push(z)
-          if (accXHistory.value.length > maxHistory) {
+          if (accXHistory.value.length > MAX_HISTORY_POINTS) {
             accXHistory.value.shift()
             accYHistory.value.shift()
             accZHistory.value.shift()
@@ -131,7 +122,7 @@ export function useDeviceMotion() {
           gyroAlphaHistory.value.push(alpha)
           gyroBetaHistory.value.push(beta)
           gyroGammaHistory.value.push(gamma)
-          if (gyroAlphaHistory.value.length > maxHistory) {
+          if (gyroAlphaHistory.value.length > MAX_HISTORY_POINTS) {
             gyroAlphaHistory.value.shift()
             gyroBetaHistory.value.shift()
             gyroGammaHistory.value.shift()
@@ -166,7 +157,7 @@ export function useDeviceMotion() {
           oriAlphaHistory.value.push(alpha)
           oriBetaHistory.value.push(beta)
           oriGammaHistory.value.push(gamma)
-          if (oriAlphaHistory.value.length > maxHistory) {
+          if (oriAlphaHistory.value.length > MAX_HISTORY_POINTS) {
             oriAlphaHistory.value.shift()
             oriBetaHistory.value.shift()
             oriGammaHistory.value.shift()

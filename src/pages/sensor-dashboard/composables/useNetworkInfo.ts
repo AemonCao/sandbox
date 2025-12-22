@@ -1,7 +1,7 @@
 import type { SensorData } from './types'
 
 export function useNetworkInfo() {
-  const MAX_HISTORY = 60
+  const MAX_HISTORY = 10
   const sensorData = ref<SensorData>({
     id: 'network',
     name: '网络信息',
@@ -14,8 +14,8 @@ export function useNetworkInfo() {
     chartMax: 100,
   })
 
-  const downlinkHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
-  const rttHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
+  const downlinkHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }, () => 0))
+  const rttHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }, () => 0))
 
   function updateNetworkInfo() {
     const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection

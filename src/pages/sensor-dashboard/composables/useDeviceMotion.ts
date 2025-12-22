@@ -1,7 +1,11 @@
 import type { SensorData } from './types'
 
 export function useDeviceMotion() {
-  const MAX_HISTORY = 3600
+  const HISTORY_DURATION = 10000
+  let maxHistory = 600
+  let lastTimestamp = 0
+  let updateCount = 0
+
   const accelerometer = ref<SensorData>({
     id: 'accelerometer',
     name: '加速度计',
@@ -51,15 +55,15 @@ export function useDeviceMotion() {
     chartMax: 360,
   })
 
-  const accXHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
-  const accYHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
-  const accZHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
-  const gyroAlphaHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
-  const gyroBetaHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
-  const gyroGammaHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
-  const oriAlphaHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
-  const oriBetaHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
-  const oriGammaHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
+  const accXHistory = ref<number[]>([])
+  const accYHistory = ref<number[]>([])
+  const accZHistory = ref<number[]>([])
+  const gyroAlphaHistory = ref<number[]>([])
+  const gyroBetaHistory = ref<number[]>([])
+  const gyroGammaHistory = ref<number[]>([])
+  const oriAlphaHistory = ref<number[]>([])
+  const oriBetaHistory = ref<number[]>([])
+  const oriGammaHistory = ref<number[]>([])
 
   let motionHandler: ((event: DeviceMotionEvent) => void) | null = null
   let orientationHandler: ((event: DeviceOrientationEvent) => void) | null = null
@@ -82,6 +86,16 @@ export function useDeviceMotion() {
     if ('ondevicemotion' in window) {
       motionHandler = (event: DeviceMotionEvent) => {
         if (event.acceleration) {
+          const now = Date.now()
+          if (lastTimestamp === 0)
+            lastTimestamp = now
+          updateCount++
+          if (now - lastTimestamp >= HISTORY_DURATION) {
+            maxHistory = Math.max(100, Math.ceil(updateCount * 1.2))
+            lastTimestamp = now
+            updateCount = 0
+          }
+
           const x = event.acceleration.x || 0
           const y = event.acceleration.y || 0
           const z = event.acceleration.z || 0
@@ -89,7 +103,7 @@ export function useDeviceMotion() {
           accXHistory.value.push(x)
           accYHistory.value.push(y)
           accZHistory.value.push(z)
-          if (accXHistory.value.length > MAX_HISTORY) {
+          if (accXHistory.value.length > maxHistory) {
             accXHistory.value.shift()
             accYHistory.value.shift()
             accZHistory.value.shift()
@@ -115,7 +129,7 @@ export function useDeviceMotion() {
           gyroAlphaHistory.value.push(alpha)
           gyroBetaHistory.value.push(beta)
           gyroGammaHistory.value.push(gamma)
-          if (gyroAlphaHistory.value.length > MAX_HISTORY) {
+          if (gyroAlphaHistory.value.length > maxHistory) {
             gyroAlphaHistory.value.shift()
             gyroBetaHistory.value.shift()
             gyroGammaHistory.value.shift()
@@ -150,7 +164,7 @@ export function useDeviceMotion() {
           oriAlphaHistory.value.push(alpha)
           oriBetaHistory.value.push(beta)
           oriGammaHistory.value.push(gamma)
-          if (oriAlphaHistory.value.length > MAX_HISTORY) {
+          if (oriAlphaHistory.value.length > maxHistory) {
             oriAlphaHistory.value.shift()
             oriBetaHistory.value.shift()
             oriGammaHistory.value.shift()

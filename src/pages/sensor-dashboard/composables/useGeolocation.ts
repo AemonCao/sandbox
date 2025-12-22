@@ -1,7 +1,7 @@
 import type { SensorData } from './types'
 
 export function useGeolocation() {
-  const MAX_HISTORY = 60
+  const MAX_HISTORY = 10
   const sensorData = ref<SensorData>({
     id: 'geolocation',
     name: '地理位置',
@@ -14,7 +14,7 @@ export function useGeolocation() {
     chartMax: 100,
   })
 
-  const accuracyHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
+  const accuracyHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }, () => 0))
 
   let watchId: number | null = null
 

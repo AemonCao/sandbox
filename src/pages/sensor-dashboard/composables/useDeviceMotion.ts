@@ -149,6 +149,11 @@ export function useDeviceMotion() {
 
     if ('ondeviceorientation' in window) {
       orientationHandler = (event: DeviceOrientationEvent) => {
+        const now = Date.now()
+        if (now - lastUpdateTime < SAMPLE_INTERVAL)
+          return
+        lastUpdateTime = now
+
         if (event.alpha !== null) {
           const alpha = event.alpha
           const beta = event.beta || 0

@@ -150,6 +150,29 @@ src/
 - Styling with UnoCSS atomic classes using attributify mode
 - Vue 3 Composition API with `<script setup>` syntax
 
+### Code Documentation
+
+- **方法注释**: 编写或修改方法时，必须添加 JSDoc 格式的中文注释，说明方法的功能、参数和返回值
+- **关键代码注释**: 在复杂逻辑、算法实现、重要计算等关键代码处添加中文注释，帮助理解代码意图
+- **注释示例**:
+
+```typescript
+/**
+ * 计算两点之间的距离
+ * @param x1 - 第一个点的 x 坐标
+ * @param y1 - 第一个点的 y 坐标
+ * @param x2 - 第二个点的 x 坐标
+ * @param y2 - 第二个点的 y 坐标
+ * @returns 两点之间的欧几里得距离
+ */
+function calculateDistance(x1: number, y1: number, x2: number, y2: number): number {
+  // 使用勾股定理计算距离
+  const dx = x2 - x1
+  const dy = y2 - y1
+  return Math.sqrt(dx * dx + dy * dy)
+}
+```
+
 ### UnoCSS Styling Guidelines
 
 **核心特性：**

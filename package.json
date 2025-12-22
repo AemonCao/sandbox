@@ -77,7 +77,7 @@
     "vite": "catalog:build"
   },
   "simple-git-hooks": {
-    "pre-commit": "node scripts/bump-version.js && pnpm lint-staged"
+    "pre-commit": "pnpm lint-staged"
   },
   "lint-staged": {
     "*": "eslint --fix"

@@ -4,6 +4,13 @@
 *.local
 dist
 dist-ssr
+dist-zip
 node_modules
 .idea/
 *.log
+cypress/downloads
+*.zip
+*.tgz
+*.tar.gz
+*.rar
+*.7z

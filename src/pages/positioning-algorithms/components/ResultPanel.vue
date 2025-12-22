@@ -11,7 +11,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  'algorithm-change': [algorithm: string]
+  algorithmChange: [algorithm: string]
 }>()
 
 const chartRef = ref<HTMLDivElement>()
@@ -42,7 +42,7 @@ const performanceInsights = computed(() => {
 
   // 精度分析
   const bestAccuracy = bestAlgorithm.value?.error || Infinity
-  const worstAccuracy = Math.max(...Object.values(algorithms).map((alg: any) => alg.averageError))
+  const _worstAccuracy = Math.max(...Object.values(algorithms).map((alg: any) => alg.averageError))
 
   if (bestAccuracy < 2) {
     insights.push(`🎯 最佳算法精度达到 ${bestAccuracy.toFixed(2)}m，表现优秀`)
@@ -96,7 +96,7 @@ const algorithmColors = {
 }
 
 // 方法
-function initCharts() {
+function _initCharts() {
   if (!chartRef.value || !props.comparisonResults)
     return
 
@@ -332,7 +332,7 @@ function getSuccessRateColor(rate: number): string {
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300',
                 ]"
-                @click="emit('algorithm-change', item.algorithm)"
+                @click="emit('algorithmChange', item.algorithm)"
               >
                 {{ selectedAlgorithm === item.algorithm ? '当前选择' : '查看详情' }}
               </button>

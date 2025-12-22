@@ -10,8 +10,8 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  'algorithm-change': [algorithm: string]
-  'config-change': [algorithm: string, config: any]
+  algorithmChange: [algorithm: string]
+  configChange: [algorithm: string, config: any]
 }>()
 
 const expandedAlgorithms = ref<string[]>([props.selectedAlgorithm])
@@ -221,14 +221,14 @@ function toggleAlgorithmExpansion(algorithm: string) {
 }
 
 function selectAlgorithm(algorithm: string) {
-  emit('algorithm-change', algorithm)
+  emit('algorithmChange', algorithm)
   if (!expandedAlgorithms.value.includes(algorithm)) {
     expandedAlgorithms.value.push(algorithm)
   }
 }
 
 function updateConfig(algorithm: string, key: string, value: any) {
-  emit('config-change', algorithm, { [key]: value })
+  emit('configChange', algorithm, { [key]: value })
 }
 
 function resetToDefaults(algorithm: string) {
@@ -242,7 +242,7 @@ function resetToDefaults(algorithm: string) {
   }
 
   if (defaults[algorithm]) {
-    emit('config-change', algorithm, defaults[algorithm])
+    emit('configChange', algorithm, defaults[algorithm])
   }
 }
 

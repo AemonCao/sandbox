@@ -1,4 +1,4 @@
-import { reactive, ref } from 'vue'
+import { ref } from 'vue'
 
 export interface TestScenario {
   id: string
@@ -224,7 +224,7 @@ export function useTestData(beacons: any, testPoints: any, truePositions: any) {
     const totalSteps = beaconDensities.length * iterations
     let currentStep = 0
 
-    const originalBeacons = [...beacons.value]
+    const _originalBeacons = [...beacons.value]
 
     for (const density of beaconDensities) {
       for (let iter = 0; iter < iterations; iter++) {
@@ -375,7 +375,7 @@ export function useTestData(beacons: any, testPoints: any, truePositions: any) {
 
   // 算法对比测试
   async function runComparisonTest(scenario: TestScenario) {
-    const { gridSize, areaWidth, areaHeight, metrics } = scenario.parameters
+    const { gridSize, areaWidth, areaHeight } = scenario.parameters
     const totalSteps = gridSize * gridSize
     let currentStep = 0
 
@@ -648,7 +648,7 @@ export function useTestData(beacons: any, testPoints: any, truePositions: any) {
         }
         break
 
-      case 'circular':
+      case 'circular': {
         // 圆形路径
         const centerX = width / 2
         const centerY = height / 2
@@ -662,7 +662,7 @@ export function useTestData(beacons: any, testPoints: any, truePositions: any) {
           })
         }
         break
-
+      }
       case 'zigzag':
         // 之字形路径
         for (let i = 0; i < steps; i++) {

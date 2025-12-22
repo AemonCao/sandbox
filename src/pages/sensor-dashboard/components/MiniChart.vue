@@ -40,7 +40,7 @@ const points = computed(() => {
       :points="points"
       fill="none"
       :stroke="color"
-      stroke-width="2"
+      stroke-width="4"
       vector-effect="non-scaling-stroke"
     />
   </svg>

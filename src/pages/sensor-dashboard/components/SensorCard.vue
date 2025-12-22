@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { SensorData } from '../composables/types'
+import { downsample } from '../composables/useSampling'
 import MiniChart from './MiniChart.vue'
 import PermissionButton from './PermissionButton.vue'
 
@@ -19,7 +20,7 @@ const chartData = computed(() => {
   props.sensor.chartFields.forEach((field) => {
     const history = (props.sensor as any)[`${field}History`]
     if (history && Array.isArray(history))
-      data[field] = history
+      data[field] = downsample(history, 100)
   })
   return Object.keys(data).length > 0 ? data : null
 })

@@ -11,7 +11,7 @@ export function useNetworkInfo() {
     chartFields: ['downlink', 'rtt'],
   })
 
-  const MAX_HISTORY = 500
+  const MAX_HISTORY = 60
   const downlinkHistory = ref<number[]>([])
   const rttHistory = ref<number[]>([])
 

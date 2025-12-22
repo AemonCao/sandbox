@@ -53,15 +53,15 @@ export function useDeviceMotion() {
     chartMax: 360,
   })
 
-  const accXHistory = ref<number[]>([])
-  const accYHistory = ref<number[]>([])
-  const accZHistory = ref<number[]>([])
-  const gyroAlphaHistory = ref<number[]>([])
-  const gyroBetaHistory = ref<number[]>([])
-  const gyroGammaHistory = ref<number[]>([])
-  const oriAlphaHistory = ref<number[]>([])
-  const oriBetaHistory = ref<number[]>([])
-  const oriGammaHistory = ref<number[]>([])
+  const accXHistory = ref<number[]>(Array.from({ length: MAX_HISTORY_POINTS }, () => 0))
+  const accYHistory = ref<number[]>(Array.from({ length: MAX_HISTORY_POINTS }, () => 0))
+  const accZHistory = ref<number[]>(Array.from({ length: MAX_HISTORY_POINTS }, () => 0))
+  const gyroAlphaHistory = ref<number[]>(Array.from({ length: MAX_HISTORY_POINTS }, () => 0))
+  const gyroBetaHistory = ref<number[]>(Array.from({ length: MAX_HISTORY_POINTS }, () => 0))
+  const gyroGammaHistory = ref<number[]>(Array.from({ length: MAX_HISTORY_POINTS }, () => 0))
+  const oriAlphaHistory = ref<number[]>(Array.from({ length: MAX_HISTORY_POINTS }, () => 0))
+  const oriBetaHistory = ref<number[]>(Array.from({ length: MAX_HISTORY_POINTS }, () => 0))
+  const oriGammaHistory = ref<number[]>(Array.from({ length: MAX_HISTORY_POINTS }, () => 0))
 
   let motionHandler: ((event: DeviceMotionEvent) => void) | null = null
   let orientationHandler: ((event: DeviceOrientationEvent) => void) | null = null

@@ -1,7 +1,8 @@
 import type { SensorData } from './types'
+import { MAX_HISTORY_POINTS, SAMPLE_INTERVAL } from './useSensorConfig'
 
 export function useGeolocation() {
-  const MAX_HISTORY = 10
+  let lastUpdateTime = 0
   const sensorData = ref<SensorData>({
     id: 'geolocation',
     name: '地理位置',
@@ -14,7 +15,7 @@ export function useGeolocation() {
     chartMax: 100,
   })
 
-  const accuracyHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }, () => 0))
+  const accuracyHistory = ref<number[]>(Array.from({ length: MAX_HISTORY_POINTS }, () => 0))
 
   let watchId: number | null = null
 
@@ -46,10 +47,15 @@ export function useGeolocation() {
 
     watchId = navigator.geolocation.watchPosition(
       (position) => {
+        const now = Date.now()
+        if (now - lastUpdateTime < SAMPLE_INTERVAL)
+          return
+        lastUpdateTime = now
+
         const accuracy = position.coords.accuracy
 
         accuracyHistory.value.push(accuracy)
-        if (accuracyHistory.value.length > MAX_HISTORY)
+        if (accuracyHistory.value.length > MAX_HISTORY_POINTS)
           accuracyHistory.value.shift()
 
         sensorData.value.status = 'available'

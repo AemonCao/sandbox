@@ -1,7 +1,8 @@
 import type { SensorData } from './types'
-import { MAX_HISTORY_POINTS } from './useSensorConfig'
+import { MAX_HISTORY_POINTS, SAMPLE_INTERVAL } from './useSensorConfig'
 
 export function useBattery() {
+  let lastUpdateTime = 0
   const sensorData = ref<SensorData>({
     id: 'battery',
     name: '电池状态',
@@ -43,6 +44,11 @@ export function useBattery() {
 
   function updateBatteryInfo() {
     if (battery) {
+      const now = Date.now()
+      if (now - lastUpdateTime < SAMPLE_INTERVAL)
+        return
+      lastUpdateTime = now
+
       const level = battery.level * 100
       levelHistory.value.push(level)
       if (levelHistory.value.length > MAX_HISTORY_POINTS)

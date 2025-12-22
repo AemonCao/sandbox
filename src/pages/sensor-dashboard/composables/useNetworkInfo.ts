@@ -1,7 +1,8 @@
 import type { SensorData } from './types'
+import { MAX_HISTORY_POINTS, SAMPLE_INTERVAL } from './useSensorConfig'
 
 export function useNetworkInfo() {
-  const MAX_HISTORY = 10
+  let lastUpdateTime = 0
   const sensorData = ref<SensorData>({
     id: 'network',
     name: '网络信息',
@@ -14,22 +15,27 @@ export function useNetworkInfo() {
     chartMax: 100,
   })
 
-  const downlinkHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }, () => 0))
-  const rttHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }, () => 0))
+  const downlinkHistory = ref<number[]>(Array.from({ length: MAX_HISTORY_POINTS }, () => 0))
+  const rttHistory = ref<number[]>(Array.from({ length: MAX_HISTORY_POINTS }, () => 0))
 
   function updateNetworkInfo() {
+    const now = Date.now()
+    if (now - lastUpdateTime < SAMPLE_INTERVAL)
+      return
+    lastUpdateTime = now
+
     const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
 
     if (connection) {
       if (connection.downlink !== undefined) {
         downlinkHistory.value.push(connection.downlink)
-        if (downlinkHistory.value.length > MAX_HISTORY)
+        if (downlinkHistory.value.length > MAX_HISTORY_POINTS)
           downlinkHistory.value.shift()
       }
 
       if (connection.rtt !== undefined) {
         rttHistory.value.push(connection.rtt)
-        if (rttHistory.value.length > MAX_HISTORY)
+        if (rttHistory.value.length > MAX_HISTORY_POINTS)
           rttHistory.value.shift()
       }
 

@@ -116,6 +116,9 @@ catalogs:
     jszip:
       specifier: ^3.10.1
       version: 3.10.1
+    lil-gui:
+      specifier: 0.21.0
+      version: 0.21.0
     lodash:
       specifier: ^4.17.21
       version: 4.17.21
@@ -176,6 +179,9 @@ importers:
       jszip:
         specifier: catalog:frontend
         version: 3.10.1
+      lil-gui:
+        specifier: catalog:frontend
+        version: 0.21.0
       lodash:
         specifier: catalog:frontend
         version: 4.17.21
@@ -3081,6 +3087,9 @@ packages:
 
   lie@3.3.0:
     resolution: {integrity: sha512-UaiMJzeWRlEujzAuw5LokY1L5ecNQYZKfmyZ9L7wDHb/p5etKaxXhohBcrw0EYby+G/NA52vRSN4N39dxHAIwQ==}
+
+  lil-gui@0.21.0:
+    resolution: {integrity: sha512-tpvxN7v1GvE/Tv+GRopfOp0W7fVEjF4PltkuX8vOCIfim22rD1ztvfkoEMcv9lzQeuNUSeIrUmUjBwmlW/oUew==}
 
   lint-staged@16.2.6:
     resolution: {integrity: sha512-s1gphtDbV4bmW1eylXpVMk2u7is7YsrLl8hzrtvC70h4ByhcMLZFY01Fx05ZUDNuv1H8HO4E+e2zgejV1jVwNw==}
@@ -7461,6 +7470,8 @@ snapshots:
   lie@3.3.0:
     dependencies:
       immediate: 3.0.6
+
+  lil-gui@0.21.0: {}
 
   lint-staged@16.2.6:
     dependencies:

@@ -31,7 +31,9 @@
       "Bash(cat:*)",
       "Bash(git stash:*)",
       "Bash(find:*)",
-      "Bash(npx simple-git-hooks:*)"
+      "Bash(npx simple-git-hooks:*)",
+      "Bash(git tag:*)",
+      "Bash(npx conventional-changelog:*)"
     ],
     "deny": [],
     "ask": []

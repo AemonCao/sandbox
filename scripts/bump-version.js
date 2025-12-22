@@ -36,6 +36,18 @@ catch (error) {
   process.exit(1)
 }
 
+// 创建 git tag（用于下次 CHANGELOG 生成时的版本边界）
+try {
+  execSync(`git tag v${pkg.version}`, { stdio: 'inherit' })
+  console.log(`Created git tag: v${pkg.version}`)
+}
+catch (error) {
+  // 如果 tag 已存在，忽略错误
+  if (!error.message.includes('already exists')) {
+    console.error('Failed to create git tag:', error.message)
+  }
+}
+
 // 将 package.json 和 CHANGELOG.md 添加到暂存区
 execSync('git add package.json CHANGELOG.md')
 console.log('Added package.json and CHANGELOG.md to staging area')

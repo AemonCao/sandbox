@@ -28,7 +28,8 @@
       "Bash(npx eslint:*)",
       "Bash(git restore:*)",
       "Bash(git push)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []

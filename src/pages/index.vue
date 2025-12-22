@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { RouteRecordRaw } from 'vue-router'
-import { NButton, NCard, NGi, NGrid, NSpace } from 'naive-ui'
+import { NCard, NSpace } from 'naive-ui'
 import { routes } from 'vue-router/auto-routes'
 
 defineOptions({
@@ -113,37 +113,31 @@ pageRoutes.sort((a, b) => {
         </NCard>
       </div>
 
-      <NGrid v-else x-gap="4 md:4" y-gap="4 md:4" cols="1 md:2 lg:3 xl:4" responsive="screen">
-        <NGi v-for="route in pageRoutes" :key="route.path">
-          <NCard
-            cursor="pointer"
-            transition="all duration-300 ease"
-            rounded="3 md:3"
-            hover:translate-y="-1 md:-1"
-            hover:shadow="[0_8px_16px_rgba(0,0,0,0.15)]"
-            h="full"
-            flex="~ col"
-            @click="$router.push(route.path)"
-          >
-            <div p="4 md:2">
-              <h3 text="5 md:5" font="600" text-gray-800 mb-2 dark:text-gray-100>
-                {{ route.meta?.title || route.name }}
-              </h3>
-              <p v-if="route.meta?.description" text="3.5 md:3.5" text-gray-600 leading-relaxed my-2 dark:text-gray-400>
-                {{ route.meta.description }}
-              </p>
-              <p text="3 md:3.5" font="mono" p="2 md:1 2 md:2" rounded="1 md:1" text-gray-600 bg-gray-100 inline-block dark:text-gray-300 dark:bg-gray-800>
-                {{ route.path }}
-              </p>
-            </div>
-            <template #footer>
-              <NButton type="primary" size="large" block @click.stop="$router.push(route.path)">
-                进入页面
-              </NButton>
-            </template>
-          </NCard>
-        </NGi>
-      </NGrid>
+      <div v-else grid="~ cols-1 md:cols-2 lg:cols-3 xl:cols-4" gap="4">
+        <NCard
+          v-for="route in pageRoutes"
+          :key="route.path"
+          cursor="pointer"
+          transition="all duration-300 ease"
+          rounded="3 md:3"
+          hover:shadow="[0_8px_16px_rgba(0,0,0,0.15)]"
+          h="full"
+          flex="~ col"
+          @click="$router.push(route.path)"
+        >
+          <div p="4 md:2">
+            <h3 text="5 md:5" font="600" text-gray-800 mb-2 dark:text-gray-100>
+              {{ route.meta?.title || route.name }}
+            </h3>
+            <p v-if="route.meta?.description" text="3.5 md:3.5" text-gray-600 leading-relaxed my-2 dark:text-gray-400>
+              {{ route.meta.description }}
+            </p>
+            <p text="3 md:3.5" font="mono" p="2 md:1 2 md:2" rounded="1 md:1" text-gray-600 bg-gray-100 inline-block dark:text-gray-300 dark:bg-gray-800>
+              {{ route.path }}
+            </p>
+          </div>
+        </NCard>
+      </div>
     </NSpace>
   </div>
 </template>

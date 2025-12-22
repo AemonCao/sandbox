@@ -25,7 +25,7 @@ const isHomePage = computed(() => router.currentRoute.value.path === '/')
       z="1000"
       shadow="[0_2px_8px_rgba(0,0,0,0.15)]"
       hover:shadow="[0_4px_12px_rgba(0,0,0,0.2)]"
-      border="2 solid gray-300" rounded-full bg-white flex h-12 w-12 cursor-pointer transition-all duration-300 ease-in-out items-center left-5 top-5 justify-center fixed dark:border-gray-600 dark:bg-gray-800 active:scale-95 hover:scale-110
+      border="2 solid gray-300" rounded-full bg-white flex h-12 w-12 cursor-pointer transition-all duration-300 ease-in-out items-center left-5 top-5 justify-center fixed dark:border-gray-600 dark:bg-gray-800
       title="返回主页"
       @click="router.push('/')"
     >
@@ -36,7 +36,7 @@ const isHomePage = computed(() => router.currentRoute.value.path === '/')
       z="1000"
       shadow="[0_2px_8px_rgba(0,0,0,0.15)]"
       hover:shadow="[0_4px_12px_rgba(0,0,0,0.2)]"
-      border="2 solid gray-300" rounded-full bg-white flex h-12 w-12 cursor-pointer transition-all duration-300 ease-in-out items-center right-5 top-5 justify-center fixed dark:border-gray-600 dark:bg-gray-800 active:scale-95 hover:scale-110
+      border="2 solid gray-300" rounded-full bg-white flex h-12 w-12 cursor-pointer transition-all duration-300 ease-in-out items-center right-5 top-5 justify-center fixed dark:border-gray-600 dark:bg-gray-800
       :title="isDark ? '切换到浅色模式' : '切换到深色模式'"
       @click="toggleDark"
     >

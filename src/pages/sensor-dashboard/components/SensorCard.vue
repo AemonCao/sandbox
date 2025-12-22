@@ -108,7 +108,7 @@ function getKeyLabel(key: string) {
 <template>
   <div
     border="2 transparent"
-    p="4 md:4" rounded-lg bg-white shadow-md transition-all duration-300 hover:border-blue-400 dark:bg-gray-800 hover:shadow-lg hover:scale-102
+    p="4 md:4" rounded-lg bg-white shadow-md transition-all duration-300 hover:border-blue-400 dark:bg-gray-800 hover:shadow-lg
   >
     <div mb-3 flex items-center justify-between>
       <div flex gap-2 items-center>

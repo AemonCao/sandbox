@@ -111,6 +111,7 @@ src/
 meta:
   layout: default
   title: '页面标题'
+  description: '页面简介'
 </route>
 ```
 

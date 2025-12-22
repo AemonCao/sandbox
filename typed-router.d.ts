@@ -184,6 +184,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/sensor-dashboard/components/CameraPreview': RouteRecordInfo<
+      '/sensor-dashboard/components/CameraPreview',
+      '/sensor-dashboard/components/CameraPreview',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/sensor-dashboard/components/DeviceTypeIndicator': RouteRecordInfo<
       '/sensor-dashboard/components/DeviceTypeIndicator',
       '/sensor-dashboard/components/DeviceTypeIndicator',
@@ -367,6 +374,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/sensor-dashboard/index.vue': {
       routes:
         | '/sensor-dashboard/'
+      views:
+        | never
+    }
+    'src/pages/sensor-dashboard/components/CameraPreview.vue': {
+      routes:
+        | '/sensor-dashboard/components/CameraPreview'
       views:
         | never
     }

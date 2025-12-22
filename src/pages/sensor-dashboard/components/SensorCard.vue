@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { SensorData } from '../composables/types'
 import { downsample } from '../composables/useSampling'
+import CameraPreview from './CameraPreview.vue'
 import MiniChart from './MiniChart.vue'
 import PermissionButton from './PermissionButton.vue'
 
@@ -113,6 +114,7 @@ function formatValue(value: any) {
           {{ sensor.unit }}
         </div>
       </div>
+      <CameraPreview v-if="sensor.id === 'camera'" />
       <div v-if="chartData" mt-2 space-y-2>
         <div v-for="(data, field, index) in chartData" :key="field">
           <div text-xs text-gray-500 mb-1 dark:text-gray-400>

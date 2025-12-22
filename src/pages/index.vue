@@ -77,8 +77,7 @@ pageRoutes.sort((a, b) => {
 
 <template>
   <div
-    from-blue-500 to-purple-600 bg-gradient-to-r
-    dark:from-blue-800 dark:to-purple-900
+    from-indigo-50 to-pink-50 via-purple-50 bg-gradient-to-br dark:from-gray-900 dark:to-indigo-900 dark:via-purple-900
     p="4 md:6" min-h="100vh"
   >
     <div text="center" mb="8 md:10">

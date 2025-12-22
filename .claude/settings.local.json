@@ -29,7 +29,8 @@
       "Bash(git restore:*)",
       "Bash(git push)",
       "Bash(cat:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

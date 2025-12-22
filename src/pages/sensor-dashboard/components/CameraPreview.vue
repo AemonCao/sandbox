@@ -2,17 +2,21 @@
 const videoRef = ref<HTMLVideoElement>()
 const stream = ref<MediaStream | null>(null)
 const isActive = ref(false)
+const message = useMessage()
 
 async function startPreview() {
   try {
     stream.value = await navigator.mediaDevices.getUserMedia({ video: true })
     if (videoRef.value) {
       videoRef.value.srcObject = stream.value
+      await videoRef.value.play()
       isActive.value = true
     }
   }
   catch (error) {
+    const msg = error instanceof Error ? error.message : '未知错误'
     console.error('Failed to start camera preview:', error)
+    message.error(`摄像头启动失败: ${msg}`)
   }
 }
 

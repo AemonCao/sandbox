@@ -187,13 +187,13 @@ const deviceStatusStats = computed(() => {
 </script>
 
 <template>
-  <div p-4 min-h-screen from-slate-50 to-blue-50 bg-gradient-to-br dark:from-slate-900 dark:to-slate-800>
+  <div p="4 md:6" min-h-screen from-slate-50 to-blue-50 bg-gradient-to-br dark:from-slate-900 dark:to-slate-800>
     <!-- 页面标题 -->
-    <div mb-6>
-      <h1 text-3xl text-slate-800 font-bold mb-2 dark:text-slate-100>
+    <div mb="6 md:8">
+      <h1 text="6 md:8" text-slate-800 font-bold mb-2 dark:text-slate-100>
         智能输液监控系统
       </h1>
-      <p text-slate-600 dark:text-slate-300>
+      <p text="3.5 md:4" text-slate-600 dark:text-slate-300>
         实时监控病房输液状态，确保患者安全
       </p>
     </div>
@@ -201,12 +201,12 @@ const deviceStatusStats = computed(() => {
     <!-- 统计卡片区域 -->
     <div mb-8 gap-4 grid grid-cols-2 lg:grid-cols-6 md:grid-cols-4>
       <!-- 总床位数 -->
-      <div p-4 border border-slate-200 rounded-xl bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800>
+      <div p="4 md:4" border border-slate-200 rounded-xl bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800>
         <div mb-2 flex items-center justify-between>
-          <span text-sm text-slate-600 dark:text-slate-400>总床位数</span>
-          <div i-carbon-bed text-xl text-blue-500 />
+          <span text="3.5 md:3.5" text-slate-600 dark:text-slate-400>总床位数</span>
+          <div i-carbon-bed text="5 md:5" text-blue-500 />
         </div>
-        <div text-2xl text-slate-800 font-bold dark:text-slate-100>
+        <div text="6 md:6" text-slate-800 font-bold dark:text-slate-100>
           {{ statistics.bed_total }}
         </div>
       </div>
@@ -214,10 +214,10 @@ const deviceStatusStats = computed(() => {
       <!-- 在院患者 -->
       <div p-4 border border-slate-200 rounded-xl bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800>
         <div mb-2 flex items-center justify-between>
-          <span text-sm text-slate-600 dark:text-slate-400>在院患者</span>
-          <div i-carbon-user text-xl text-green-500 />
+          <span text="3.5 md:3.5" text-slate-600 dark:text-slate-400>在院患者</span>
+          <div i-carbon-user text="5 md:5" text-green-500 />
         </div>
-        <div text-2xl text-slate-800 font-bold dark:text-slate-100>
+        <div text="6 md:6" text-slate-800 font-bold dark:text-slate-100>
           {{ statistics.in_hospital }}
         </div>
       </div>
@@ -225,10 +225,10 @@ const deviceStatusStats = computed(() => {
       <!-- 今日出院 -->
       <div p-4 border border-slate-200 rounded-xl bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800>
         <div mb-2 flex items-center justify-between>
-          <span text-sm text-slate-600 dark:text-slate-400>今日出院</span>
+          <span text="3.5 md:3.5" text-slate-600 dark:text-slate-400>今日出院</span>
           <div i-carbon-user-multiple text-xl text-orange-500 />
         </div>
-        <div text-2xl text-slate-800 font-bold dark:text-slate-100>
+        <div text="6 md:6" text-slate-800 font-bold dark:text-slate-100>
           {{ statistics.leave_hospital }}
         </div>
       </div>
@@ -236,10 +236,10 @@ const deviceStatusStats = computed(() => {
       <!-- 今日手术 -->
       <div p-4 border border-slate-200 rounded-xl bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800>
         <div mb-2 flex items-center justify-between>
-          <span text-sm text-slate-600 dark:text-slate-400>今日手术</span>
+          <span text="3.5 md:3.5" text-slate-600 dark:text-slate-400>今日手术</span>
           <div i-carbon-activity text-xl text-purple-500 />
         </div>
-        <div text-2xl text-slate-800 font-bold dark:text-slate-100>
+        <div text="6 md:6" text-slate-800 font-bold dark:text-slate-100>
           {{ statistics.today_operation }}
         </div>
       </div>
@@ -247,10 +247,10 @@ const deviceStatusStats = computed(() => {
       <!-- 正在输液 -->
       <div p-4 border border-slate-200 rounded-xl bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800>
         <div mb-2 flex items-center justify-between>
-          <span text-sm text-slate-600 dark:text-slate-400>正在输液</span>
+          <span text="3.5 md:3.5" text-slate-600 dark:text-slate-400>正在输液</span>
           <div i-carbon-drop text-xl text-green-500 />
         </div>
-        <div text-2xl text-slate-800 font-bold dark:text-slate-100>
+        <div text="6 md:6" text-slate-800 font-bold dark:text-slate-100>
           {{ deviceStatusStats.infusing }}
         </div>
       </div>
@@ -258,10 +258,10 @@ const deviceStatusStats = computed(() => {
       <!-- 设备离线 -->
       <div p-4 border border-slate-200 rounded-xl bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800>
         <div mb-2 flex items-center justify-between>
-          <span text-sm text-slate-600 dark:text-slate-400>设备离线</span>
+          <span text="3.5 md:3.5" text-slate-600 dark:text-slate-400>设备离线</span>
           <div i-carbon-wifi-off text-xl text-gray-500 />
         </div>
-        <div text-2xl text-slate-800 font-bold dark:text-slate-100>
+        <div text="6 md:6" text-slate-800 font-bold dark:text-slate-100>
           {{ deviceStatusStats.offline }}
         </div>
       </div>

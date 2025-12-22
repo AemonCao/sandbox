@@ -102,36 +102,36 @@ function handleModelSaved(modelName: string) {
 </script>
 
 <template>
-  <div p-4 min-h-screen from-blue-50 to-indigo-100 bg-gradient-to-br sm:p-6 dark:from-gray-900 dark:to-blue-900>
-    <div mb-6>
-      <h1 text-3xl font-bold text-center dark:text-white>
+  <div p="4 md:6" min-h-screen from-blue-50 to-indigo-100 bg-gradient-to-br dark:from-gray-900 dark:to-blue-900>
+    <div mb="6 md:8">
+      <h1 text="6 md:8" font-bold text-center dark:text-white>
         手写数字识别
       </h1>
-      <p text-gray-600 mt-2 text-center dark:text-gray-300>
+      <p text="3.5 md:4" text-gray-600 mt-2 text-center dark:text-gray-300>
         使用神经网络识别手写数字 (MNIST)
       </p>
     </div>
 
     <NSpin :show="loading" description="初始化中...">
-      <div v-if="initError" text-red-600 mb-4 p-4 rounded-lg bg-red-50 dark:text-red-300 dark:bg-red-900>
+      <div v-if="initError" text="4 md:4" text-red-600 mb-4 p-4 rounded-lg bg-red-50 dark:text-red-300 dark:bg-red-900>
         初始化错误: {{ initError }}
       </div>
 
       <div mx-auto gap-4 max-w-7xl flex="~ col">
         <!-- 第一行：模型列表 -->
-        <div p-4 rounded-lg bg-white shadow-lg sm:p-6 dark:bg-gray-800 dark:shadow-gray-700>
+        <div p="4 md:6" rounded-lg bg-white shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
           <div mb-4 gap-3 flex="~ col sm:row" items-start justify-between sm:items-center>
-            <h2 text-xl font-semibold dark:text-white>
+            <h2 text="5 md:5" font-semibold dark:text-white>
               模型列表
             </h2>
             <div flex flex-wrap gap-2>
-              <NButton @click="modelManagerRef?.handleImport()">
+              <NButton size="large" @click="modelManagerRef?.handleImport()">
                 导入模型
               </NButton>
-              <NButton type="primary" @click="showTrainingModal = true">
+              <NButton size="large" type="primary" @click="showTrainingModal = true">
                 训练新模型
               </NButton>
-              <NButton type="error" @click="modelManagerRef?.handleClearAll()">
+              <NButton size="large" type="error" @click="modelManagerRef?.handleClearAll()">
                 清空所有
               </NButton>
             </div>

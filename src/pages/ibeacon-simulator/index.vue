@@ -469,7 +469,7 @@ onMounted(() => {
     >
       <!-- 画布容器 -->
       <template #1>
-        <div p-2 h-full>
+        <div p="2 md:4" h-full>
           <div rounded-lg bg-white flex h-full shadow-md items-center justify-center relative dark:bg-gray-800 dark:shadow-gray-700>
             <BeaconCanvas
               :beacons="beacons"

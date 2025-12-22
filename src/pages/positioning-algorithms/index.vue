@@ -291,19 +291,19 @@ onMounted(() => {
     <!-- 头部导航 -->
     <header class="border-b border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
       <div class="mx-auto px-4 max-w-7xl lg:px-8 sm:px-6">
-        <div class="flex h-16 items-center justify-between">
+        <div class="flex h-16 items-center justify-between md:h-20">
           <div class="flex items-center">
-            <h1 class="text-2xl text-gray-900 font-bold dark:text-white">
+            <h1 class="text-5 text-gray-900 font-bold md:text-6 dark:text-white">
               多算法定位引擎对比
             </h1>
             <div class="ml-6 flex items-center space-x-4">
-              <div class="text-sm text-gray-500 dark:text-gray-400">
+              <div class="text-3.5 text-gray-500 md:text-3.5 dark:text-gray-400">
                 测试点: {{ testPoints.length }}
               </div>
-              <div class="text-sm text-gray-500 dark:text-gray-400">
+              <div class="text-3.5 text-gray-500 md:text-3.5 dark:text-gray-400">
                 信标: {{ beacons.length }}
               </div>
-              <div v-if="statistics" class="text-sm text-gray-500 dark:text-gray-400">
+              <div v-if="statistics" class="text-3.5 text-gray-500 md:text-3.5 dark:text-gray-400">
                 最佳算法: {{ statistics.bestAlgorithm }}
               </div>
             </div>
@@ -315,7 +315,7 @@ onMounted(() => {
               <button
                 v-for="mode in ['overlay', 'comparison', 'accuracy', 'heatmap']"
                 :key="mode"
-                class="text-sm font-medium px-3 py-1 rounded transition-colors" :class="[
+                class="text-3.5 font-medium px-3 py-2 rounded transition-colors md:text-3.5 md:py-1" :class="[
                   visualizationMode === mode
                     ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm'
                     : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white',

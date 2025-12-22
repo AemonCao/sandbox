@@ -14,7 +14,7 @@ const emit = defineEmits<{
 
 <template>
   <div mb-8>
-    <h2 text-2xl text-gray-800 font-bold mb-4 dark:text-gray-100>
+    <h2 text="6 md:6" text-gray-800 font-bold mb-4 dark:text-gray-100>
       {{ category.name }}
     </h2>
     <div

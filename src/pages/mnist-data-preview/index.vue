@@ -163,24 +163,24 @@ function jump() {
 </script>
 
 <template>
-  <div p-4 min-h-screen from-blue-50 to-indigo-100 bg-gradient-to-br dark:from-gray-900 dark:to-blue-900>
-    <div mb-6>
-      <h1 text-3xl font-bold text-center dark:text-white>
+  <div p="4 md:6" min-h-screen from-blue-50 to-indigo-100 bg-gradient-to-br dark:from-gray-900 dark:to-blue-900>
+    <div mb="6 md:8">
+      <h1 text="6 md:8" font-bold text-center dark:text-white>
         MNIST 数据集预览
       </h1>
-      <p text-gray-600 mt-2 text-center dark:text-gray-300>
+      <p text="3.5 md:4" text-gray-600 mt-2 text-center dark:text-gray-300>
         查看训练集图片和标签是否正确
       </p>
     </div>
 
-    <div v-if="loading" mx-auto p-6 rounded-lg bg-white max-w-2xl shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
-      <div mb-4 text-center>
+    <div v-if="loading" mx-auto p="4 md:6" rounded-lg bg-white max-w-2xl shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
+      <div mb-4 text="4 md:4" text-center>
         加载数据集中... {{ formatBytes(loadedSize) }} MB / {{ formatBytes(totalSize) }} MB
       </div>
       <NProgress type="line" :percentage="progress" :show-indicator="false" />
     </div>
 
-    <div v-else mx-auto p-6 rounded-lg bg-white max-w-2xl shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
+    <div v-else mx-auto p="4 md:6" rounded-lg bg-white max-w-2xl shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
       <div flex flex-col gap-6 items-center>
         <!-- 画布 -->
         <canvas
@@ -193,17 +193,17 @@ function jump() {
 
         <!-- 标签显示 -->
         <div text-center>
-          <div text-sm text-gray-600 dark:text-gray-400>
+          <div text="3.5 md:3.5" text-gray-600 dark:text-gray-400>
             当前标签
           </div>
-          <div text-4xl text-blue-600 font-bold dark:text-blue-400>
+          <div text="8 md:10" text-blue-600 font-bold dark:text-blue-400>
             {{ label ?? '-' }}
           </div>
         </div>
 
         <!-- 索引控制 -->
         <div flex gap-4 w-full items-center>
-          <n-button :disabled="currentIndex === 0" @click="prev">
+          <n-button size="large" :disabled="currentIndex === 0" @click="prev">
             上一张
           </n-button>
 
@@ -219,7 +219,7 @@ function jump() {
             </n-button>
           </div>
 
-          <n-button :disabled="!labels || currentIndex >= labels.length - 1" @click="next">
+          <n-button size="large" :disabled="!labels || currentIndex >= labels.length - 1" @click="next">
             下一张
           </n-button>
         </div>

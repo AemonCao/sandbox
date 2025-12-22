@@ -108,7 +108,7 @@ function getKeyLabel(key: string) {
 <template>
   <div
     border="2 transparent"
-    p-4 rounded-lg bg-white shadow-md transition-all duration-300 hover:border-blue-400 dark:bg-gray-800 hover:shadow-lg hover:scale-102
+    p="4 md:4" rounded-lg bg-white shadow-md transition-all duration-300 hover:border-blue-400 dark:bg-gray-800 hover:shadow-lg hover:scale-102
   >
     <div mb-3 flex items-center justify-between>
       <div flex gap-2 items-center>
@@ -116,18 +116,18 @@ function getKeyLabel(key: string) {
           rounded-full h-3 w-3
           :class="statusColor"
         />
-        <h3 text-lg text-gray-800 font-semibold dark:text-gray-100>
+        <h3 text="5 md:5" text-gray-800 font-semibold dark:text-gray-100>
           {{ sensor.name }}
         </h3>
       </div>
-      <div text-xs text-gray-500 dark:text-gray-400>
+      <div text="3 md:3" text-gray-500 dark:text-gray-400>
         {{ formatTimestamp(sensor.lastUpdate) }}
       </div>
     </div>
     <div mb-2>
       <span
         :class="statusColor"
-        text-xs text-white font-medium px-2 py-1 rounded
+        text="3 md:3" text-white font-medium px-2 py-1 rounded
       >
         {{ statusText }}
       </span>
@@ -135,22 +135,22 @@ function getKeyLabel(key: string) {
     <div v-if="sensor.status === 'available'">
       <div v-if="getValueEntries(sensor.value)" py-4 space-y-2>
         <div v-for="[key, val] in getValueEntries(sensor.value)" :key="key" px-4 flex items-center justify-between>
-          <span text-sm text-gray-600 dark:text-gray-400>{{ getKeyLabel(key) }} ({{ key }}):</span>
-          <span text-xl text-blue-600 font-bold dark:text-blue-400>{{ val }}</span>
+          <span text="3.5 md:3.5" text-gray-600 dark:text-gray-400>{{ getKeyLabel(key) }} ({{ key }}):</span>
+          <span text="5 md:5" text-blue-600 font-bold dark:text-blue-400>{{ val }}</span>
         </div>
       </div>
       <div v-else py-4 text-center>
-        <div text-2xl text-blue-600 font-bold dark:text-blue-400>
+        <div text="6 md:6" text-blue-600 font-bold dark:text-blue-400>
           {{ formatValue(sensor.value) }}
         </div>
-        <div v-if="sensor.unit" text-sm text-gray-500 mt-1 dark:text-gray-400>
+        <div v-if="sensor.unit" text="3.5 md:3.5" text-gray-500 mt-1 dark:text-gray-400>
           {{ sensor.unit }}
         </div>
       </div>
       <CameraPreview v-if="sensor.id === 'camera'" />
       <div v-if="chartData" mt-2 space-y-2>
         <div v-for="(data, field, index) in chartData" :key="field">
-          <div text-xs text-gray-500 mb-1 dark:text-gray-400>
+          <div text="3 md:3" text-gray-500 mb-1 dark:text-gray-400>
             {{ field }}
           </div>
           <MiniChart :data="data" :color-index="index" :min="sensor.chartMin" :max="sensor.chartMax" />

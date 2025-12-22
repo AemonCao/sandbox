@@ -890,36 +890,36 @@ const hasActiveFilters = computed(() => {
 </script>
 
 <template>
-  <div p-4 min-h-screen from-gray-50 to-blue-50 bg-gradient-to-br dark:from-gray-900 dark:to-blue-900>
-    <div mb-6>
-      <h1 text-3xl text-gray-800 font-bold text-center dark:text-white>
+  <div p="4 md:6" min-h-screen from-gray-50 to-blue-50 bg-gradient-to-br dark:from-gray-900 dark:to-blue-900>
+    <div mb="6 md:8">
+      <h1 text="6 md:8" text-gray-800 font-bold text-center dark:text-white>
         蓝牙广播包解析器
       </h1>
-      <p text-gray-600 mt-2 text-center dark:text-gray-300>
+      <p text="3.5 md:4" text-gray-600 mt-2 text-center dark:text-gray-300>
         支持同时解析多个蓝牙广播包和扫描返回包，支持批量输入
       </p>
     </div>
 
-    <div mx-auto gap-6 grid grid-cols-1 max-w-full lg:px-4 lg:grid-cols-2>
+    <div mx-auto gap="4 md:6" grid grid-cols-1 max-w-full lg:px-4 lg:grid-cols-2>
       <!-- 左侧输入区域 -->
       <div
-        p-6 rounded-lg bg-white shadow-lg dark:bg-gray-800 lg:h-fit lg:max-h-screen dark:shadow-gray-700 lg:top-4 lg:sticky lg:overflow-y-auto
+        p="4 md:6" rounded-lg bg-white shadow-lg dark:bg-gray-800 lg:h-fit lg:max-h-screen dark:shadow-gray-700 lg:top-4 lg:sticky lg:overflow-y-auto
         style="max-height: calc(100vh - 120px)"
       >
-        <h2 text-xl text-gray-800 font-semibold mb-4 flex gap-2 items-center dark:text-white>
+        <h2 text="5 md:5" text-gray-800 font-semibold mb-4 flex gap-2 items-center dark:text-white>
           <div rounded bg-blue-500 h-6 w-2 />
           输入广播包数据
         </h2>
 
         <div mb-4>
-          <label text-sm text-gray-700 font-medium mb-2 block dark:text-gray-300>
+          <label text="3.5 md:3.5" text-gray-700 font-medium mb-2 block dark:text-gray-300>
             请输入广播包数据（支持每行一个或JSON数组格式）
           </label>
           <textarea
             v-model="inputText"
             placeholder="格式1（普通广播包）：&#10;00aea273f4f8deaa0201061aff4c000215ab8190d5d11e4941acc442f30510b40827473bd4b5&#10;&#10;格式2（扫描返回包 04开头）：&#10;046c3d20c67b90f00303f0ff0a094265654c696e6b65720a167825271436cd3401003401...&#10;&#10;格式3（JSON数组）：&#10;[&quot;00aea273f4f8deaa020106...&quot;, &quot;046c3d20c67b90f00303...&quot;]"
 
-            text-sm font-mono px-3 py-2 border border-gray-300 rounded-md h-32 w-full resize-none dark:text-gray-200 dark:border-gray-600 focus:border-blue-500 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500
+            text="3.5 md:3.5" font-mono px-3 py-2 border border-gray-300 rounded-md h-32 w-full resize-none dark:text-gray-200 dark:border-gray-600 focus:border-blue-500 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500
             rows="6"
           />
         </div>
@@ -927,7 +927,7 @@ const hasActiveFilters = computed(() => {
         <div flex gap-3>
           <button
             :disabled="!inputText.trim()"
-            text-white px-4 py-2 rounded-md bg-blue-500 flex-1 transition-colors
+            text="4 md:4" text-white px-4 py="3 md:2" rounded-md bg-blue-500 flex-1 transition-colors
             disabled:bg-gray-300 hover:bg-blue-600 disabled:cursor-not-allowed dark:disabled:bg-gray-600
             @click="addPackets"
           >
@@ -935,7 +935,7 @@ const hasActiveFilters = computed(() => {
           </button>
           <button
             :disabled="packets.length === 0"
-            text-white px-4 py-2 rounded-md bg-red-500 flex-1 transition-colors
+            text="4 md:4" text-white px-4 py="3 md:2" rounded-md bg-red-500 flex-1 transition-colors
             disabled:bg-gray-300 hover:bg-red-600 disabled:cursor-not-allowed dark:disabled:bg-gray-600
             @click="clearAll"
           >
@@ -946,7 +946,7 @@ const hasActiveFilters = computed(() => {
         <!-- 已添加的广播包列表 -->
         <div v-if="packets.length > 0" mt-6>
           <div mb-3 flex items-center justify-between>
-            <h3 text-sm text-gray-700 font-medium dark:text-gray-300>
+            <h3 text="3.5 md:3.5" text-gray-700 font-medium dark:text-gray-300>
               已添加的广播包 ({{ packets.length }})
             </h3>
             <button
@@ -990,14 +990,14 @@ const hasActiveFilters = computed(() => {
       </div>
 
       <!-- 右侧解析结果区域 -->
-      <div p-6 rounded-lg bg-white shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
-        <h2 text-xl text-gray-800 font-semibold mb-4 flex gap-2 items-center justify-between dark:text-white>
+      <div p="4 md:6" rounded-lg bg-white shadow-lg dark:bg-gray-800 dark:shadow-gray-700>
+        <h2 text="5 md:5" text-gray-800 font-semibold mb-4 flex gap-2 items-center justify-between dark:text-white>
           <div flex gap-2 items-center>
             <div rounded bg-green-500 h-6 w-2 />
             解析结果
           </div>
           <div flex gap-2 items-center>
-            <div text-sm text-gray-500 font-normal dark:text-gray-400>
+            <div text="3.5 md:3.5" text-gray-500 font-normal dark:text-gray-400>
               共 {{ parsedResults.length }} 个广播包
               <span v-if="hasActiveFilters" text-blue-600 dark:text-blue-400>
                 (已过滤: {{ filteredResults.length }})
@@ -1016,7 +1016,7 @@ const hasActiveFilters = computed(() => {
         <!-- 过滤器控件 -->
         <div mb-4 p-4 border border-gray-200 rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-gray-700>
           <div mb-3 flex items-center justify-between>
-            <h3 text-sm text-gray-700 font-medium flex gap-2 items-center dark:text-gray-200>
+            <h3 text="3.5 md:3.5" text-gray-700 font-medium flex gap-2 items-center dark:text-gray-200>
               <div rounded bg-indigo-500 h-4 w-2 />
               过滤器
             </h3>
@@ -1041,7 +1041,7 @@ const hasActiveFilters = computed(() => {
             <!-- 第一行：广播包类型、Major、Minor -->
             <div gap-3 grid grid-cols-3>
               <div>
-                <label text-xs text-gray-600 font-medium mb-1 block dark:text-gray-300>
+                <label text="3 md:3" text-gray-600 font-medium mb-1 block dark:text-gray-300>
                   广播包类型
                 </label>
                 <select
@@ -1070,7 +1070,7 @@ const hasActiveFilters = computed(() => {
               </div>
 
               <div>
-                <label text-xs text-gray-600 font-medium mb-1 block dark:text-gray-300>
+                <label text="3 md:3" text-gray-600 font-medium mb-1 block dark:text-gray-300>
                   Major
                 </label>
                 <input
@@ -1082,7 +1082,7 @@ const hasActiveFilters = computed(() => {
               </div>
 
               <div>
-                <label text-xs text-gray-600 font-medium mb-1 block dark:text-gray-300>
+                <label text="3 md:3" text-gray-600 font-medium mb-1 block dark:text-gray-300>
                   Minor
                 </label>
                 <input
@@ -1097,7 +1097,7 @@ const hasActiveFilters = computed(() => {
             <!-- 第二行：RSSI范围 -->
             <div gap-3 grid grid-cols-2>
               <div>
-                <label text-xs text-gray-600 font-medium mb-1 block dark:text-gray-300>
+                <label text="3 md:3" text-gray-600 font-medium mb-1 block dark:text-gray-300>
                   RSSI最小值 (dBm)
                 </label>
                 <input
@@ -1109,7 +1109,7 @@ const hasActiveFilters = computed(() => {
               </div>
 
               <div>
-                <label text-xs text-gray-600 font-medium mb-1 block dark:text-gray-300>
+                <label text="3 md:3" text-gray-600 font-medium mb-1 block dark:text-gray-300>
                   RSSI最大值 (dBm)
                 </label>
                 <input
@@ -1124,7 +1124,7 @@ const hasActiveFilters = computed(() => {
             <!-- 第三行：电压范围 -->
             <div gap-3 grid grid-cols-2>
               <div>
-                <label text-xs text-gray-600 font-medium mb-1 block dark:text-gray-300>
+                <label text="3 md:3" text-gray-600 font-medium mb-1 block dark:text-gray-300>
                   电压最小值 (V)
                 </label>
                 <input
@@ -1137,7 +1137,7 @@ const hasActiveFilters = computed(() => {
               </div>
 
               <div>
-                <label text-xs text-gray-600 font-medium mb-1 block dark:text-gray-300>
+                <label text="3 md:3" text-gray-600 font-medium mb-1 block dark:text-gray-300>
                   电压最大值 (V)
                 </label>
                 <input
@@ -1153,7 +1153,7 @@ const hasActiveFilters = computed(() => {
             <!-- 第四行：电量范围 -->
             <div gap-3 grid grid-cols-2>
               <div>
-                <label text-xs text-gray-600 font-medium mb-1 block dark:text-gray-300>
+                <label text="3 md:3" text-gray-600 font-medium mb-1 block dark:text-gray-300>
                   电量最小值 (%)
                 </label>
                 <input
@@ -1167,7 +1167,7 @@ const hasActiveFilters = computed(() => {
               </div>
 
               <div>
-                <label text-xs text-gray-600 font-medium mb-1 block dark:text-gray-300>
+                <label text="3 md:3" text-gray-600 font-medium mb-1 block dark:text-gray-300>
                   电量最大值 (%)
                 </label>
                 <input
@@ -1240,7 +1240,7 @@ const hasActiveFilters = computed(() => {
                 <div>
                   <span text-gray-600 font-medium dark:text-gray-400>RSSI：</span>
                   <span
-                    text-sm font-mono
+                    text="3.5 md:3.5" font-mono
                     :class="result.rssi < -70 ? 'text-red-600' : result.rssi < -60 ? 'text-yellow-600' : 'text-green-600'"
                   >
                     {{ result.rssi }} dBm

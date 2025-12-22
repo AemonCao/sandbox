@@ -137,17 +137,17 @@ function handleDrawEnd() {
       />
     </div>
     <div flex gap-4 items-center>
-      <NButton type="warning" @click="handleClear">
+      <NButton size="large" type="warning" @click="handleClear">
         清除画布
       </NButton>
-      <div text-sm text-gray-600 dark:text-gray-400>
+      <div text="3.5 md:3.5" text-gray-600 dark:text-gray-400>
         画笔大小: {{ brushSize }}
       </div>
     </div>
 
     <div flex="~ col sm:row" gap-4 w-full items-center justify-center>
       <div flex flex-col gap-2 items-center>
-        <div text-sm text-gray-600 dark:text-gray-400>
+        <div text="3.5 md:3.5" text-gray-600 dark:text-gray-400>
           28×28 预览
         </div>
         <canvas
@@ -160,7 +160,7 @@ function handleDrawEnd() {
       </div>
 
       <div flex flex-col gap-2 items-center>
-        <div text-sm text-gray-600 dark:text-gray-400>
+        <div text="3.5 md:3.5" text-gray-600 dark:text-gray-400>
           1×784 预览
         </div>
         <canvas

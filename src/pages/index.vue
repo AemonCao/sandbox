@@ -79,14 +79,13 @@ pageRoutes.sort((a, b) => {
   <div
     from-blue-500 to-purple-600 bg-gradient-to-r
     dark:from-blue-800 dark:to-purple-900
-    p="24px" min-h="100vh"
-    sm:p="16px"
+    p="4 md:6" min-h="100vh"
   >
-    <div text="center" mb="40px">
-      <h1 text="2.5rem" font="600" mb="12px" sm:text="2rem">
+    <div text="center" mb="8 md:10">
+      <h1 text="6 md:10" font="600" mb="3">
         Vue 3 前端沙盒
       </h1>
-      <p text="1.2rem" opacity-90 m="0" sm:text="1rem">
+      <p text="4 md:5" opacity-90 m="0">
         用于运行演示代码和调试新组件
       </p>
     </div>
@@ -114,31 +113,31 @@ pageRoutes.sort((a, b) => {
         </NCard>
       </div>
 
-      <NGrid v-else x-gap="16px" y-gap="16px" cols="1 s:2 m:3 l:4" responsive="screen">
+      <NGrid v-else x-gap="4 md:4" y-gap="4 md:4" cols="1 md:2 lg:3 xl:4" responsive="screen">
         <NGi v-for="route in pageRoutes" :key="route.path">
           <NCard
             cursor="pointer"
             transition="all duration-300 ease"
-            rounded="12px"
-            hover:translate-y="-4px"
-            hover:shadow="[0_12px_24px_rgba(0,0,0,0.15)]"
+            rounded="3 md:3"
+            hover:translate-y="-1 md:-1"
+            hover:shadow="[0_8px_16px_rgba(0,0,0,0.15)]"
             h="full"
             flex="~ col"
             @click="$router.push(route.path)"
           >
-            <div p="8px 0">
-              <h3 text="1.2rem" font="600" text-gray-800 mb-2px dark:text-gray-100 sm:text="1.1rem">
+            <div p="4 md:2">
+              <h3 text="5 md:5" font="600" text-gray-800 mb-2 dark:text-gray-100>
                 {{ route.meta?.title || route.name }}
               </h3>
-              <p v-if="route.meta?.description" text="0.9rem" text-gray-600 leading-relaxed my-2 dark:text-gray-400>
+              <p v-if="route.meta?.description" text="3.5 md:3.5" text-gray-600 leading-relaxed my-2 dark:text-gray-400>
                 {{ route.meta.description }}
               </p>
-              <p text="0.9rem" font="mono" p="4px 8px" rounded="4px" text-gray-600 bg-gray-100 inline-block dark:text-gray-300 dark:bg-gray-800 sm:text="0.8rem">
+              <p text="3 md:3.5" font="mono" p="2 md:1 2 md:2" rounded="1 md:1" text-gray-600 bg-gray-100 inline-block dark:text-gray-300 dark:bg-gray-800>
                 {{ route.path }}
               </p>
             </div>
             <template #footer>
-              <NButton type="primary" block @click.stop="$router.push(route.path)">
+              <NButton type="primary" size="large" block @click.stop="$router.push(route.path)">
                 进入页面
               </NButton>
             </template>

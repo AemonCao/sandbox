@@ -11,7 +11,7 @@ export function useGeolocation() {
     chartFields: ['accuracy'],
   })
 
-  const MAX_HISTORY = 30
+  const MAX_HISTORY = 500
   const accuracyHistory = ref<number[]>([])
 
   let watchId: number | null = null

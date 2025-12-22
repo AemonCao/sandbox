@@ -12,7 +12,7 @@ export function useBattery() {
   })
 
   const levelHistory = ref<number[]>([])
-  const MAX_HISTORY = 30
+  const MAX_HISTORY = 500
 
   let battery: any = null
 

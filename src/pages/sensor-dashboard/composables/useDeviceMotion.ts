@@ -44,7 +44,7 @@ export function useDeviceMotion() {
     chartFields: ['alpha', 'beta', 'gamma'],
   })
 
-  const MAX_HISTORY = 30
+  const MAX_HISTORY = 500
   const accXHistory = ref<number[]>([])
   const accYHistory = ref<number[]>([])
   const accZHistory = ref<number[]>([])

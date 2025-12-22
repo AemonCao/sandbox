@@ -1,6 +1,7 @@
 import type { SensorData } from './types'
 
 export function useDeviceMotion() {
+  const MAX_HISTORY = 3600
   const accelerometer = ref<SensorData>({
     id: 'accelerometer',
     name: '加速度计',
@@ -10,6 +11,8 @@ export function useDeviceMotion() {
     lastUpdate: 0,
     supportsPermissionAPI: false,
     chartFields: ['x', 'y', 'z'],
+    chartMin: -20,
+    chartMax: 20,
   })
 
   const gyroscope = ref<SensorData>({
@@ -21,6 +24,8 @@ export function useDeviceMotion() {
     lastUpdate: 0,
     supportsPermissionAPI: false,
     chartFields: ['alpha', 'beta', 'gamma'],
+    chartMin: -360,
+    chartMax: 360,
   })
 
   const magnetometer = ref<SensorData>({
@@ -42,18 +47,19 @@ export function useDeviceMotion() {
     lastUpdate: 0,
     supportsPermissionAPI: false,
     chartFields: ['alpha', 'beta', 'gamma'],
+    chartMin: -180,
+    chartMax: 360,
   })
 
-  const MAX_HISTORY = 3600
-  const accXHistory = ref<number[]>([])
-  const accYHistory = ref<number[]>([])
-  const accZHistory = ref<number[]>([])
-  const gyroAlphaHistory = ref<number[]>([])
-  const gyroBetaHistory = ref<number[]>([])
-  const gyroGammaHistory = ref<number[]>([])
-  const oriAlphaHistory = ref<number[]>([])
-  const oriBetaHistory = ref<number[]>([])
-  const oriGammaHistory = ref<number[]>([])
+  const accXHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
+  const accYHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
+  const accZHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
+  const gyroAlphaHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
+  const gyroBetaHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
+  const gyroGammaHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
+  const oriAlphaHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
+  const oriBetaHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
+  const oriGammaHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
 
   let motionHandler: ((event: DeviceMotionEvent) => void) | null = null
   let orientationHandler: ((event: DeviceOrientationEvent) => void) | null = null

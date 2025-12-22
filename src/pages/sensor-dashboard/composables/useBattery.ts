@@ -1,6 +1,7 @@
 import type { SensorData } from './types'
 
 export function useBattery() {
+  const MAX_HISTORY = 60
   const sensorData = ref<SensorData>({
     id: 'battery',
     name: '电池状态',
@@ -9,10 +10,11 @@ export function useBattery() {
     lastUpdate: 0,
     supportsPermissionAPI: false,
     chartFields: ['level'],
+    chartMin: 0,
+    chartMax: 100,
   })
 
-  const levelHistory = ref<number[]>([])
-  const MAX_HISTORY = 60
+  const levelHistory = ref<number[]>(Array.from({ length: MAX_HISTORY }).fill(0))
 
   let battery: any = null
 

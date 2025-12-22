@@ -2,6 +2,8 @@
 interface Props {
   data: number[]
   colorIndex?: number
+  min?: number
+  max?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -19,8 +21,10 @@ const color = computed(() => colors.value[props.colorIndex % colors.value.length
 const points = computed(() => {
   if (!props.data || props.data.length < 2)
     return ''
-  const max = Math.max(...props.data)
-  const min = Math.min(...props.data)
+  const dataMax = Math.max(...props.data)
+  const dataMin = Math.min(...props.data)
+  const max = props.max !== undefined ? Math.max(props.max, dataMax) : dataMax
+  const min = props.min !== undefined ? Math.min(props.min, dataMin) : dataMin
   const range = max - min || 1
   return props.data.map((v, i) => {
     const x = (i / (props.data.length - 1)) * 100

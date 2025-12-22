@@ -13,6 +13,8 @@ export interface SensorData {
   supportsPermissionAPI: boolean
   history?: number[]
   chartFields?: string[]
+  chartMin?: number
+  chartMax?: number
 }
 
 export interface SensorCategory {

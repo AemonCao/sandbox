@@ -118,7 +118,7 @@ function formatValue(value: any) {
           <div text-xs text-gray-500 mb-1 dark:text-gray-400>
             {{ field }}
           </div>
-          <MiniChart :data="data" :color-index="index" />
+          <MiniChart :data="data" :color-index="index" :min="sensor.chartMin" :max="sensor.chartMax" />
         </div>
       </div>
     </div>

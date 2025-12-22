@@ -5,6 +5,7 @@ export function useDeviceMotion() {
   let maxHistory = 600
   let lastTimestamp = 0
   let updateCount = 0
+  let isCalibrated = false
 
   const accelerometer = ref<SensorData>({
     id: 'accelerometer',
@@ -86,14 +87,15 @@ export function useDeviceMotion() {
     if ('ondevicemotion' in window) {
       motionHandler = (event: DeviceMotionEvent) => {
         if (event.acceleration) {
-          const now = Date.now()
-          if (lastTimestamp === 0)
-            lastTimestamp = now
-          updateCount++
-          if (now - lastTimestamp >= HISTORY_DURATION) {
-            maxHistory = Math.max(100, Math.ceil(updateCount * 1.2))
-            lastTimestamp = now
-            updateCount = 0
+          if (!isCalibrated) {
+            const now = Date.now()
+            if (lastTimestamp === 0)
+              lastTimestamp = now
+            updateCount++
+            if (now - lastTimestamp >= HISTORY_DURATION) {
+              maxHistory = Math.max(100, Math.ceil(updateCount * 1.2))
+              isCalibrated = true
+            }
           }
 
           const x = event.acceleration.x || 0

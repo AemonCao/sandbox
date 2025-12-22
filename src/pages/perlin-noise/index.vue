@@ -74,7 +74,7 @@ function initGUI() {
       terrainParams.heightScale = 30
       visualParams.displayMode = 'solid'
       visualParams.colorScheme = 'terrain'
-      gui?.updateDisplay()
+      gui?.controllersRecursive().forEach(c => c.updateDisplay())
     },
   }
 

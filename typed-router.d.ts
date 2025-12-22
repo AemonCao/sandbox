@@ -149,6 +149,20 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/perlin-noise/': RouteRecordInfo<
+      '/perlin-noise/',
+      '/perlin-noise',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/perlin-noise/components/TerrainCanvas': RouteRecordInfo<
+      '/perlin-noise/components/TerrainCanvas',
+      '/perlin-noise/components/TerrainCanvas',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/positioning-algorithms/': RouteRecordInfo<
       '/positioning-algorithms/',
       '/positioning-algorithms',
@@ -351,6 +365,18 @@ declare module 'vue-router/auto-routes' {
     'src/pages/mnist-recognition/components/TrainingPanel.vue': {
       routes:
         | '/mnist-recognition/components/TrainingPanel'
+      views:
+        | never
+    }
+    'src/pages/perlin-noise/index.vue': {
+      routes:
+        | '/perlin-noise/'
+      views:
+        | never
+    }
+    'src/pages/perlin-noise/components/TerrainCanvas.vue': {
+      routes:
+        | '/perlin-noise/components/TerrainCanvas'
       views:
         | never
     }

@@ -458,4 +458,5 @@ onMounted(() => {
 meta:
   layout: default
   title: '多算法定位引擎对比'
+  description: '对比多种定位算法的性能和精度，可视化展示算法差异'
 </route>

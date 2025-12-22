@@ -172,4 +172,5 @@ function handleModelSaved(modelName: string) {
 meta:
   layout: default
   title: '手写数字识别'
+  description: '基于TensorFlow.js的神经网络训练和测试，支持交互式绘图和模型管理'
 </route>

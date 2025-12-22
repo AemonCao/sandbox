@@ -545,4 +545,5 @@ onMounted(() => {
 meta:
   layout: default
   title: '室内蓝牙定位模拟器 (三角定位)'
+  description: '基于三角定位算法的室内定位模拟器，支持交互式Canvas和实时计算'
 </route>

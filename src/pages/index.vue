@@ -12,6 +12,7 @@ interface RouteInfo {
   name: string
   meta: {
     title?: string
+    description?: string
     layout?: string
     menu?: {
       title?: string
@@ -121,12 +122,17 @@ pageRoutes.sort((a, b) => {
             rounded="12px"
             hover:translate-y="-4px"
             hover:shadow="[0_12px_24px_rgba(0,0,0,0.15)]"
+            h="full"
+            flex="~ col"
             @click="$router.push(route.path)"
           >
             <div p="8px 0">
               <h3 text="1.2rem" font="600" text-gray-800 mb-2px dark:text-gray-100 sm:text="1.1rem">
                 {{ route.meta?.title || route.name }}
               </h3>
+              <p v-if="route.meta?.description" text="0.9rem" text-gray-600 leading-relaxed my-2 dark:text-gray-400>
+                {{ route.meta.description }}
+              </p>
               <p text="0.9rem" font="mono" p="4px 8px" rounded="4px" text-gray-600 bg-gray-100 inline-block dark:text-gray-300 dark:bg-gray-800 sm:text="0.8rem">
                 {{ route.path }}
               </p>

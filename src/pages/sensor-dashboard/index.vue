@@ -76,4 +76,5 @@ function handlePermissionRequest(sensorId: string) {
 meta:
   layout: default
   title: '浏览器传感器状态'
+  description: '实时监控浏览器传感器数据，支持历史记录和图表可视化'
 </route>

@@ -2216,4 +2216,5 @@ const hasActiveFilters = computed(() => {
 meta:
   layout: default
   title: '蓝牙信标解析'
+  description: '解析和分析蓝牙广播数据包，支持AD结构分析和iBeacon数据解析'
 </route>

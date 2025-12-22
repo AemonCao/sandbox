@@ -245,4 +245,5 @@ function jump() {
 meta:
   layout: default
   title: 'MNIST数据预览'
+  description: '预览MNIST手写数字数据集，可视化展示训练样本'
 </route>

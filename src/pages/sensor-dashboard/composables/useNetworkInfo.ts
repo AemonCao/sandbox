@@ -2,7 +2,6 @@ import type { SensorData } from './types'
 import { MAX_HISTORY_POINTS, SAMPLE_INTERVAL } from './useSensorConfig'
 
 export function useNetworkInfo() {
-  let lastUpdateTime = 0
   const sensorData = ref<SensorData>({
     id: 'network',
     name: '网络信息',
@@ -18,12 +17,9 @@ export function useNetworkInfo() {
   const downlinkHistory = ref<number[]>(Array.from({ length: MAX_HISTORY_POINTS }, () => 0))
   const rttHistory = ref<number[]>(Array.from({ length: MAX_HISTORY_POINTS }, () => 0))
 
-  function updateNetworkInfo() {
-    const now = Date.now()
-    if (now - lastUpdateTime < SAMPLE_INTERVAL)
-      return
-    lastUpdateTime = now
+  let intervalId: number | null = null
 
+  function updateNetworkInfo() {
     const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
 
     if (connection) {
@@ -61,14 +57,13 @@ export function useNetworkInfo() {
     }
 
     updateNetworkInfo()
-    connection.addEventListener('change', updateNetworkInfo)
+    intervalId = window.setInterval(updateNetworkInfo, SAMPLE_INTERVAL)
   }
 
   function stop() {
-    const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
-
-    if (connection) {
-      connection.removeEventListener('change', updateNetworkInfo)
+    if (intervalId !== null) {
+      clearInterval(intervalId)
+      intervalId = null
     }
   }
 

@@ -2,7 +2,6 @@ import type { SensorData } from './types'
 import { MAX_HISTORY_POINTS, SAMPLE_INTERVAL } from './useSensorConfig'
 
 export function useBattery() {
-  let lastUpdateTime = 0
   const sensorData = ref<SensorData>({
     id: 'battery',
     name: '电池状态',
@@ -18,6 +17,7 @@ export function useBattery() {
   const levelHistory = ref<number[]>(Array.from({ length: MAX_HISTORY_POINTS }, () => 0))
 
   let battery: any = null
+  let intervalId: number | null = null
 
   async function start() {
     if (!('getBattery' in navigator)) {
@@ -29,10 +29,7 @@ export function useBattery() {
       battery = await (navigator as any).getBattery()
       updateBatteryInfo()
 
-      battery.addEventListener('levelchange', updateBatteryInfo)
-      battery.addEventListener('chargingchange', updateBatteryInfo)
-      battery.addEventListener('chargingtimechange', updateBatteryInfo)
-      battery.addEventListener('dischargingtimechange', updateBatteryInfo)
+      intervalId = window.setInterval(updateBatteryInfo, SAMPLE_INTERVAL)
 
       sensorData.value.status = 'available'
     }
@@ -44,11 +41,6 @@ export function useBattery() {
 
   function updateBatteryInfo() {
     if (battery) {
-      const now = Date.now()
-      if (now - lastUpdateTime < SAMPLE_INTERVAL)
-        return
-      lastUpdateTime = now
-
       const level = battery.level * 100
       levelHistory.value.push(level)
       if (levelHistory.value.length > MAX_HISTORY_POINTS)
@@ -66,13 +58,11 @@ export function useBattery() {
   }
 
   function stop() {
-    if (battery) {
-      battery.removeEventListener('levelchange', updateBatteryInfo)
-      battery.removeEventListener('chargingchange', updateBatteryInfo)
-      battery.removeEventListener('chargingtimechange', updateBatteryInfo)
-      battery.removeEventListener('dischargingtimechange', updateBatteryInfo)
-      battery = null
+    if (intervalId !== null) {
+      clearInterval(intervalId)
+      intervalId = null
     }
+    battery = null
   }
 
   return {

@@ -191,6 +191,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/sensor-dashboard/components/MiniChart': RouteRecordInfo<
+      '/sensor-dashboard/components/MiniChart',
+      '/sensor-dashboard/components/MiniChart',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/sensor-dashboard/components/PermissionButton': RouteRecordInfo<
       '/sensor-dashboard/components/PermissionButton',
       '/sensor-dashboard/components/PermissionButton',
@@ -366,6 +373,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/sensor-dashboard/components/DeviceTypeIndicator.vue': {
       routes:
         | '/sensor-dashboard/components/DeviceTypeIndicator'
+      views:
+        | never
+    }
+    'src/pages/sensor-dashboard/components/MiniChart.vue': {
+      routes:
+        | '/sensor-dashboard/components/MiniChart'
       views:
         | never
     }

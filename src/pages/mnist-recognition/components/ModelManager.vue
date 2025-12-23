@@ -37,7 +37,7 @@ const columns = computed(() => [
   {
     title: '操作',
     key: 'actions',
-    width: 180,
+    width: 120,
     fixed: 'right' as const,
     render: (row: ModelMetadata) => {
       const isSelected = selectedModel.value === row.name

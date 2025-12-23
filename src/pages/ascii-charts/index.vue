@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { BarChartData, BarStyle, ChartConfig, ChartType, LineChartData, PieChartData, TimelineData, WaterfallData } from './composables/types'
+import type { BarChartData, BarStyle, ChartConfig, ChartType, LineChartData, NodeStyle, PieChartData, TimelineData, TreeChartData, TreeDirection, TreeNode, WaterfallData } from './composables/types'
 import ChartControls from './components/ChartControls.vue'
 import ChartDisplay from './components/ChartDisplay.vue'
 import { useAsciiChart } from './composables/useAsciiChart'
@@ -127,6 +127,31 @@ function generateSampleData(type: ChartType): ChartConfig['data'] {
       } as PieChartData
     }
 
+    case 'tree': {
+      const depth = Math.floor(Math.random() * 2) + 2
+
+      function generateNode(id: string, level: number, maxLevel: number): TreeNode {
+        const node: TreeNode = { id, label: id }
+        if (level < maxLevel) {
+          const childCount = Math.floor(Math.random() * 3) + 1
+          node.children = Array.from({ length: childCount }, (_, i) =>
+            generateNode(`${id}.${i + 1}`, level + 1, maxLevel))
+        }
+        return node
+      }
+
+      return {
+        root: generateNode('Root', 0, depth),
+        direction: 'top-down',
+        nodeStyle: {
+          borderStyle: 'thin',
+          showBorder: true,
+          width: 8,
+          height: 3,
+        },
+      } as TreeChartData
+    }
+
     default:
       return initialConfig.data
   }
@@ -139,8 +164,17 @@ function randomizeData() {
   const currentData = config.value.data
   const newData = generateSampleData(config.value.type)
 
-  // 合并配置，保留所有现有配置项
-  updateData({ ...currentData, ...newData })
+  // 树图特殊处理：只更新 root 节点，保留其他配置
+  if (config.value.type === 'tree') {
+    updateData({
+      ...currentData,
+      root: (newData as TreeChartData).root,
+    })
+  }
+  else {
+    // 合并配置，保留所有现有配置项
+    updateData({ ...currentData, ...newData })
+  }
 }
 
 /**
@@ -190,6 +224,45 @@ function updateLegendOrientation(orientation: string) {
     })
   }
 }
+
+/**
+ * 更新树图方向
+ */
+function updateTreeDirection(direction: TreeDirection) {
+  if (config.value.type === 'tree') {
+    updateData({
+      ...(config.value.data as TreeChartData),
+      direction,
+    })
+  }
+}
+
+/**
+ * 更新节点样式
+ */
+function updateNodeStyle(nodeStyle: NodeStyle) {
+  if (config.value.type === 'tree') {
+    updateData({
+      ...(config.value.data as TreeChartData),
+      nodeStyle: {
+        ...(config.value.data as TreeChartData).nodeStyle,
+        ...nodeStyle,
+      },
+    })
+  }
+}
+
+/**
+ * 更新树图间距
+ */
+function updateTreeSpacing(spacing: { siblingSpacing?: number, levelSpacing?: number }) {
+  if (config.value.type === 'tree') {
+    updateData({
+      ...(config.value.data as TreeChartData),
+      ...spacing,
+    })
+  }
+}
 </script>
 
 <template>
@@ -218,6 +291,9 @@ function updateLegendOrientation(orientation: string) {
             @update:pie-label-style="updatePieLabelStyle"
             @update:legend-position="updateLegendPosition"
             @update:legend-orientation="updateLegendOrientation"
+            @update:tree-direction="updateTreeDirection"
+            @update:node-style="updateNodeStyle"
+            @update:tree-spacing="updateTreeSpacing"
             @update:font-family="fontFamily = $event"
             @update:custom-size="setCustomSize"
             @reset-size="resetToResponsive"
@@ -237,7 +313,7 @@ function updateLegendOrientation(orientation: string) {
           功能说明
         </h3>
         <ul list-disc list-inside space-y-1>
-          <li>支持 5 种图表类型：折线图、柱状图、时间轴、瀑布图、饼图</li>
+          <li>支持 6 种图表类型：折线图、柱状图、时间轴、瀑布图、饼图、树状图</li>
           <li>数据变化时自动重新渲染</li>
           <li>移动端自适应布局（图表尺寸自动调整）</li>
           <li>使用纯 ASCII 字符绘制，兼容性好</li>

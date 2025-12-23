@@ -26,22 +26,39 @@ function colorize(text: string, colorVar?: string): string {
 }
 
 /**
- * 为图表添加边框
+ * 为图表添加边框和内边距
  */
-export function addBorder(lines: string[], width: number, height: number, borderStyle: BorderStyle = 'thin'): string[] {
+export function addBorder(lines: string[], width: number, height: number, borderStyle: BorderStyle = 'thin', padding = 1): string[] {
   const chars = getBorderChars(borderStyle)
   const result: string[] = []
 
-  // 顶部边框
-  result.push(colorize(chars.topLeft + chars.horizontal.repeat(width) + chars.topRight, 'axis'))
+  // 计算实际内容宽度（去除HTML标签后的最大宽度）
+  const stripHtml = (str: string) => str.replace(/<[^>]*>/g, '')
+  const actualWidth = Math.max(...lines.map(line => stripHtml(line).length))
+  const innerWidth = actualWidth + padding * 2
 
-  // 中间内容
+  // 顶部边框
+  result.push(colorize(chars.topLeft + chars.horizontal.repeat(innerWidth) + chars.topRight, 'axis'))
+
+  // 顶部内边距
+  for (let i = 0; i < padding; i++) {
+    result.push(colorize(chars.vertical, 'axis') + ' '.repeat(innerWidth) + colorize(chars.vertical, 'axis'))
+  }
+
+  // 中间内容 - 确保每行都填充到相同宽度
   for (const line of lines) {
-    result.push(colorize(chars.vertical, 'axis') + line + colorize(chars.vertical, 'axis'))
+    const lineWidth = stripHtml(line).length
+    const paddedLine = ' '.repeat(padding) + line + ' '.repeat(actualWidth - lineWidth + padding)
+    result.push(colorize(chars.vertical, 'axis') + paddedLine + colorize(chars.vertical, 'axis'))
+  }
+
+  // 底部内边距
+  for (let i = 0; i < padding; i++) {
+    result.push(colorize(chars.vertical, 'axis') + ' '.repeat(innerWidth) + colorize(chars.vertical, 'axis'))
   }
 
   // 底部边框
-  result.push(colorize(chars.bottomLeft + chars.horizontal.repeat(width) + chars.bottomRight, 'axis'))
+  result.push(colorize(chars.bottomLeft + chars.horizontal.repeat(innerWidth) + chars.bottomRight, 'axis'))
 
   return result
 }

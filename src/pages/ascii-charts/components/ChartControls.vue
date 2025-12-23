@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { BarStyle, BorderStyle, ChartConfig, ChartType, GridStyle, LegendOrientation, LegendPosition, PieLabelStyle } from '../composables/types'
+import type { BarStyle, BorderStyle, ChartConfig, ChartType, GridStyle, LegendOrientation, LegendPosition, NodeStyle, PieLabelStyle, TreeDirection } from '../composables/types'
 
 const props = defineProps<{
   config: ChartConfig
@@ -19,6 +19,9 @@ const emit = defineEmits<{
   'update:pieLabelStyle': [value: PieLabelStyle]
   'update:legendPosition': [value: LegendPosition]
   'update:legendOrientation': [value: LegendOrientation]
+  'update:treeDirection': [value: TreeDirection]
+  'update:nodeStyle': [value: NodeStyle]
+  'update:treeSpacing': [value: { siblingSpacing?: number, levelSpacing?: number }]
   'update:showBorder': [value: boolean]
   'update:borderStyle': [value: BorderStyle]
   'update:fontFamily': [value: string]
@@ -33,6 +36,7 @@ const chartTypes: Array<{ value: ChartType, label: string }> = [
   { value: 'timeline', label: '时间轴' },
   { value: 'waterfall', label: '瀑布图' },
   { value: 'pie', label: '饼图' },
+  { value: 'tree', label: '树状图' },
 ]
 
 const fontOptions = [
@@ -149,6 +153,13 @@ const borderStyleOptions: Array<{ value: BorderStyle, label: string }> = [
   { value: 'thick', label: '粗线 (━┃)' },
   { value: 'double', label: '双线 (═║)' },
   { value: 'rounded', label: '圆角 (╭╮)' },
+]
+
+const treeDirectionOptions: Array<{ value: TreeDirection, label: string }> = [
+  { value: 'top-down', label: '从上到下' },
+  { value: 'bottom-up', label: '从下到上' },
+  { value: 'left-right', label: '从左到右' },
+  { value: 'right-left', label: '从右到左' },
 ]
 
 const localWidth = ref(props.config.style.width)
@@ -281,6 +292,71 @@ watch(() => props.config.style.height, (val) => {
           </NRadio>
         </NSpace>
       </NRadioGroup>
+    </div>
+
+    <!-- 树图配置 -->
+    <div v-if="config.type === 'tree'">
+      <label text-sm font-medium mb-2 block>树方向</label>
+      <NRadioGroup
+        :value="(config.data as any).direction || 'top-down'"
+        @update:value="emit('update:treeDirection', $event)"
+      >
+        <NSpace vertical>
+          <NRadio
+            v-for="item in treeDirectionOptions"
+            :key="item.value"
+            :value="item.value"
+          >
+            {{ item.label }}
+          </NRadio>
+        </NSpace>
+      </NRadioGroup>
+
+      <label text-sm font-medium mb-2 mt-3 block>节点边框样式</label>
+      <NRadioGroup
+        :value="(config.data as any).nodeStyle?.borderStyle || 'thin'"
+        @update:value="emit('update:nodeStyle', { ...(config.data as any).nodeStyle, borderStyle: $event })"
+      >
+        <NSpace>
+          <NRadio
+            v-for="item in borderStyleOptions"
+            :key="item.value"
+            :value="item.value"
+          >
+            {{ item.label }}
+          </NRadio>
+        </NSpace>
+      </NRadioGroup>
+
+      <NCheckbox
+        :checked="(config.data as any).nodeStyle?.showBorder !== false"
+        mt-3
+        @update:checked="emit('update:nodeStyle', { ...(config.data as any).nodeStyle, showBorder: $event })"
+      >
+        显示节点边框
+      </NCheckbox>
+
+      <div mt-4>
+        <label text-sm font-medium mb-2 block>子节点间距: {{ (config.data as any).siblingSpacing ?? 4 }}</label>
+        <NSlider
+          :value="(config.data as any).siblingSpacing ?? 4"
+          :min="0"
+          :max="10"
+          :step="1"
+          @update:value="emit('update:treeSpacing', { siblingSpacing: $event })"
+        />
+      </div>
+
+      <div mt-3>
+        <label text-sm font-medium mb-2 block>层级间距: {{ (config.data as any).levelSpacing ?? 3 }}</label>
+        <NSlider
+          :value="(config.data as any).levelSpacing ?? 3"
+          :min="1"
+          :max="8"
+          :step="1"
+          @update:value="emit('update:treeSpacing', { levelSpacing: $event })"
+        />
+      </div>
     </div>
 
     <!-- 显示选项 -->

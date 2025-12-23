@@ -3,7 +3,7 @@
  */
 
 // 图表类型
-export type ChartType = 'line' | 'bar' | 'timeline' | 'waterfall' | 'pie'
+export type ChartType = 'line' | 'bar' | 'timeline' | 'waterfall' | 'pie' | 'tree'
 
 // 网格样式类型
 export type GridStyle = 'thin-medium' | 'thick-medium' | 'thin-dense' | 'thick-dense' | 'thin-solid' | 'thick-solid'
@@ -93,9 +93,37 @@ export interface PieChartData {
   legendOrientation?: LegendOrientation
 }
 
+// 树节点接口
+export interface TreeNode {
+  id: string
+  label: string
+  children?: TreeNode[]
+  color?: string
+}
+
+// 树方向类型
+export type TreeDirection = 'top-down' | 'bottom-up' | 'left-right' | 'right-left'
+
+// 节点样式接口
+export interface NodeStyle {
+  borderStyle: BorderStyle
+  showBorder: boolean
+  width: number
+  height: number
+}
+
+// 树图数据
+export interface TreeChartData {
+  root: TreeNode
+  direction?: TreeDirection
+  nodeStyle?: NodeStyle
+  siblingSpacing?: number // 子节点之间的间距
+  levelSpacing?: number // 父子节点之间的间距
+}
+
 // 统一配置
 export interface ChartConfig {
   type: ChartType
   style: ChartStyle
-  data: LineChartData | BarChartData | TimelineData | WaterfallData | PieChartData
+  data: LineChartData | BarChartData | TimelineData | WaterfallData | PieChartData | TreeChartData
 }

@@ -7,6 +7,7 @@ import { renderBarChart } from './renderers/barChart'
 import { renderLineChart } from './renderers/lineChart'
 import { renderPieChart } from './renderers/pieChart'
 import { renderTimelineChart } from './renderers/timelineChart'
+import { renderTreeChart } from './renderers/treeChart'
 import { renderWaterfallChart } from './renderers/waterfallChart'
 
 export function useAsciiChart(initialConfig: ChartConfig) {
@@ -27,6 +28,8 @@ export function useAsciiChart(initialConfig: ChartConfig) {
         return renderWaterfallChart(config.value)
       case 'pie':
         return renderPieChart(config.value)
+      case 'tree':
+        return renderTreeChart(config.value)
       default:
         return ['Invalid chart type']
     }

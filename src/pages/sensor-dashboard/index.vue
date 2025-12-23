@@ -77,4 +77,5 @@ meta:
   layout: default
   title: '浏览器传感器状态'
   description: '实时监控浏览器传感器数据，支持历史记录和图表可视化'
+  tags: ['传感器', '监控系统', '数据可视化']
 </route>

@@ -246,4 +246,5 @@ meta:
   layout: default
   title: 'MNIST数据预览'
   description: '预览MNIST手写数字数据集，可视化展示训练样本'
+  tags: ['机器学习', 'TensorFlow.js', '数据可视化']
 </route>

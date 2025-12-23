@@ -10,7 +10,6 @@ This is a Vue 3 frontend sandbox project used for running demo code and debuggin
 - **Machine Learning**: MNIST handwritten digit recognition with TensorFlow.js
 - **Data Visualization**: ECharts integration for complex data display
 - **Healthcare**: Infusion monitoring systems
-- **Positioning Algorithms**: Multi-algorithm positioning engine comparison
 
 ## Common Development Commands
 
@@ -84,7 +83,6 @@ src/
 │   ├── infusion-monitoring/index.vue      # 智能输液监控
 │   ├── mnist-data-preview/index.vue       # MNIST数据预览
 │   ├── mnist-recognition/index.vue        # 手写数字识别
-│   ├── positioning-algorithms/index.vue   # 多算法定位引擎对比
 │   └── [...all].vue # Catch-all route for 404 handling
 ├── styles/          # Global styles and theme configuration
 │   └── customTheme.ts # Naive UI theme customization
@@ -312,6 +310,8 @@ function calculateDistance(x1: number, y1: number, x2: number, y2: number): numb
 meta:
   layout: default
   title: '新页面'
+  description: '页面功能简介'
+  tags: ['标签1', '标签2']
 </route>
 ```
 
@@ -381,12 +381,6 @@ The project includes several fully functional demo pages showcasing different te
   model management
 - **Technologies**: TensorFlow.js with WebGL backend, Canvas API, neural network training
 - **Components**: DrawingCanvas, ModelControls, ModelManager, PredictionList, TrainingPanel
-
-### 6. 多算法定位引擎对比 (Multi-Algorithm Positioning Engine Comparison)
-
-- **Path**: `/positioning-algorithms`
-- **Features**: Compare different positioning algorithms and their performance
-- **Technologies**: Algorithm visualization, performance metrics
 
 ## Important Notes
 

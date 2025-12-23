@@ -33,7 +33,8 @@
       "Bash(find:*)",
       "Bash(npx simple-git-hooks:*)",
       "Bash(git tag:*)",
-      "Bash(npx conventional-changelog:*)"
+      "Bash(npx conventional-changelog:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

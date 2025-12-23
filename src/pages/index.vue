@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { RouteRecordRaw } from 'vue-router'
-import { NCard, NSpace } from 'naive-ui'
+import { NCard, NSpace, NTag } from 'naive-ui'
 import { routes } from 'vue-router/auto-routes'
 
 defineOptions({
@@ -14,6 +14,7 @@ interface RouteInfo {
     title?: string
     description?: string
     layout?: string
+    tags?: string[]
     menu?: {
       title?: string
       navSort?: number
@@ -73,6 +74,38 @@ extractRoutes(routes)
 pageRoutes.sort((a, b) => {
   return a.path.localeCompare(b.path)
 })
+
+// 收集所有标签
+const allTags = computed(() => {
+  const tags = new Set<string>()
+  pageRoutes.forEach((route) => {
+    route.meta.tags?.forEach(tag => tags.add(tag))
+  })
+  return Array.from(tags).sort()
+})
+
+// 选中的标签
+const selectedTags = ref<Set<string>>(new Set())
+
+// 过滤后的路由
+const filteredRoutes = computed(() => {
+  if (selectedTags.value.size === 0)
+    return pageRoutes
+  return pageRoutes.filter((route) => {
+    return route.meta.tags?.some(tag => selectedTags.value.has(tag))
+  })
+})
+
+/**
+ * 切换标签选中状态
+ * @param tag - 标签名称
+ */
+function toggleTag(tag: string) {
+  if (selectedTags.value.has(tag))
+    selectedTags.value.delete(tag)
+  else
+    selectedTags.value.add(tag)
+}
 </script>
 
 <template>
@@ -88,25 +121,35 @@ pageRoutes.sort((a, b) => {
         用于运行演示代码和调试新组件
       </p>
     </div>
+
+    <!-- 标签过滤器 -->
+    <div v-if="allTags.length > 0" mb-6 flex justify-center>
+      <div flex flex-wrap gap-2 max-w-4xl>
+        <NTag
+          v-for="tag in allTags"
+          :key="tag"
+          :type="selectedTags.has(tag) ? 'primary' : 'default'"
+          :bordered="false"
+          cursor-pointer
+          @click="toggleTag(tag)"
+        >
+          {{ tag }}
+        </NTag>
+      </div>
+    </div>
+
     <NSpace vertical size="large">
       <div
-        v-if="pageRoutes.length === 0"
+        v-if="filteredRoutes.length === 0"
         flex="~" justify="center" items="center" min-h="200px"
       >
         <NCard max-w="600px" text="center">
           <div>
             <h3 text="1.5rem" color="#333" m="0 0 16px 0">
-              暂无其他页面
+              暂无匹配页面
             </h3>
             <p color="#666" leading="1.6" m="8px 0">
-              当前项目只有主页和404页面
-            </p>
-            <p color="#666" leading="1.6" m="8px 0">
-              您可以在
-              <code bg="#f5f5f5" p="2px 6px" rounded="3px" font="mono" color="#e83e8c">
-                src/pages/
-              </code>
-              目录下创建新的Vue文件来添加更多页面
+              没有找到包含所选标签的页面
             </p>
           </div>
         </NCard>
@@ -114,7 +157,7 @@ pageRoutes.sort((a, b) => {
 
       <div v-else grid="~ cols-1 md:cols-2 lg:cols-3 xl:cols-4" gap="4">
         <NCard
-          v-for="route in pageRoutes"
+          v-for="route in filteredRoutes"
           :key="route.path"
           cursor="pointer"
           transition="all duration-300 ease"
@@ -131,6 +174,11 @@ pageRoutes.sort((a, b) => {
             <p v-if="route.meta?.description" text="3.5 md:3.5" text-gray-600 leading-relaxed my-2 dark:text-gray-400>
               {{ route.meta.description }}
             </p>
+            <div v-if="route.meta?.tags?.length" my-2 flex flex-wrap gap-1>
+              <NTag v-for="tag in route.meta.tags" :key="tag" size="small" :bordered="false">
+                {{ tag }}
+              </NTag>
+            </div>
             <p text="3 md:3.5" font="mono" p="2 md:1 2 md:2" rounded="1 md:1" text-gray-600 bg-gray-100 inline-block dark:text-gray-300 dark:bg-gray-800>
               {{ route.path }}
             </p>

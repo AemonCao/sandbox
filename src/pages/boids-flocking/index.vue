@@ -118,4 +118,5 @@ meta:
   layout: default
   title: '鸟群算法'
   description: 'Boids 鸟群算法模拟，展示分离、对齐、聚集三大规则的群体智能行为'
+  tags: ['算法', 'Canvas', '可视化']
 </route>

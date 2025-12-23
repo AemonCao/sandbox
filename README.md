@@ -86,7 +86,6 @@ src/
 │   ├── mnist-data-preview/            # MNIST数据预览
 │   ├── mnist-recognition/             # 手写数字识别
 │   ├── perlin-noise/                  # Perlin噪声地图生成器
-│   ├── positioning-algorithms/        # 多算法定位引擎对比
 │   ├── sensor-dashboard/              # 传感器数据仪表盘
 │   └── [...all].vue                   # 404 捕获路由
 ├── styles/          # 全局样式和主题配置
@@ -112,6 +111,7 @@ meta:
   layout: default
   title: '页面标题'
   description: '页面简介'
+  tags: ['标签1', '标签2']
 </route>
 ```
 
@@ -292,21 +292,6 @@ pnpm test --watch
 - `PredictionList` - 预测结果列表
 - `TrainingPanel` - 训练面板
 
-### 6. 🎯 多算法定位引擎对比 (Multi-Algorithm Positioning Engine Comparison)
-
-**路径**: `/positioning-algorithms`
-
-对比不同定位算法的性能和精度，包括三角定位、质心定位、加权质心等多种算法。
-
-**功能特性**:
-
-- 多种定位算法实现
-- 算法性能对比
-- 可视化展示
-- 实时计算和分析
-
-**技术栈**: 算法可视化、性能指标分析
-
 ### 7. 📊 传感器数据仪表盘 (Sensor Dashboard)
 
 **路径**: `/sensor-dashboard`
@@ -322,7 +307,7 @@ pnpm test --watch
 
 **技术栈**: ECharts、实时数据可视化
 
-### 8. 🐦 鸟群算法模拟 (Boids Flocking)
+### 6. 🐦 鸟群算法模拟 (Boids Flocking)
 
 **路径**: `/boids-flocking`
 
@@ -339,7 +324,7 @@ pnpm test --watch
 
 **技术栈**: Canvas API、群体智能算法、lil-gui
 
-### 9. 🗺️ Perlin噪声地图生成器 (Perlin Noise Map Generator)
+### 7. 🗺️ Perlin噪声地图生成器 (Perlin Noise Map Generator)
 
 **路径**: `/perlin-noise`
 

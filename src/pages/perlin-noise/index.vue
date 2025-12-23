@@ -124,4 +124,5 @@ meta:
   layout: default
   title: 'Perlin 噪声地图生成器'
   description: '使用 Simplex 噪声算法生成类似 Minecraft 的程序化 3D 地形，支持多种显示模式和颜色方案'
+  tags: ['算法', '3D', 'Three.js', '程序化生成']
 </route>

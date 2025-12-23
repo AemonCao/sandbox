@@ -527,4 +527,5 @@ meta:
   layout: default
   title: '智能输液监控'
   description: '医疗输液管理系统，提供实时数据监控和智能预警功能'
+  tags: ['医疗', 'IoT', '监控系统']
 </route>

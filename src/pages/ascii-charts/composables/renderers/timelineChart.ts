@@ -2,6 +2,7 @@
  * 时间轴/甘特图渲染器
  */
 import type { ChartConfig, TimelineData } from '../types'
+import { addBorder } from './borderUtils'
 
 /**
  * 包装字符串为带颜色的 HTML span 标签
@@ -116,5 +117,12 @@ export function renderTimelineChart(config: ChartConfig): string[] {
     }
   }
 
-  return canvas.map(row => row.join(''))
+  const result = canvas.map(row => row.join(''))
+
+  // 添加边框
+  if (config.style.showBorder) {
+    return addBorder(result, width, height, config.style.borderStyle)
+  }
+
+  return result
 }

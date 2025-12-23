@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { BarChartData, BarStyle, ChartConfig, ChartType, LineChartData, TimelineData, WaterfallData } from './composables/types'
+import type { BarChartData, BarStyle, ChartConfig, ChartType, LineChartData, PieChartData, TimelineData, WaterfallData } from './composables/types'
 import ChartControls from './components/ChartControls.vue'
 import ChartDisplay from './components/ChartDisplay.vue'
 import { useAsciiChart } from './composables/useAsciiChart'
@@ -17,6 +17,8 @@ const initialConfig: ChartConfig = {
     showGrid: true,
     showHorizontalGrid: true,
     showVerticalGrid: true,
+    showBorder: false,
+    borderStyle: 'thin',
   },
   data: {
     series: [{
@@ -114,6 +116,17 @@ function generateSampleData(type: ChartType): ChartConfig['data'] {
       } as WaterfallData
     }
 
+    case 'pie': {
+      const labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
+      const count = Math.floor(Math.random() * 9) + 2 // 2-10个项目
+      return {
+        slices: Array.from({ length: count }, (_, i) => ({
+          label: labels[i],
+          value: Math.floor(Math.random() * 50) + 20,
+        })),
+      } as PieChartData
+    }
+
     default:
       return initialConfig.data
   }
@@ -123,12 +136,11 @@ function generateSampleData(type: ChartType): ChartConfig['data'] {
  * 随机生成数据
  */
 function randomizeData() {
+  const currentData = config.value.data
   const newData = generateSampleData(config.value.type)
-  // 保留柱状图样式
-  if (config.value.type === 'bar' && 'barStyle' in config.value.data) {
-    (newData as BarChartData).barStyle = (config.value.data as BarChartData).barStyle
-  }
-  updateData(newData)
+
+  // 合并配置，保留所有现有配置项
+  updateData({ ...currentData, ...newData })
 }
 
 /**
@@ -139,6 +151,42 @@ function updateBarStyle(barStyle: BarStyle) {
     updateData({
       ...(config.value.data as BarChartData),
       barStyle,
+    })
+  }
+}
+
+/**
+ * 更新饼图标签样式
+ */
+function updatePieLabelStyle(labelStyle: string) {
+  if (config.value.type === 'pie') {
+    updateData({
+      ...(config.value.data as PieChartData),
+      labelStyle: labelStyle as any,
+    })
+  }
+}
+
+/**
+ * 更新饼图图例位置
+ */
+function updateLegendPosition(position: string) {
+  if (config.value.type === 'pie') {
+    updateData({
+      ...(config.value.data as PieChartData),
+      legendPosition: position as any,
+    })
+  }
+}
+
+/**
+ * 更新饼图图例方向
+ */
+function updateLegendOrientation(orientation: string) {
+  if (config.value.type === 'pie') {
+    updateData({
+      ...(config.value.data as PieChartData),
+      legendOrientation: orientation as any,
     })
   }
 }
@@ -164,7 +212,12 @@ function updateBarStyle(barStyle: BarStyle) {
             @update:show-horizontal-grid="updateStyle({ showHorizontalGrid: $event })"
             @update:show-vertical-grid="updateStyle({ showVerticalGrid: $event })"
             @update:grid-style="updateStyle({ gridStyle: $event })"
+            @update:show-border="updateStyle({ showBorder: $event })"
+            @update:border-style="updateStyle({ borderStyle: $event })"
             @update:bar-style="updateBarStyle"
+            @update:pie-label-style="updatePieLabelStyle"
+            @update:legend-position="updateLegendPosition"
+            @update:legend-orientation="updateLegendOrientation"
             @update:font-family="fontFamily = $event"
             @update:custom-size="setCustomSize"
             @reset-size="resetToResponsive"
@@ -184,7 +237,7 @@ function updateBarStyle(barStyle: BarStyle) {
           功能说明
         </h3>
         <ul list-disc list-inside space-y-1>
-          <li>支持 4 种图表类型：折线图、柱状图、时间轴、瀑布图</li>
+          <li>支持 5 种图表类型：折线图、柱状图、时间轴、瀑布图、饼图</li>
           <li>数据变化时自动重新渲染</li>
           <li>移动端自适应布局（图表尺寸自动调整）</li>
           <li>使用纯 ASCII 字符绘制，兼容性好</li>

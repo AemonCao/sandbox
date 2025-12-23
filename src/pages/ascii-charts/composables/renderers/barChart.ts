@@ -2,6 +2,7 @@
  * 柱状图渲染器
  */
 import type { BarChartData, BarStyle, ChartConfig, GridStyle } from '../types'
+import { addBorder } from './borderUtils'
 
 /**
  * 获取网格字符
@@ -160,5 +161,12 @@ export function renderBarChart(config: ChartConfig): string[] {
     currentX += barWidth + spacing
   })
 
-  return canvas.map(row => row.join(''))
+  const result = canvas.map(row => row.join(''))
+
+  // 添加边框
+  if (config.style.showBorder) {
+    return addBorder(result, width, height, config.style.borderStyle)
+  }
+
+  return result
 }

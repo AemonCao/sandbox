@@ -12,7 +12,7 @@ export interface ResponsiveConfig {
 const defaultConfig: ResponsiveConfig = {
   mobile: { width: 50, height: 20 },
   tablet: { width: 70, height: 25 },
-  desktop: { width: 90, height: 30 },
+  desktop: { width: 80, height: 30 },
 }
 
 export function useResponsive(config: ResponsiveConfig = defaultConfig) {

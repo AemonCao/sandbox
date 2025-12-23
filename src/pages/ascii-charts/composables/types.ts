@@ -3,13 +3,16 @@
  */
 
 // 图表类型
-export type ChartType = 'line' | 'bar' | 'timeline' | 'waterfall'
+export type ChartType = 'line' | 'bar' | 'timeline' | 'waterfall' | 'pie'
 
 // 网格样式类型
 export type GridStyle = 'thin-medium' | 'thick-medium' | 'thin-dense' | 'thick-dense' | 'thin-solid' | 'thick-solid'
 
 // 柱状图样式类型
 export type BarStyle = 'solid' | 'shadow' | 'hollow' | 'bold-hollow' | 'double-line' | 'rounded'
+
+// 边框样式类型
+export type BorderStyle = 'thin' | 'thick' | 'double' | 'rounded'
 
 // 样式配置
 export interface ChartStyle {
@@ -20,6 +23,8 @@ export interface ChartStyle {
   showHorizontalGrid: boolean // 显示横向网格
   showVerticalGrid: boolean // 显示纵向网格
   gridStyle?: GridStyle // 网格样式
+  showBorder?: boolean // 显示外框
+  borderStyle?: BorderStyle // 外框样式
   colors?: {
     axis?: string // 坐标轴颜色 (CSS color)
     grid?: string // 网格颜色 (CSS color)
@@ -67,9 +72,30 @@ export interface WaterfallData {
   totalDuration: number
 }
 
+// 饼图标签样式
+export type PieLabelStyle = 'none' | 'center' | 'line'
+
+// 图例位置
+export type LegendPosition = 'top' | 'bottom' | 'left' | 'right'
+
+// 图例方向
+export type LegendOrientation = 'horizontal' | 'vertical'
+
+// 饼图数据
+export interface PieChartData {
+  slices: Array<{
+    label: string
+    value: number
+    color?: string
+  }>
+  labelStyle?: PieLabelStyle
+  legendPosition?: LegendPosition
+  legendOrientation?: LegendOrientation
+}
+
 // 统一配置
 export interface ChartConfig {
   type: ChartType
   style: ChartStyle
-  data: LineChartData | BarChartData | TimelineData | WaterfallData
+  data: LineChartData | BarChartData | TimelineData | WaterfallData | PieChartData
 }

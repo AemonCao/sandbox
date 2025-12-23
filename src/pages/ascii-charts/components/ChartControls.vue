@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { BarStyle, ChartConfig, ChartType, GridStyle } from '../composables/types'
+import type { BarStyle, BorderStyle, ChartConfig, ChartType, GridStyle, LegendOrientation, LegendPosition, PieLabelStyle } from '../composables/types'
 
 const props = defineProps<{
   config: ChartConfig
@@ -16,6 +16,11 @@ const emit = defineEmits<{
   'update:showVerticalGrid': [value: boolean]
   'update:gridStyle': [value: GridStyle]
   'update:barStyle': [value: BarStyle]
+  'update:pieLabelStyle': [value: PieLabelStyle]
+  'update:legendPosition': [value: LegendPosition]
+  'update:legendOrientation': [value: LegendOrientation]
+  'update:showBorder': [value: boolean]
+  'update:borderStyle': [value: BorderStyle]
   'update:fontFamily': [value: string]
   'update:customSize': [width: number, height: number]
   'resetSize': []
@@ -27,6 +32,7 @@ const chartTypes: Array<{ value: ChartType, label: string }> = [
   { value: 'bar', label: '柱状图' },
   { value: 'timeline', label: '时间轴' },
   { value: 'waterfall', label: '瀑布图' },
+  { value: 'pie', label: '饼图' },
 ]
 
 const fontOptions = [
@@ -120,6 +126,31 @@ const barStyleOptions: Array<{ value: BarStyle, label: string }> = [
   { value: 'rounded', label: '圆角 (▐)' },
 ]
 
+const pieLabelStyleOptions: Array<{ value: PieLabelStyle, label: string }> = [
+  { value: 'none', label: '无标签' },
+  { value: 'center', label: '中心标签' },
+  { value: 'line', label: '指示线' },
+]
+
+const legendPositionOptions: Array<{ value: LegendPosition, label: string }> = [
+  { value: 'top', label: '上' },
+  { value: 'bottom', label: '下' },
+  { value: 'left', label: '左' },
+  { value: 'right', label: '右' },
+]
+
+const legendOrientationOptions: Array<{ value: LegendOrientation, label: string }> = [
+  { value: 'horizontal', label: '横向' },
+  { value: 'vertical', label: '纵向' },
+]
+
+const borderStyleOptions: Array<{ value: BorderStyle, label: string }> = [
+  { value: 'thin', label: '细线 (─│)' },
+  { value: 'thick', label: '粗线 (━┃)' },
+  { value: 'double', label: '双线 (═║)' },
+  { value: 'rounded', label: '圆角 (╭╮)' },
+]
+
 const localWidth = ref(props.config.style.width)
 const localHeight = ref(props.config.style.height)
 
@@ -198,6 +229,60 @@ watch(() => props.config.style.height, (val) => {
       </NRadioGroup>
     </div>
 
+    <!-- 饼图标签样式 -->
+    <div v-if="config.type === 'pie'">
+      <label text-sm font-medium mb-2 block>标签样式</label>
+      <NRadioGroup
+        :value="(config.data as any).labelStyle || 'none'"
+        @update:value="emit('update:pieLabelStyle', $event)"
+      >
+        <NSpace vertical>
+          <NRadio
+            v-for="item in pieLabelStyleOptions"
+            :key="item.value"
+            :value="item.value"
+          >
+            {{ item.label }}
+          </NRadio>
+        </NSpace>
+      </NRadioGroup>
+    </div>
+
+    <!-- 饼图图例配置 -->
+    <div v-if="config.type === 'pie'">
+      <label text-sm font-medium mb-2 block>图例位置</label>
+      <NRadioGroup
+        :value="(config.data as any).legendPosition || 'bottom'"
+        @update:value="emit('update:legendPosition', $event)"
+      >
+        <NSpace>
+          <NRadio
+            v-for="item in legendPositionOptions"
+            :key="item.value"
+            :value="item.value"
+          >
+            {{ item.label }}
+          </NRadio>
+        </NSpace>
+      </NRadioGroup>
+
+      <label text-sm font-medium mb-2 mt-3 block>图例方向</label>
+      <NRadioGroup
+        :value="(config.data as any).legendOrientation || 'vertical'"
+        @update:value="emit('update:legendOrientation', $event)"
+      >
+        <NSpace>
+          <NRadio
+            v-for="item in legendOrientationOptions"
+            :key="item.value"
+            :value="item.value"
+          >
+            {{ item.label }}
+          </NRadio>
+        </NSpace>
+      </NRadioGroup>
+    </div>
+
     <!-- 显示选项 -->
     <div v-if="config.type === 'line' || config.type === 'bar'" space-y-2>
       <NCheckbox
@@ -265,6 +350,34 @@ watch(() => props.config.style.height, (val) => {
             </NSpace>
           </NRadioGroup>
         </div>
+      </div>
+    </div>
+
+    <!-- 边框配置 -->
+    <div space-y-2>
+      <NCheckbox
+        :checked="config.style.showBorder || false"
+        @update:checked="emit('update:showBorder', $event)"
+      >
+        显示外框
+      </NCheckbox>
+
+      <div v-if="config.style.showBorder" ml-6>
+        <label text-xs font-medium mb-1 block>外框样式</label>
+        <NRadioGroup
+          :value="config.style.borderStyle || 'thin'"
+          @update:value="emit('update:borderStyle', $event)"
+        >
+          <NSpace vertical>
+            <NRadio
+              v-for="item in borderStyleOptions"
+              :key="item.value"
+              :value="item.value"
+            >
+              {{ item.label }}
+            </NRadio>
+          </NSpace>
+        </NRadioGroup>
       </div>
     </div>
 

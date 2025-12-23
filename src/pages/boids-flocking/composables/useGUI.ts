@@ -12,8 +12,8 @@ export function useGUI(
   function initGUI() {
     gui = new GUI()
     gui.domElement.style.position = 'fixed'
-    gui.domElement.style.top = '70px'
-    gui.domElement.style.right = '10px'
+    gui.domElement.style.top = '85px'
+    gui.domElement.style.right = '20px'
 
     const fSim = gui.addFolder('模拟设置')
     fSim.add(params, 'boidCount', 10, 500, 1).name('Boid 数量').onFinishChange(resetSimulation)

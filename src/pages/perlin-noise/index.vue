@@ -33,6 +33,9 @@ let gui: GUI | null = null
  */
 function initGUI() {
   gui = new GUI({ title: 'Perlin噪声地图生成器' })
+  gui.domElement.style.position = 'fixed'
+  gui.domElement.style.top = '85px'
+  gui.domElement.style.right = '20px'
 
   // 噪声参数组
   const noiseFolder = gui.addFolder('噪声参数')

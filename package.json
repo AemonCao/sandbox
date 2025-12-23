@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@tensorflow/tfjs": "catalog:frontend",
+    "@tensorflow/tfjs-backend-cpu": "catalog:frontend",
     "@tensorflow/tfjs-backend-webgl": "catalog:frontend",
     "@types/echarts": "catalog:dev",
     "@types/three": "catalog:dev",

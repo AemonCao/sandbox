@@ -9,6 +9,7 @@ import TrainingPanel from './components/TrainingPanel.vue'
 import { useModel } from './composables/useModel'
 import { usePrediction } from './composables/usePrediction'
 import '@tensorflow/tfjs-backend-webgl'
+import '@tensorflow/tfjs-backend-cpu'
 
 const store = useMnistStore()
 const { createModel, loadModel, checkModelExists } = useModel()
@@ -21,11 +22,25 @@ const initError = ref('')
 const modelManagerRef = ref<InstanceType<typeof ModelManager>>()
 const currentImageData = ref<number[]>([])
 
+/**
+ * 检测是否为移动设备
+ */
+function isMobileDevice() {
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+}
+
 onMounted(async () => {
   try {
     loading.value = true
-    await tf.setBackend('webgl')
+
+    // 移动设备使用 CPU backend，桌面设备使用 WebGL
+    const backend = isMobileDevice() ? 'cpu' : 'webgl'
+    await tf.setBackend(backend)
     await tf.ready()
+
+    if (backend === 'cpu') {
+      message.warning('检测到移动设备，已切换到 CPU 模式（训练速度较慢）')
+    }
 
     const exists = await checkModelExists()
     if (exists) {

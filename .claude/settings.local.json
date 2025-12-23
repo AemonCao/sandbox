@@ -34,7 +34,8 @@
       "Bash(npx simple-git-hooks:*)",
       "Bash(git tag:*)",
       "Bash(npx conventional-changelog:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(lsof:*)"
     ],
     "deny": [],
     "ask": []

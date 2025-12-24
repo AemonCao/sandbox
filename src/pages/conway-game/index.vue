@@ -256,6 +256,8 @@ function initGUI() {
   })
   fSettings.addColor(params, 'cellColor').name('颜色')
 
+  useDraggableGUI(gui)
+
   watch(isDark, () => {
     if (gui) {
       gui.domElement.classList.toggle('dark', isDark.value)

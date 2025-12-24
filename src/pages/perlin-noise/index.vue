@@ -83,6 +83,8 @@ function initGUI() {
 
   gui.add(actions, 'randomSeed').name('🎲 随机种子')
   gui.add(actions, 'reset').name('🔄 重置参数')
+
+  useDraggableGUI(gui)
 }
 
 onMounted(() => {

@@ -119,6 +119,7 @@ export interface TreeChartData {
   nodeStyle?: NodeStyle
   siblingSpacing?: number // 子节点之间的间距
   levelSpacing?: number // 父子节点之间的间距
+  randomLabel?: boolean // 是否使用随机长度标签
 }
 
 // 树图默认值

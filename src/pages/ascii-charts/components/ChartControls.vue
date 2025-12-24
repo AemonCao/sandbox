@@ -22,7 +22,7 @@ const emit = defineEmits<{
   'update:legendOrientation': [value: LegendOrientation]
   'update:treeDirection': [value: TreeDirection]
   'update:nodeStyle': [value: NodeStyle]
-  'update:treeSpacing': [value: { siblingSpacing?: number, levelSpacing?: number }]
+  'update:treeSpacing': [value: { siblingSpacing?: number, levelSpacing?: number, randomLabel?: boolean }]
   'update:showBorder': [value: boolean]
   'update:borderStyle': [value: BorderStyle]
   'update:fontFamily': [value: string]
@@ -335,6 +335,14 @@ watch(() => props.config.style.height, (val) => {
         @update:checked="emit('update:nodeStyle', { ...(config.data as any).nodeStyle, showBorder: $event })"
       >
         显示节点边框
+      </NCheckbox>
+
+      <NCheckbox
+        :checked="(config.data as any).randomLabel === true"
+        mt-3
+        @update:checked="emit('update:treeSpacing', { randomLabel: $event })"
+      >
+        随机长度标签
       </NCheckbox>
 
       <div mt-4>

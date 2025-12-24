@@ -129,24 +129,26 @@ function generateSampleData(type: ChartType): ChartConfig['data'] {
 
     case 'tree': {
       const depth = Math.floor(Math.random() * 2) + 2
-      // eslint-disable-next-line no-console
-      console.log('生成树图数据 - 深度:', depth)
+      const useRandomLabel = (config.value.data as TreeChartData).randomLabel === true
+
+      function generateRandomLabel(): string {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+        const len = Math.floor(Math.random() * 8) + 2
+        return Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
+      }
 
       function generateNode(id: string, level: number, maxLevel: number): TreeNode {
-        const node: TreeNode = { id, label: id }
+        const label = useRandomLabel ? generateRandomLabel() : id
+        const node: TreeNode = { id, label }
         if (level < maxLevel) {
           const childCount = Math.floor(Math.random() * 3) + 1
           node.children = Array.from({ length: childCount }, (_, i) =>
             generateNode(level === 0 ? `${i + 1}` : `${id}.${i + 1}`, level + 1, maxLevel))
-          // eslint-disable-next-line no-console
-          console.log(`节点 ${id} - 层级: ${level}, 子节点数: ${childCount}`)
         }
         return node
       }
 
       const root = generateNode('1', 0, depth)
-      // eslint-disable-next-line no-console
-      console.log('树图根节点:', root)
 
       return {
         root,
@@ -157,6 +159,7 @@ function generateSampleData(type: ChartType): ChartConfig['data'] {
           width: 8,
           height: 3,
         },
+        randomLabel: useRandomLabel,
       } as TreeChartData
     }
 
@@ -263,12 +266,22 @@ function updateNodeStyle(nodeStyle: NodeStyle) {
 /**
  * 更新树图间距
  */
-function updateTreeSpacing(spacing: { siblingSpacing?: number, levelSpacing?: number }) {
+function updateTreeSpacing(spacing: { siblingSpacing?: number, levelSpacing?: number, randomLabel?: boolean }) {
   if (config.value.type === 'tree') {
+    const currentData = config.value.data as TreeChartData
     updateData({
-      ...(config.value.data as TreeChartData),
+      ...currentData,
       ...spacing,
     })
+    // 如果切换了 randomLabel，重新生成数据
+    if (spacing.randomLabel !== undefined && spacing.randomLabel !== currentData.randomLabel) {
+      const newData = generateSampleData('tree') as TreeChartData
+      updateData({
+        ...currentData,
+        ...spacing,
+        root: newData.root,
+      })
+    }
   }
 }
 </script>

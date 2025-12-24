@@ -177,6 +177,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/pathfinding/': RouteRecordInfo<
+      '/pathfinding/',
+      '/pathfinding',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/perlin-noise/': RouteRecordInfo<
       '/perlin-noise/',
       '/perlin-noise',
@@ -382,6 +389,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/mnist-recognition/components/TrainingPanel.vue': {
       routes:
         | '/mnist-recognition/components/TrainingPanel'
+      views:
+        | never
+    }
+    'src/pages/pathfinding/index.vue': {
+      routes:
+        | '/pathfinding/'
       views:
         | never
     }

@@ -40,6 +40,18 @@ function calculateSubtreeWidth(node: TreeNode, nodeStyle: NodeStyle, siblingSpac
 }
 
 /**
+ * 计算子树高度（用于横向布局）
+ */
+function calculateSubtreeHeight(node: TreeNode, nodeStyle: NodeStyle, siblingSpacing: number): number {
+  if (!node.children || node.children.length === 0) {
+    return nodeStyle.height
+  }
+  const childrenHeight = node.children.reduce((sum, child) => sum + calculateSubtreeHeight(child, nodeStyle, siblingSpacing), 0)
+  const spacing = (node.children.length - 1) * siblingSpacing
+  return Math.max(nodeStyle.height, childrenHeight + spacing)
+}
+
+/**
  * 计算节点位置
  */
 function calculatePositions(node: TreeNode, nodeStyle: NodeStyle, x: number, y: number, depth: number, direction: string, siblingSpacing: number, levelSpacing: number): NodePosition[] {
@@ -64,14 +76,16 @@ function calculatePositions(node: TreeNode, nodeStyle: NodeStyle, x: number, y: 
     })
   }
   else {
-    let childY = y - Math.floor(totalWidth / 2)
+    const subtreeHeights = node.children.map(child => calculateSubtreeHeight(child, nodeStyle, siblingSpacing))
+    const totalHeight = subtreeHeights.reduce((sum, h) => sum + h, 0) + (node.children.length - 1) * siblingSpacing
+    let childY = y - Math.floor(totalHeight / 2)
     const childX = direction === 'left-right' ? x + Math.floor(nodeStyle.width / 2) + levelSpacing + Math.floor(nodeStyle.width / 2) : x - Math.floor(nodeStyle.width / 2) - levelSpacing - Math.floor(nodeStyle.width / 2)
 
     node.children.forEach((child, i) => {
-      const childWidth = subtreeWidths[i]
-      const childCenterY = childY + Math.floor(childWidth / 2)
+      const childHeight = subtreeHeights[i]
+      const childCenterY = childY + Math.floor(childHeight / 2)
       positions.push(...calculatePositions(child, nodeStyle, childX, childCenterY, depth + 1, direction, siblingSpacing, levelSpacing))
-      childY += childWidth + siblingSpacing
+      childY += childHeight + siblingSpacing
     })
   }
 
@@ -289,14 +303,14 @@ function drawConnections(canvas: string[][], positions: NodePosition[], nodeStyl
     else {
       // left-right or right-left
       const parentY = pos.y + Math.floor(nodeStyle.height / 2)
-      const parentX = direction === 'left-right' ? pos.x + Math.floor(nodeStyle.width / 2) + 1 : pos.x - Math.floor(nodeStyle.width / 2) - 1
+      const parentX = direction === 'left-right' ? pos.x + Math.floor(nodeStyle.width / 2) : pos.x - Math.floor(nodeStyle.width / 2)
 
       // 只有一个子节点时，直接用横线连接
       if (pos.node.children.length === 1) {
         const childPos = posMap.get(pos.node.children[0].id)
         if (!childPos)
           return
-        const childX = direction === 'left-right' ? childPos.x - Math.floor(nodeStyle.width / 2) - 1 : childPos.x + Math.floor(nodeStyle.width / 2) + 1
+        const childX = direction === 'left-right' ? childPos.x - Math.floor(nodeStyle.width / 2) : childPos.x + Math.floor(nodeStyle.width / 2)
         const minX = Math.min(parentX, childX)
         const maxX = Math.max(parentX, childX)
         for (let x = minX; x <= maxX; x++) {
@@ -349,12 +363,13 @@ function drawConnections(canvas: string[][], positions: NodePosition[], nodeStyl
         if (!childPos)
           return
 
-        const childX = direction === 'left-right' ? childPos.x - Math.floor(nodeStyle.width / 2) - 1 : childPos.x + Math.floor(nodeStyle.width / 2) + 1
+        const childX = direction === 'left-right' ? childPos.x - Math.floor(nodeStyle.width / 2) : childPos.x + Math.floor(nodeStyle.width / 2)
         const childY = childPos.y + Math.floor(nodeStyle.height / 2)
 
         const childMinX = Math.min(lineX, childX)
         const childMaxX = Math.max(lineX, childX)
-        for (let x = childMinX + 1; x <= childMaxX; x++) {
+        const startX = direction === 'left-right' ? childMinX + 1 : childMinX
+        for (let x = startX; x <= childMaxX; x++) {
           if (childY >= 0 && childY < canvas.length && x >= 0 && x < canvas[0].length) {
             if (canvas[childY][x] === ' ') {
               canvas[childY][x] = '<span style="color:var(--chart-grid-color)">─</span>'
@@ -425,33 +440,34 @@ export function renderTreeChart(config: ChartConfig): string[] {
 
   const treeDepth = getDepth(data.root)
   const treeWidth = calculateSubtreeWidth(data.root, nodeStyle, siblingSpacing)
+  const treeHeight = calculateSubtreeHeight(data.root, nodeStyle, siblingSpacing)
 
   // 根据方向计算画布尺寸
   let canvasWidth: number, canvasHeight: number, startX: number, startY: number
 
   if (direction === 'top-down') {
     canvasWidth = treeWidth
-    canvasHeight = treeDepth * (nodeStyle.height + levelSpacing) - levelSpacing + nodeStyle.height
-    startX = Math.floor(canvasWidth / 2)
+    canvasHeight = treeDepth * (nodeStyle.height + levelSpacing) - levelSpacing
+    startX = Math.floor(treeWidth / 2)
     startY = 0
   }
   else if (direction === 'bottom-up') {
     canvasWidth = treeWidth
-    canvasHeight = treeDepth * (nodeStyle.height + levelSpacing) - levelSpacing + nodeStyle.height
-    startX = Math.floor(canvasWidth / 2)
+    canvasHeight = treeDepth * (nodeStyle.height + levelSpacing) - levelSpacing
+    startX = Math.floor(treeWidth / 2)
     startY = canvasHeight - nodeStyle.height
   }
   else if (direction === 'left-right') {
-    canvasWidth = treeDepth * (nodeStyle.width + levelSpacing) - levelSpacing + nodeStyle.width
-    canvasHeight = treeWidth
+    canvasWidth = treeDepth * (nodeStyle.width + levelSpacing) - levelSpacing
+    canvasHeight = treeHeight
     startX = Math.floor(nodeStyle.width / 2)
-    startY = Math.floor(canvasHeight / 2)
+    startY = Math.floor(treeHeight / 2) - Math.floor(nodeStyle.height / 2)
   }
   else {
-    canvasWidth = treeDepth * (nodeStyle.width + levelSpacing) - levelSpacing + nodeStyle.width
-    canvasHeight = treeWidth
+    canvasWidth = treeDepth * (nodeStyle.width + levelSpacing) - levelSpacing
+    canvasHeight = treeHeight
     startX = canvasWidth - Math.floor(nodeStyle.width / 2) - 1
-    startY = Math.floor(canvasHeight / 2)
+    startY = Math.floor(treeHeight / 2) - Math.floor(nodeStyle.height / 2)
   }
 
   // 计算布局

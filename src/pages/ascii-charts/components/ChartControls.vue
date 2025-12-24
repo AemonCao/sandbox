@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { BarStyle, BorderStyle, ChartConfig, ChartType, GridStyle, LegendOrientation, LegendPosition, NodeStyle, PieLabelStyle, TreeDirection } from '../composables/types'
 import { TREE_DEFAULTS } from '../composables/types'
+import { checkAllFonts, FONT_OPTIONS } from '../composables/useFonts'
 
 const props = defineProps<{
   config: ChartConfig
@@ -40,45 +41,13 @@ const chartTypes: Array<{ value: ChartType, label: string }> = [
   { value: 'tree', label: '树状图' },
 ]
 
-const fontOptions = [
-  { value: 'Courier New, monospace', label: 'Courier New' },
-  { value: 'Consolas, monospace', label: 'Consolas' },
-  { value: 'Monaco, monospace', label: 'Monaco' },
-  { value: 'SF Mono, monospace', label: 'SF Mono' },
-  { value: 'Menlo, monospace', label: 'Menlo' },
-  { value: 'Roboto Mono, monospace', label: 'Roboto Mono' },
-  { value: 'Fira Code, monospace', label: 'Fira Code' },
-  { value: 'JetBrains Mono, monospace', label: 'JetBrains Mono' },
-  { value: 'Source Code Pro, monospace', label: 'Source Code Pro' },
-  { value: 'IBM Plex Mono, monospace', label: 'IBM Plex Mono' },
-]
-
 const availableFonts = ref<Set<string>>(new Set())
-
-/**
- * 检测字体是否可用
- */
-async function checkFontAvailability(fontFamily: string) {
-  try {
-    const font = fontFamily.split(',')[0].trim().replace(/['"]/g, '')
-    await document.fonts.load(`12px "${font}"`)
-    return document.fonts.check(`12px "${font}"`)
-  }
-  catch {
-    return false
-  }
-}
 
 /**
  * 检测所有字体
  */
 onMounted(async () => {
-  for (const font of fontOptions) {
-    const isAvailable = await checkFontAvailability(font.value)
-    if (isAvailable) {
-      availableFonts.value.add(font.value)
-    }
-  }
+  availableFonts.value = await checkAllFonts()
 })
 
 type GridThickness = 'thin' | 'thick'
@@ -210,7 +179,7 @@ watch(() => props.config.style.height, (val) => {
       >
         <NSpace>
           <NRadio
-            v-for="item in fontOptions"
+            v-for="item in FONT_OPTIONS"
             :key="item.value"
             :value="item.value"
             :disabled="!availableFonts.has(item.value)"

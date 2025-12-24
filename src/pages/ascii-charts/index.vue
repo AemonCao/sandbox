@@ -3,7 +3,13 @@ import type { BarChartData, BarStyle, ChartConfig, ChartType, LineChartData, Nod
 import ChartControls from './components/ChartControls.vue'
 import ChartDisplay from './components/ChartDisplay.vue'
 import { useAsciiChart } from './composables/useAsciiChart'
+import { preloadGoogleFonts } from './composables/useFonts'
 import { useResponsive } from './composables/useResponsive'
+
+// 预加载 Google Fonts
+onMounted(() => {
+  preloadGoogleFonts()
+})
 
 const { isMobile, chartSize, customSize, setCustomSize, resetToResponsive } = useResponsive()
 

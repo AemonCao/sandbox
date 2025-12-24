@@ -60,7 +60,7 @@ export const useMnistStore = defineStore('mnist', {
     },
 
     clearPredictions() {
-      this.predictions = Array.from({ length: 10 }).fill(0)
+      this.predictions = Array.from({ length: 10 }, () => 0)
     },
 
     updatePredictions(predictions: number[]) {

@@ -102,7 +102,12 @@ export function useThreeScene(canvas: HTMLCanvasElement) {
 
     // 根据显示模式设置
     if (displayMode === 'solid') {
-      terrain.material.wireframe = false
+      if (Array.isArray(terrain.material)) {
+        terrain.material.forEach(m => (m as THREE.MeshStandardMaterial).wireframe = false)
+      }
+      else {
+        (terrain.material as THREE.MeshStandardMaterial).wireframe = false
+      }
       scene.add(terrain)
     }
     else if (displayMode === 'wireframe') {
@@ -114,7 +119,12 @@ export function useThreeScene(canvas: HTMLCanvasElement) {
       scene.add(wireframe)
     }
     else if (displayMode === 'both') {
-      terrain.material.wireframe = false
+      if (Array.isArray(terrain.material)) {
+        terrain.material.forEach(m => (m as THREE.MeshStandardMaterial).wireframe = false)
+      }
+      else {
+        (terrain.material as THREE.MeshStandardMaterial).wireframe = false
+      }
       scene.add(terrain)
 
       // 添加线框

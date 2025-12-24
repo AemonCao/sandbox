@@ -332,10 +332,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div ref="canvasContainerRef" class="canvas-container">
+  <div :ref="(el) => canvasContainerRef = el as HTMLElement" class="canvas-container">
     <!-- 网格层 -->
     <canvas
-      ref="gridCanvasRef"
+      :ref="(el) => gridCanvasRef = el as HTMLCanvasElement"
       class="grid-canvas"
       style="pointer-events: none; position: absolute; left: 8px; top: 8px;"
     />

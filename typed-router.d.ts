@@ -72,6 +72,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/conway-game/': RouteRecordInfo<
+      '/conway-game/',
+      '/conway-game',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/ibeacon-simulator/': RouteRecordInfo<
       '/ibeacon-simulator/',
       '/ibeacon-simulator',
@@ -285,6 +292,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/boids-flocking/index.vue': {
       routes:
         | '/boids-flocking/'
+      views:
+        | never
+    }
+    'src/pages/conway-game/index.vue': {
+      routes:
+        | '/conway-game/'
       views:
         | never
     }

@@ -2,6 +2,7 @@
  * 树图渲染器
  */
 import type { ChartConfig, NodeStyle, TreeChartData, TreeNode } from '../types'
+import { TREE_DEFAULTS } from '../types'
 import { addBorder } from './borderUtils'
 
 const lightColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16']
@@ -12,6 +13,7 @@ interface NodePosition {
   x: number
   y: number
   depth: number
+  width: number
 }
 
 /**
@@ -28,15 +30,25 @@ function getBorderChars(style: string) {
 }
 
 /**
+ * 计算节点宽度（基于标签长度）
+ */
+function getNodeWidth(node: TreeNode, nodeStyle: NodeStyle): number {
+  const minWidth = 5
+  const padding = nodeStyle.showBorder ? 4 : 2
+  return Math.max(minWidth, node.label.length + padding)
+}
+
+/**
  * 计算子树宽度
  */
 function calculateSubtreeWidth(node: TreeNode, nodeStyle: NodeStyle, siblingSpacing: number): number {
+  const nodeWidth = getNodeWidth(node, nodeStyle)
   if (!node.children || node.children.length === 0) {
-    return nodeStyle.width
+    return nodeWidth
   }
   const childrenWidth = node.children.reduce((sum, child) => sum + calculateSubtreeWidth(child, nodeStyle, siblingSpacing), 0)
   const spacing = (node.children.length - 1) * siblingSpacing
-  return Math.max(nodeStyle.width, childrenWidth + spacing)
+  return Math.max(nodeWidth, childrenWidth + spacing)
 }
 
 /**
@@ -54,8 +66,9 @@ function calculateSubtreeHeight(node: TreeNode, nodeStyle: NodeStyle, siblingSpa
 /**
  * 计算节点位置
  */
-function calculatePositions(node: TreeNode, nodeStyle: NodeStyle, x: number, y: number, depth: number, direction: string, siblingSpacing: number, levelSpacing: number): NodePosition[] {
-  const positions: NodePosition[] = [{ node, x, y, depth }]
+function calculatePositions(node: TreeNode, nodeStyle: NodeStyle, x: number, y: number, depth: number, direction: string, siblingSpacing: number, levelSpacing: number, levelWidths?: number[]): NodePosition[] {
+  const nodeWidth = getNodeWidth(node, nodeStyle)
+  const positions: NodePosition[] = [{ node, x, y, depth, width: nodeWidth }]
 
   if (!node.children || node.children.length === 0) {
     return positions
@@ -71,7 +84,7 @@ function calculatePositions(node: TreeNode, nodeStyle: NodeStyle, x: number, y: 
     node.children.forEach((child, i) => {
       const childWidth = subtreeWidths[i]
       const childCenterX = childX + Math.floor(childWidth / 2)
-      positions.push(...calculatePositions(child, nodeStyle, childCenterX, childY, depth + 1, direction, siblingSpacing, levelSpacing))
+      positions.push(...calculatePositions(child, nodeStyle, childCenterX, childY, depth + 1, direction, siblingSpacing, levelSpacing, levelWidths))
       childX += childWidth + siblingSpacing
     })
   }
@@ -79,12 +92,17 @@ function calculatePositions(node: TreeNode, nodeStyle: NodeStyle, x: number, y: 
     const subtreeHeights = node.children.map(child => calculateSubtreeHeight(child, nodeStyle, siblingSpacing))
     const totalHeight = subtreeHeights.reduce((sum, h) => sum + h, 0) + (node.children.length - 1) * siblingSpacing
     let childY = y - Math.floor(totalHeight / 2)
-    const childX = direction === 'left-right' ? x + Math.floor(nodeStyle.width / 2) + levelSpacing + Math.floor(nodeStyle.width / 2) : x - Math.floor(nodeStyle.width / 2) - levelSpacing - Math.floor(nodeStyle.width / 2)
 
     node.children.forEach((child, i) => {
+      const childWidth = getNodeWidth(child, nodeStyle)
+      const currentLevelWidth = levelWidths ? levelWidths[depth] : nodeWidth
+      const nextLevelWidth = levelWidths ? levelWidths[depth + 1] : childWidth
+      const childX = direction === 'left-right'
+        ? x + Math.floor(currentLevelWidth / 2) + levelSpacing + Math.floor(nextLevelWidth / 2) + 1
+        : x - Math.floor(currentLevelWidth / 2) - levelSpacing - Math.floor(nextLevelWidth / 2) - 1
       const childHeight = subtreeHeights[i]
       const childCenterY = childY + Math.floor(childHeight / 2)
-      positions.push(...calculatePositions(child, nodeStyle, childX, childCenterY, depth + 1, direction, siblingSpacing, levelSpacing))
+      positions.push(...calculatePositions(child, nodeStyle, childX, childCenterY, depth + 1, direction, siblingSpacing, levelSpacing, levelWidths))
       childY += childHeight + siblingSpacing
     })
   }
@@ -96,8 +114,8 @@ function calculatePositions(node: TreeNode, nodeStyle: NodeStyle, x: number, y: 
  * 绘制节点
  */
 function drawNode(canvas: string[][], pos: NodePosition, nodeStyle: NodeStyle, color: string) {
-  const { x, y } = pos
-  const { width, height, showBorder, borderStyle } = nodeStyle
+  const { x, y, width } = pos
+  const { height, showBorder, borderStyle } = nodeStyle
   const chars = getBorderChars(borderStyle)
 
   const startX = x - Math.floor(width / 2)
@@ -303,14 +321,14 @@ function drawConnections(canvas: string[][], positions: NodePosition[], nodeStyl
     else {
       // left-right or right-left
       const parentY = pos.y + Math.floor(nodeStyle.height / 2)
-      const parentX = direction === 'left-right' ? pos.x + Math.floor(nodeStyle.width / 2) : pos.x - Math.floor(nodeStyle.width / 2)
+      const parentX = direction === 'left-right' ? pos.x + Math.floor(pos.width / 2) : pos.x - Math.floor(pos.width / 2)
 
       // 只有一个子节点时，直接用横线连接
       if (pos.node.children.length === 1) {
         const childPos = posMap.get(pos.node.children[0].id)
         if (!childPos)
           return
-        const childX = direction === 'left-right' ? childPos.x - Math.floor(nodeStyle.width / 2) : childPos.x + Math.floor(nodeStyle.width / 2)
+        const childX = direction === 'left-right' ? childPos.x - Math.floor(childPos.width / 2) : childPos.x + Math.floor(childPos.width / 2)
         const minX = Math.min(parentX, childX)
         const maxX = Math.max(parentX, childX)
         for (let x = minX; x <= maxX; x++) {
@@ -328,13 +346,13 @@ function drawConnections(canvas: string[][], positions: NodePosition[], nodeStyl
       if (!firstChild)
         return
       const lineX = direction === 'left-right'
-        ? pos.x + Math.floor(nodeStyle.width / 2) + Math.floor(levelSpacing / 2)
-        : pos.x - Math.floor(nodeStyle.width / 2) - Math.floor(levelSpacing / 2) - 1
+        ? pos.x + Math.floor(pos.width / 2) + Math.floor(levelSpacing / 2) + 1
+        : pos.x - Math.floor(pos.width / 2) - Math.floor(levelSpacing / 2) - 1
 
-      // 绘制从父节点到垂直线的水平线（不包括垂直线本身）
+      // 绘制从父节点到垂直线的水平线（包括垂直线位置）
       const minX = Math.min(parentX, lineX)
       const maxX = Math.max(parentX, lineX)
-      for (let x = minX; x < maxX; x++) {
+      for (let x = minX; x <= maxX; x++) {
         if (parentY >= 0 && parentY < canvas.length && x >= 0 && x < canvas[0].length) {
           if (canvas[parentY][x] === ' ') {
             canvas[parentY][x] = '<span style="color:var(--chart-grid-color)">─</span>'
@@ -363,13 +381,12 @@ function drawConnections(canvas: string[][], positions: NodePosition[], nodeStyl
         if (!childPos)
           return
 
-        const childX = direction === 'left-right' ? childPos.x - Math.floor(nodeStyle.width / 2) : childPos.x + Math.floor(nodeStyle.width / 2)
+        const childX = direction === 'left-right' ? childPos.x - Math.floor(childPos.width / 2) : childPos.x + Math.floor(childPos.width / 2)
         const childY = childPos.y + Math.floor(nodeStyle.height / 2)
 
         const childMinX = Math.min(lineX, childX)
         const childMaxX = Math.max(lineX, childX)
-        const startX = direction === 'left-right' ? childMinX + 1 : childMinX
-        for (let x = startX; x <= childMaxX; x++) {
+        for (let x = childMinX + 1; x <= childMaxX; x++) {
           if (childY >= 0 && childY < canvas.length && x >= 0 && x < canvas[0].length) {
             if (canvas[childY][x] === ' ') {
               canvas[childY][x] = '<span style="color:var(--chart-grid-color)">─</span>'
@@ -424,8 +441,8 @@ export function renderTreeChart(config: ChartConfig): string[] {
     height: 3,
   }
 
-  const siblingSpacing = data.siblingSpacing ?? 4
-  const levelSpacing = data.levelSpacing ?? 3
+  const siblingSpacing = data.siblingSpacing ?? TREE_DEFAULTS.SIBLING_SPACING
+  const levelSpacing = data.levelSpacing ?? TREE_DEFAULTS.LEVEL_SPACING
 
   const isDark = document.documentElement.classList.contains('dark')
   const colors = isDark ? darkColors : lightColors
@@ -441,6 +458,18 @@ export function renderTreeChart(config: ChartConfig): string[] {
   const treeDepth = getDepth(data.root)
   const treeWidth = calculateSubtreeWidth(data.root, nodeStyle, siblingSpacing)
   const treeHeight = calculateSubtreeHeight(data.root, nodeStyle, siblingSpacing)
+
+  // 计算每层的最大节点宽度（用于横向布局）
+  function getMaxWidthPerLevel(node: TreeNode, level: number, widths: number[]): void {
+    const nodeWidth = getNodeWidth(node, nodeStyle)
+    widths[level] = Math.max(widths[level] || 0, nodeWidth)
+    if (node.children) {
+      node.children.forEach(child => getMaxWidthPerLevel(child, level + 1, widths))
+    }
+  }
+  const levelWidths: number[] = []
+  getMaxWidthPerLevel(data.root, 0, levelWidths)
+  const totalCanvasWidth = levelWidths.reduce((sum, w) => sum + w, 0) + (treeDepth - 1) * levelSpacing
 
   // 根据方向计算画布尺寸
   let canvasWidth: number, canvasHeight: number, startX: number, startY: number
@@ -458,20 +487,20 @@ export function renderTreeChart(config: ChartConfig): string[] {
     startY = canvasHeight - nodeStyle.height
   }
   else if (direction === 'left-right') {
-    canvasWidth = treeDepth * (nodeStyle.width + levelSpacing) - levelSpacing
+    canvasWidth = totalCanvasWidth
     canvasHeight = treeHeight
-    startX = Math.floor(nodeStyle.width / 2)
+    startX = Math.floor(levelWidths[0] / 2)
     startY = Math.floor(treeHeight / 2) - Math.floor(nodeStyle.height / 2)
   }
   else {
-    canvasWidth = treeDepth * (nodeStyle.width + levelSpacing) - levelSpacing
+    canvasWidth = totalCanvasWidth
     canvasHeight = treeHeight
-    startX = canvasWidth - Math.floor(nodeStyle.width / 2) - 1
+    startX = canvasWidth - Math.floor(levelWidths[0] / 2) - 1
     startY = Math.floor(treeHeight / 2) - Math.floor(nodeStyle.height / 2)
   }
 
   // 计算布局
-  const positions = calculatePositions(data.root, nodeStyle, startX, startY, 0, direction, siblingSpacing, levelSpacing)
+  const positions = calculatePositions(data.root, nodeStyle, startX, startY, 0, direction, siblingSpacing, levelSpacing, levelWidths)
 
   // 创建画布
   const canvas: string[][] = Array.from({ length: canvasHeight }, () =>

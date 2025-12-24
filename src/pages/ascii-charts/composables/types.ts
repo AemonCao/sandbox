@@ -121,6 +121,12 @@ export interface TreeChartData {
   levelSpacing?: number // 父子节点之间的间距
 }
 
+// 树图默认值
+export const TREE_DEFAULTS = {
+  SIBLING_SPACING: 0,
+  LEVEL_SPACING: 1,
+} as const
+
 // 统一配置
 export interface ChartConfig {
   type: ChartType

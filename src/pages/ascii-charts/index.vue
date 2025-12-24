@@ -129,19 +129,27 @@ function generateSampleData(type: ChartType): ChartConfig['data'] {
 
     case 'tree': {
       const depth = Math.floor(Math.random() * 2) + 2
+      // eslint-disable-next-line no-console
+      console.log('生成树图数据 - 深度:', depth)
 
       function generateNode(id: string, level: number, maxLevel: number): TreeNode {
         const node: TreeNode = { id, label: id }
         if (level < maxLevel) {
           const childCount = Math.floor(Math.random() * 3) + 1
           node.children = Array.from({ length: childCount }, (_, i) =>
-            generateNode(`${id}.${i + 1}`, level + 1, maxLevel))
+            generateNode(level === 0 ? `${i + 1}` : `${id}.${i + 1}`, level + 1, maxLevel))
+          // eslint-disable-next-line no-console
+          console.log(`节点 ${id} - 层级: ${level}, 子节点数: ${childCount}`)
         }
         return node
       }
 
+      const root = generateNode('1', 0, depth)
+      // eslint-disable-next-line no-console
+      console.log('树图根节点:', root)
+
       return {
-        root: generateNode('Root', 0, depth),
+        root,
         direction: 'top-down',
         nodeStyle: {
           borderStyle: 'thin',

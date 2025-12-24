@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { BarStyle, BorderStyle, ChartConfig, ChartType, GridStyle, LegendOrientation, LegendPosition, NodeStyle, PieLabelStyle, TreeDirection } from '../composables/types'
+import { TREE_DEFAULTS } from '../composables/types'
 
 const props = defineProps<{
   config: ChartConfig
@@ -337,9 +338,9 @@ watch(() => props.config.style.height, (val) => {
       </NCheckbox>
 
       <div mt-4>
-        <label text-sm font-medium mb-2 block>子节点间距: {{ (config.data as any).siblingSpacing ?? 4 }}</label>
+        <label text-sm font-medium mb-2 block>子节点间距: {{ (config.data as any).siblingSpacing ?? TREE_DEFAULTS.SIBLING_SPACING }}</label>
         <NSlider
-          :value="(config.data as any).siblingSpacing ?? 4"
+          :value="(config.data as any).siblingSpacing ?? TREE_DEFAULTS.SIBLING_SPACING"
           :min="0"
           :max="10"
           :step="1"
@@ -348,9 +349,9 @@ watch(() => props.config.style.height, (val) => {
       </div>
 
       <div mt-3>
-        <label text-sm font-medium mb-2 block>层级间距: {{ (config.data as any).levelSpacing ?? 3 }}</label>
+        <label text-sm font-medium mb-2 block>层级间距: {{ (config.data as any).levelSpacing ?? TREE_DEFAULTS.LEVEL_SPACING }}</label>
         <NSlider
-          :value="(config.data as any).levelSpacing ?? 3"
+          :value="(config.data as any).levelSpacing ?? TREE_DEFAULTS.LEVEL_SPACING"
           :min="1"
           :max="8"
           :step="1"

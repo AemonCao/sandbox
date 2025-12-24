@@ -79,6 +79,7 @@ src/
 │   └── default.vue  # 默认布局 (动态标题管理)
 ├── pages/           # 页面组件 (文件路由)
 │   ├── index.vue                      # 主页 (显示所有可用路由)
+│   ├── ascii-charts/                  # ASCII 字符图表渲染引擎
 │   ├── bluetooth-json/                # 蓝牙信标解析
 │   ├── boids-flocking/                # 鸟群算法模拟
 │   ├── ibeacon-simulator/             # 室内蓝牙定位模拟器
@@ -204,7 +205,24 @@ pnpm test --watch
 
 项目包含多个完整的技术演示案例：
 
-### 1. 🔵 蓝牙信标解析 (Bluetooth Beacon Parser)
+### 1. 📊 ASCII 字符图表渲染引擎 (ASCII Charts)
+
+**路径**: `/ascii-charts`
+
+纯文本字符渲染的数据可视化图表引擎，支持多种图表类型。
+
+**功能特性**:
+
+- 支持 6 种图表类型：折线图、柱状图、时间轴、瀑布图、饼图、树状图
+- 数据变化时自动重新渲染
+- 移动端自适应布局（图表尺寸自动调整）
+- 使用纯 ASCII 字符绘制，兼容性好
+- 支持自定义字体（集成 Google Fonts）
+- 丰富的样式配置选项
+
+**技术栈**: Canvas API、字符渲染、响应式设计、Google Fonts
+
+### 2. 🔵 蓝牙信标解析 (Bluetooth Beacon Parser)
 
 **路径**: `/bluetooth-json`
 
@@ -219,7 +237,7 @@ pnpm test --watch
 
 **技术栈**: JSON 解析、数据可视化
 
-### 2. 📍 室内蓝牙定位模拟器 (Indoor Bluetooth Positioning Simulator)
+### 3. 📍 室内蓝牙定位模拟器 (Indoor Bluetooth Positioning Simulator)
 
 **路径**: `/ibeacon-simulator`
 
@@ -241,7 +259,7 @@ pnpm test --watch
 - `FormulaPanel` - 公式展示面板
 - `InfoPanel` - 信息面板
 
-### 3. 💉 智能输液监控 (Infusion Monitoring)
+### 4. 💉 智能输液监控 (Infusion Monitoring)
 
 **路径**: `/infusion-monitoring`
 
@@ -255,7 +273,7 @@ pnpm test --watch
 
 **技术栈**: 实时数据监控、告警系统
 
-### 4. 🔢 MNIST数据预览 (MNIST Data Preview)
+### 5. 🔢 MNIST数据预览 (MNIST Data Preview)
 
 **路径**: `/mnist-data-preview`
 
@@ -269,7 +287,7 @@ pnpm test --watch
 
 **技术栈**: TensorFlow.js、数据可视化
 
-### 5. ✍️ 手写数字识别 (Handwritten Digit Recognition)
+### 6. ✍️ 手写数字识别 (Handwritten Digit Recognition)
 
 **路径**: `/mnist-recognition`
 
@@ -292,22 +310,7 @@ pnpm test --watch
 - `PredictionList` - 预测结果列表
 - `TrainingPanel` - 训练面板
 
-### 7. 📊 传感器数据仪表盘 (Sensor Dashboard)
-
-**路径**: `/sensor-dashboard`
-
-实时传感器数据监控仪表盘，展示温度、湿度等环境数据。
-
-**功能特性**:
-
-- 实时数据展示
-- 历史数据图表
-- 多传感器支持
-- 响应式布局
-
-**技术栈**: ECharts、实时数据可视化
-
-### 6. 🐦 鸟群算法模拟 (Boids Flocking)
+### 7. 🐦 鸟群算法模拟 (Boids Flocking)
 
 **路径**: `/boids-flocking`
 
@@ -324,7 +327,7 @@ pnpm test --watch
 
 **技术栈**: Canvas API、群体智能算法、lil-gui
 
-### 7. 🗺️ Perlin噪声地图生成器 (Perlin Noise Map Generator)
+### 8. 🗺️ Perlin噪声地图生成器 (Perlin Noise Map Generator)
 
 **路径**: `/perlin-noise`
 
@@ -340,6 +343,21 @@ pnpm test --watch
 - 交互式 3D 视图 (旋转/缩放)
 
 **技术栈**: Three.js、Simplex Noise、lil-gui
+
+### 9. 📊 传感器数据仪表盘 (Sensor Dashboard)
+
+**路径**: `/sensor-dashboard`
+
+实时传感器数据监控仪表盘，展示温度、湿度等环境数据。
+
+**功能特性**:
+
+- 实时数据展示
+- 历史数据图表
+- 多传感器支持
+- 响应式布局
+
+**技术栈**: ECharts、实时数据可视化
 
 ## 🤝 贡献
 

@@ -6,10 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Vue 3 frontend sandbox project used for running demo code and debugging new components. The project provides a modern development environment for rapid prototyping, testing, and showcasing various technical demos including:
 
+- **ASCII Visualization**: Pure text-based chart rendering engine
 - **Bluetooth & IoT**: Bluetooth beacon parsing, iBeacon positioning simulation
 - **Machine Learning**: MNIST handwritten digit recognition with TensorFlow.js
 - **Data Visualization**: ECharts integration for complex data display
 - **Healthcare**: Infusion monitoring systems
+- **Algorithms**: Boids flocking simulation, Perlin noise terrain generation
 
 ## Common Development Commands
 
@@ -78,11 +80,15 @@ src/
 │   └── default.vue  # Default layout with dynamic title management
 ├── pages/           # File-based routing (pages become routes automatically)
 │   ├── index.vue    # Main homepage showing available routes
-│   ├── bluetooth-json/index.vue           # 蓝牙信标解析
-│   ├── ibeacon-simulator/index.vue        # 室内蓝牙定位模拟器 (三角定位)
-│   ├── infusion-monitoring/index.vue      # 智能输液监控
-│   ├── mnist-data-preview/index.vue       # MNIST数据预览
-│   ├── mnist-recognition/index.vue        # 手写数字识别
+│   ├── ascii-charts/index.vue           # ASCII 字符图表渲染引擎
+│   ├── bluetooth-json/index.vue         # 蓝牙信标解析
+│   ├── boids-flocking/index.vue         # 鸟群算法模拟
+│   ├── ibeacon-simulator/index.vue      # 室内蓝牙定位模拟器 (三角定位)
+│   ├── infusion-monitoring/index.vue    # 智能输液监控
+│   ├── mnist-data-preview/index.vue     # MNIST数据预览
+│   ├── mnist-recognition/index.vue      # 手写数字识别
+│   ├── perlin-noise/index.vue           # Perlin噪声地图生成器
+│   ├── sensor-dashboard/index.vue       # 传感器数据仪表盘
 │   └── [...all].vue # Catch-all route for 404 handling
 ├── styles/          # Global styles and theme configuration
 │   └── customTheme.ts # Naive UI theme customization
@@ -347,14 +353,22 @@ This project has access to several Model Context Protocol (MCP) services that ex
 
 The project includes several fully functional demo pages showcasing different technologies:
 
-### 1. 蓝牙信标解析 (Bluetooth Beacon Parser)
+### 1. ASCII 字符图表渲染引擎 (ASCII Charts)
+
+- **Path**: `/ascii-charts`
+- **Features**: Pure text-based chart rendering engine supporting 6 chart types (line, bar, timeline, waterfall, pie, tree), responsive design, Google Fonts integration
+- **Technologies**: Canvas API, character rendering, responsive design, Google Fonts
+- **Components**: ChartControls, ChartDisplay
+- **Composables**: useAsciiChart, useFonts, useResponsive
+
+### 2. 蓝牙信标解析 (Bluetooth Beacon Parser)
 
 - **Path**: `/bluetooth-json`
 - **Features**: Parse and analyze Bluetooth advertising packets, AD structure analysis,
   iBeacon data parsing
 - **Technologies**: JSON parsing, data visualization
 
-### 2. 室内蓝牙定位模拟器 (Indoor Bluetooth Positioning Simulator)
+### 3. 室内蓝牙定位模拟器 (Indoor Bluetooth Positioning Simulator)
 
 - **Path**: `/ibeacon-simulator`
 - **Features**: Triangulation-based positioning simulation, interactive canvas,
@@ -362,25 +376,43 @@ The project includes several fully functional demo pages showcasing different te
 - **Technologies**: Canvas API, geometric algorithms, signal strength simulation
 - **Components**: BeaconCanvas, ControlPanel, FormulaPanel, InfoPanel
 
-### 3. 智能输液监控 (Infusion Monitoring)
+### 4. 智能输液监控 (Infusion Monitoring)
 
 - **Path**: `/infusion-monitoring`
 - **Features**: Healthcare monitoring system for infusion management
 - **Technologies**: Real-time data monitoring, alert systems
 
-### 4. MNIST数据预览 (MNIST Data Preview)
+### 5. MNIST数据预览 (MNIST Data Preview)
 
 - **Path**: `/mnist-data-preview`
 - **Features**: Preview MNIST handwritten digit dataset
 - **Technologies**: TensorFlow.js, data visualization
 
-### 5. 手写数字识别 (Handwritten Digit Recognition)
+### 6. 手写数字识别 (Handwritten Digit Recognition)
 
 - **Path**: `/mnist-recognition`
 - **Features**: Train and test neural networks for digit recognition, interactive drawing canvas,
   model management
 - **Technologies**: TensorFlow.js with WebGL backend, Canvas API, neural network training
 - **Components**: DrawingCanvas, ModelControls, ModelManager, PredictionList, TrainingPanel
+
+### 7. 鸟群算法模拟 (Boids Flocking)
+
+- **Path**: `/boids-flocking`
+- **Features**: Boids algorithm simulation with separation, alignment, and cohesion rules, predator chase behavior, light attraction, boundary control
+- **Technologies**: Canvas API, swarm intelligence algorithms, lil-gui
+
+### 8. Perlin噪声地图生成器 (Perlin Noise Map Generator)
+
+- **Path**: `/perlin-noise`
+- **Features**: Procedural 3D terrain generation using Simplex noise, multi-octave noise layering, multiple display modes, interactive 3D view
+- **Technologies**: Three.js, Simplex Noise, lil-gui
+
+### 9. 传感器数据仪表盘 (Sensor Dashboard)
+
+- **Path**: `/sensor-dashboard`
+- **Features**: Real-time sensor data monitoring dashboard for temperature, humidity, and environmental data
+- **Technologies**: ECharts, real-time data visualization
 
 ## Important Notes
 

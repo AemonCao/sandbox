@@ -128,7 +128,8 @@ function generateSampleData(type: ChartType): ChartConfig['data'] {
     }
 
     case 'tree': {
-      const depth = Math.floor(Math.random() * 2) + 2
+      const currentDepth = (config.value.data as TreeChartData).depth
+      const depth = currentDepth ?? Math.floor(Math.random() * 2) + 2
       const useRandomLabel = (config.value.data as TreeChartData).randomLabel === true
 
       function generateRandomLabel(): string {
@@ -143,12 +144,12 @@ function generateSampleData(type: ChartType): ChartConfig['data'] {
         if (level < maxLevel) {
           const childCount = Math.floor(Math.random() * 3) + 1
           node.children = Array.from({ length: childCount }, (_, i) =>
-            generateNode(level === 0 ? `${i + 1}` : `${id}.${i + 1}`, level + 1, maxLevel))
+            generateNode(`${id}.${i + 1}`, level + 1, maxLevel))
         }
         return node
       }
 
-      const root = generateNode('1', 0, depth)
+      const root = generateNode('Root', 0, depth)
 
       return {
         root,
@@ -160,6 +161,7 @@ function generateSampleData(type: ChartType): ChartConfig['data'] {
           height: 3,
         },
         randomLabel: useRandomLabel,
+        depth,
       } as TreeChartData
     }
 
@@ -266,15 +268,16 @@ function updateNodeStyle(nodeStyle: NodeStyle) {
 /**
  * 更新树图间距
  */
-function updateTreeSpacing(spacing: { siblingSpacing?: number, levelSpacing?: number, randomLabel?: boolean }) {
+function updateTreeSpacing(spacing: { siblingSpacing?: number, levelSpacing?: number, randomLabel?: boolean, depth?: number }) {
   if (config.value.type === 'tree') {
     const currentData = config.value.data as TreeChartData
     updateData({
       ...currentData,
       ...spacing,
     })
-    // 如果切换了 randomLabel，重新生成数据
-    if (spacing.randomLabel !== undefined && spacing.randomLabel !== currentData.randomLabel) {
+    // 如果切换了 randomLabel 或 depth，重新生成数据
+    if ((spacing.randomLabel !== undefined && spacing.randomLabel !== currentData.randomLabel)
+      || (spacing.depth !== undefined && spacing.depth !== currentData.depth)) {
       const newData = generateSampleData('tree') as TreeChartData
       updateData({
         ...currentData,

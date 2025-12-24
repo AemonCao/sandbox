@@ -22,7 +22,7 @@ const emit = defineEmits<{
   'update:legendOrientation': [value: LegendOrientation]
   'update:treeDirection': [value: TreeDirection]
   'update:nodeStyle': [value: NodeStyle]
-  'update:treeSpacing': [value: { siblingSpacing?: number, levelSpacing?: number, randomLabel?: boolean }]
+  'update:treeSpacing': [value: { siblingSpacing?: number, levelSpacing?: number, randomLabel?: boolean, depth?: number }]
   'update:showBorder': [value: boolean]
   'update:borderStyle': [value: BorderStyle]
   'update:fontFamily': [value: string]
@@ -364,6 +364,17 @@ watch(() => props.config.style.height, (val) => {
           :max="8"
           :step="1"
           @update:value="emit('update:treeSpacing', { levelSpacing: $event })"
+        />
+      </div>
+
+      <div mt-3>
+        <label text-sm font-medium mb-2 block>树深度: {{ (config.data as any).depth ?? 2 }}</label>
+        <NSlider
+          :value="(config.data as any).depth ?? 2"
+          :min="1"
+          :max="5"
+          :step="1"
+          @update:value="emit('update:treeSpacing', { depth: $event })"
         />
       </div>
     </div>

@@ -469,7 +469,8 @@ export function renderTreeChart(config: ChartConfig): string[] {
   }
   const levelWidths: number[] = []
   getMaxWidthPerLevel(data.root, 0, levelWidths)
-  const totalCanvasWidth = levelWidths.reduce((sum, w) => sum + w, 0) + levelWidths.length * levelSpacing + levelSpacing
+  // 横向布局：各层宽度之和 + 层间距 + 最后一层节点的右半部分
+  const totalCanvasWidth = levelWidths.reduce((sum, w) => sum + w, 0) + (levelWidths.length - 1) * levelSpacing + Math.floor(levelWidths[levelWidths.length - 1] / 2)
 
   // 根据方向计算画布尺寸
   let canvasWidth: number, canvasHeight: number, startX: number, startY: number

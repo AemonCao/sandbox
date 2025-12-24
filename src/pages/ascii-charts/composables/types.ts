@@ -120,6 +120,7 @@ export interface TreeChartData {
   siblingSpacing?: number // 子节点之间的间距
   levelSpacing?: number // 父子节点之间的间距
   randomLabel?: boolean // 是否使用随机长度标签
+  depth?: number // 树的深度
 }
 
 // 树图默认值

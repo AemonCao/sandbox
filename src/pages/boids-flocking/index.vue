@@ -8,6 +8,8 @@ const isDark = useDark()
 const canvasRef = ref<HTMLCanvasElement>()
 let ctx: CanvasRenderingContext2D
 let animationId: number
+let lightRemoveTimer: ReturnType<typeof setTimeout> | null = null
+const countdown = ref(0)
 
 const params = reactive<SimulationParams>({
   boidCount: 150,
@@ -28,7 +30,7 @@ const params = reactive<SimulationParams>({
   wallAvoidDistance: 20,
   wallAvoidForce: 5.0,
   lightSeeking: true,
-  seekForce: 1.2,
+  seekForce: 5,
 })
 
 const {
@@ -53,6 +55,17 @@ function animate() {
   updateSimulation()
   drawSimulation(ctx, isDark.value)
 
+  // 绘制倒计时
+  if (countdown.value > 0 && params.lightSeeking) {
+    ctx.save()
+    ctx.fillStyle = isDark.value ? '#000fff' : '#004fff'
+    ctx.font = 'bold 24px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(countdown.value.toString(), lightPos.x, lightPos.y)
+    ctx.restore()
+  }
+
   animationId = requestAnimationFrame(animate)
 }
 
@@ -74,6 +87,46 @@ function onMouseMove(e: MouseEvent) {
   lightPos.y = e.clientY
 }
 
+/**
+ * 触摸移动事件
+ */
+function onTouchMove(e: TouchEvent) {
+  if (e.touches.length > 0) {
+    if (lightRemoveTimer) {
+      clearTimeout(lightRemoveTimer)
+      lightRemoveTimer = null
+    }
+    countdown.value = 0
+    params.lightSeeking = true
+    lightPos.x = e.touches[0].clientX
+    lightPos.y = e.touches[0].clientY
+  }
+}
+
+/**
+ * 触摸结束事件
+ */
+function onTouchEnd() {
+  const startTime = Date.now()
+  countdown.value = 3
+
+  const updateCountdown = () => {
+    const elapsed = Date.now() - startTime
+    const remaining = Math.max(0, 3 - Math.floor(elapsed / 1000))
+    countdown.value = remaining
+
+    if (remaining > 0) {
+      lightRemoveTimer = setTimeout(updateCountdown, 100)
+    }
+    else {
+      params.lightSeeking = false
+      countdown.value = 0
+    }
+  }
+
+  updateCountdown()
+}
+
 onMounted(() => {
   if (!canvasRef.value)
     return
@@ -90,15 +143,22 @@ onMounted(() => {
 
   window.addEventListener('resize', resizeCanvas)
   window.addEventListener('mousemove', onMouseMove)
+  window.addEventListener('touchmove', onTouchMove)
+  window.addEventListener('touchend', onTouchEnd)
 })
 
 onUnmounted(() => {
   if (animationId) {
     cancelAnimationFrame(animationId)
   }
+  if (lightRemoveTimer) {
+    clearTimeout(lightRemoveTimer)
+  }
   destroyGUI()
   window.removeEventListener('resize', resizeCanvas)
   window.removeEventListener('mousemove', onMouseMove)
+  window.removeEventListener('touchmove', onTouchMove)
+  window.removeEventListener('touchend', onTouchEnd)
 })
 </script>
 

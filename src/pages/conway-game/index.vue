@@ -21,7 +21,8 @@ const params = reactive({
   isPlaying: false,
   fps: 30,
   resolution: 20,
-  cellColor: computed(() => isDark.value ? '#00ff88' : '#3b82f6'),
+  cellColor: '#3b82f6',
+  bgColor: '#fff',
 })
 
 /**
@@ -106,7 +107,7 @@ function draw() {
   if (!ctx || !canvasRef.value)
     return
 
-  ctx.fillStyle = '#000'
+  ctx.fillStyle = params.bgColor
   ctx.fillRect(0, 0, canvasRef.value.width, canvasRef.value.height)
   ctx.fillStyle = params.cellColor
 
@@ -162,9 +163,13 @@ function loop() {
 /**
  * 鼠标/触摸交互
  */
-function handlePointer(x: number, y: number, isStart: boolean) {
+function handlePointer(clientX: number, clientY: number, isStart: boolean) {
   if (!canvasRef.value)
     return
+
+  const rect = canvasRef.value.getBoundingClientRect()
+  const x = clientX - rect.left
+  const y = clientY - rect.top
 
   const i = Math.floor(x / params.resolution)
   const j = Math.floor(y / params.resolution)
@@ -254,11 +259,14 @@ function initGUI() {
     resetGrid()
     randomize()
   })
-  fSettings.addColor(params, 'cellColor').name('颜色')
-
-  useDraggableGUI(gui)
+  const colorCtrl = fSettings.addColor(params, 'cellColor').name('细胞颜色')
+  const bgColorCtrl = fSettings.addColor(params, 'bgColor').name('背景颜色')
 
   watch(isDark, () => {
+    params.cellColor = isDark.value ? '#00ff88' : '#3b82f6'
+    params.bgColor = isDark.value ? '#000' : '#fff'
+    colorCtrl.updateDisplay()
+    bgColorCtrl.updateDisplay()
     if (gui) {
       gui.domElement.classList.toggle('dark', isDark.value)
     }
@@ -274,6 +282,8 @@ onMounted(() => {
   resetGrid()
   randomize()
 
+  params.cellColor = isDark.value ? '#00ff88' : '#3b82f6'
+  params.bgColor = isDark.value ? '#000' : '#fff'
   initGUI()
 
   canvasRef.value.addEventListener('mousedown', (e) => {

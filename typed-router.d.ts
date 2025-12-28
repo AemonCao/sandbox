@@ -177,6 +177,20 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/n8n-control/': RouteRecordInfo<
+      '/n8n-control/',
+      '/n8n-control',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/n8n-control/components/VerificationModal': RouteRecordInfo<
+      '/n8n-control/components/VerificationModal',
+      '/n8n-control/components/VerificationModal',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/pathfinding/': RouteRecordInfo<
       '/pathfinding/',
       '/pathfinding',
@@ -389,6 +403,18 @@ declare module 'vue-router/auto-routes' {
     'src/pages/mnist-recognition/components/TrainingPanel.vue': {
       routes:
         | '/mnist-recognition/components/TrainingPanel'
+      views:
+        | never
+    }
+    'src/pages/n8n-control/index.vue': {
+      routes:
+        | '/n8n-control/'
+      views:
+        | never
+    }
+    'src/pages/n8n-control/components/VerificationModal.vue': {
+      routes:
+        | '/n8n-control/components/VerificationModal'
       views:
         | never
     }

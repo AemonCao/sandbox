@@ -1,0 +1,13 @@
+{
+  "authWebhookUrl": "https://n8n.aemon.space/webhook/b78b642e-d2cb-4e19-bf31-00767e2936b9",
+  "tokenWebhookUrl": "https://n8n.aemon.space/webhook/52731281-ca29-421b-860f-d86e80817a37/sign-token",
+  "workflows": [
+    {
+      "id": "v0G581lVqcglWOhw",
+      "name": "每日计算机小知识",
+      "description": "通过AI生成计算机小知识并通过 Bark 发送到手机。",
+      "webhookUrl": "https://n8n.aemon.space/webhook/8cd754b0-ad9d-4e99-a590-1d84b66ebbe1",
+      "method": "GET"
+    }
+  ]
+}

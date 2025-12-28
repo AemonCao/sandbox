@@ -8,7 +8,7 @@ import type { WorkflowConfig } from './types'
  * 加载流程配置文件
  */
 export async function loadWorkflowConfig(): Promise<WorkflowConfig> {
-  const response = await fetch('/src/pages/n8n-control/workflows.json')
+  const response = await fetch('/config/workflows.json')
   if (!response.ok)
     throw new Error('加载配置文件失败')
 

@@ -36,7 +36,8 @@
       "Bash(npx conventional-changelog:*)",
       "Bash(done)",
       "Bash(lsof:*)",
-      "Bash(xargs kill:*)"
+      "Bash(xargs kill:*)",
+      "Bash(cp:*)"
     ],
     "deny": [],
     "ask": []

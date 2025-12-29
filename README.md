@@ -88,6 +88,9 @@ src/
 │   ├── mnist-recognition/             # 手写数字识别
 │   ├── perlin-noise/                  # Perlin噪声地图生成器
 │   ├── sensor-dashboard/              # 传感器数据仪表盘
+│   ├── conway-game/                   # Conway生命游戏
+│   ├── pathfinding/                   # 路径寻找可视化
+│   ├── n8n-control/                   # n8n 流程控制
 │   └── [...all].vue                   # 404 捕获路由
 ├── styles/          # 全局样式和主题配置
 │   └── customTheme.ts # Naive UI 主题自定义
@@ -358,6 +361,54 @@ pnpm test --watch
 - 响应式布局
 
 **技术栈**: ECharts、实时数据可视化
+
+### 10. 🎮 Conway生命游戏 (Conway's Game of Life)
+
+**路径**: `/conway-game`
+
+经典的 Conway 生命游戏模拟器，展示细胞自动机的演化过程。
+
+**功能特性**:
+
+- 交互式绘制细胞（鼠标/触摸）
+- 自动演化模拟
+- 播放/暂停/步进控制
+- 随机生成初始状态
+- 可调节演化速度和细胞大小
+- 实时统计代数和存活数量
+
+**技术栈**: Canvas API、细胞自动机算法、lil-gui
+
+### 11. 🗺️ 路径寻找可视化 (Pathfinding Visualization)
+
+**路径**: `/pathfinding`
+
+可视化展示多种路径寻找算法的搜索过程和最终路径。
+
+**功能特性**:
+
+- 支持 4 种算法：A*、Dijkstra、BFS、DFS
+- 交互式网格编辑（设置起点、终点、墙壁）
+- 随机墙壁生成和迷宫生成
+- 动画播放控制（播放/暂停/重置/跳到结尾）
+- 可调节网格大小和动画速度
+- 支持对角线移动选项
+- 实时统计访问节点数和路径长度
+
+**技术栈**: Canvas API、路径寻找算法、lil-gui
+
+### 12. 🔗 n8n 流程控制 (n8n Workflow Control)
+
+**路径**: `/n8n-control`
+
+通过 Web 界面触发 n8n webhook 工作流。
+
+**功能特性**:
+
+- 触发 n8n webhook 流程
+- 工作流自动化控制
+
+**技术栈**: Webhook 集成、工作流自动化
 
 ## 🤝 贡献
 

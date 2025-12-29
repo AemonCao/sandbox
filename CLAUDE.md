@@ -89,6 +89,9 @@ src/
 │   ├── mnist-recognition/index.vue      # 手写数字识别
 │   ├── perlin-noise/index.vue           # Perlin噪声地图生成器
 │   ├── sensor-dashboard/index.vue       # 传感器数据仪表盘
+│   ├── conway-game/index.vue            # Conway生命游戏
+│   ├── pathfinding/index.vue            # 路径寻找可视化
+│   ├── n8n-control/index.vue            # n8n 流程控制
 │   └── [...all].vue # Catch-all route for 404 handling
 ├── styles/          # Global styles and theme configuration
 │   └── customTheme.ts # Naive UI theme customization
@@ -413,6 +416,26 @@ The project includes several fully functional demo pages showcasing different te
 - **Path**: `/sensor-dashboard`
 - **Features**: Real-time sensor data monitoring dashboard for temperature, humidity, and environmental data
 - **Technologies**: ECharts, real-time data visualization
+
+### 10. Conway生命游戏 (Conway's Game of Life)
+
+- **Path**: `/conway-game`
+- **Features**: Conway's Game of Life simulator with interactive drawing, automatic evolution, adjustable parameters, play/pause/step controls
+- **Technologies**: Canvas API, cellular automaton algorithm, lil-gui
+- **Interaction**: Mouse/touch drawing to create/erase cells, random generation, adjustable speed and cell size
+
+### 11. 路径寻找可视化 (Pathfinding Visualization)
+
+- **Path**: `/pathfinding`
+- **Features**: Visualize A*, Dijkstra, BFS, DFS pathfinding algorithms, interactive grid editing, maze generation, animation controls
+- **Technologies**: Canvas API, pathfinding algorithms, lil-gui
+- **Components**: Grid system with composables (useGrid, useAlgorithms, useAnimation, useGUI)
+
+### 12. n8n 流程控制 (n8n Workflow Control)
+
+- **Path**: `/n8n-control`
+- **Features**: Trigger n8n webhook workflows from a web interface
+- **Technologies**: Webhook integration, workflow automation
 
 ## Important Notes
 

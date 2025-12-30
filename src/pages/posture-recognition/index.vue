@@ -89,11 +89,12 @@ const directionLabels: Record<string, string> = {
           需要访问设备运动传感器
         </p>
         <button
-
-          text-white font-medium px-6 py-3 rounded-lg bg-blue-500 transition-all duration-300 hover:bg-blue-600
+          text-white font-medium px-6 py-3 rounded-lg transition-all duration-300
+          :class="sensors.isPermissionGranted.value ? 'bg-green-500 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'"
+          :disabled="sensors.isPermissionGranted.value"
           @click="handleRequestPermission"
         >
-          授予权限
+          {{ sensors.isPermissionGranted.value ? '✓ 已授权' : '授予权限' }}
         </button>
       </div>
 

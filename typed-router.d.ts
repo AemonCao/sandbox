@@ -212,6 +212,20 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/posture-recognition/': RouteRecordInfo<
+      '/posture-recognition/',
+      '/posture-recognition',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/posture-recognition/components/ParameterControls': RouteRecordInfo<
+      '/posture-recognition/components/ParameterControls',
+      '/posture-recognition/components/ParameterControls',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/sensor-dashboard/': RouteRecordInfo<
       '/sensor-dashboard/',
       '/sensor-dashboard',
@@ -433,6 +447,18 @@ declare module 'vue-router/auto-routes' {
     'src/pages/perlin-noise/components/TerrainCanvas.vue': {
       routes:
         | '/perlin-noise/components/TerrainCanvas'
+      views:
+        | never
+    }
+    'src/pages/posture-recognition/index.vue': {
+      routes:
+        | '/posture-recognition/'
+      views:
+        | never
+    }
+    'src/pages/posture-recognition/components/ParameterControls.vue': {
+      routes:
+        | '/posture-recognition/components/ParameterControls'
       views:
         | never
     }

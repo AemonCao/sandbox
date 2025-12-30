@@ -38,9 +38,11 @@ export function useCompass() {
 
       orientationHandler = (event: DeviceOrientationEvent) => {
         if ((event as any).webkitCompassHeading !== undefined) {
+          // iOS: webkitCompassHeading 直接给出指南针方向（0° = 北）
           heading.value = (event as any).webkitCompassHeading
         }
         else if (event.alpha !== null) {
+          // Android: alpha 是顺时针旋转角度，需要反转
           heading.value = 360 - event.alpha
         }
       }

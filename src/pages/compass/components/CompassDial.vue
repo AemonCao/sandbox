@@ -38,8 +38,14 @@ watch(() => props.heading, (newHeading) => {
 const currentDirection = computed(() => {
   const normalized = ((props.heading % 360) + 360) % 360
   const closest = directions.reduce((prev, curr) => {
-    const prevDiff = Math.abs(prev.angle - normalized)
-    const currDiff = Math.abs(curr.angle - normalized)
+    const prevDiff = Math.min(
+      Math.abs(prev.angle - normalized),
+      360 - Math.abs(prev.angle - normalized),
+    )
+    const currDiff = Math.min(
+      Math.abs(curr.angle - normalized),
+      360 - Math.abs(curr.angle - normalized),
+    )
     return currDiff < prevDiff ? curr : prev
   })
   return closest.name

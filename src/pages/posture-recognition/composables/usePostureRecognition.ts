@@ -139,15 +139,18 @@ export function usePostureRecognition(
     // 计算方差
     const variance = calculateVariance(smoothed)
 
-    // 检测峰值
-    const peaks = detectPeaks(smoothed, parameters.value.walkingThreshold, 5)
+    // 计算平均幅值
+    const avgMagnitude = smoothed.reduce((sum, val) => sum + val, 0) / smoothed.length
+
+    // 检测峰值（使用动态阈值：平均幅值的 60%）
+    const peakThreshold = Math.max(0.5, avgMagnitude * 0.6)
+    const peaks = detectPeaks(smoothed, peakThreshold, 5)
 
     // 计算步频
     const timeWindow = (magnitudeHistory.value.length * 100) / 1000 // 秒
     const peakFrequency = calculateStepFrequency(peaks, timeWindow)
 
     // 分类姿态
-    const avgMagnitude = smoothed.reduce((sum, val) => sum + val, 0) / smoothed.length
     const postureType = classifyPosture(avgMagnitude, variance, peakFrequency)
 
     // 计算置信度

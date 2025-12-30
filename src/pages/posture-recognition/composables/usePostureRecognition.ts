@@ -27,10 +27,9 @@ export function usePostureRecognition(
   let updateTimer: ReturnType<typeof setInterval> | null = null
 
   /**
-   * 分类姿态类型
+   * 分类姿态类型（基于方差和步频）
    */
   function classifyPosture(
-    magnitude: number,
     variance: number,
     peakFrequency: number,
   ): PostureType {
@@ -41,15 +40,15 @@ export function usePostureRecognition(
       return 'idle'
     }
 
-    // 跑步：高幅值 + 高频率
-    if (magnitude > params.runningThreshold
+    // 跑步：高方差 + 高频率
+    if (variance > params.runningThreshold
       && peakFrequency >= params.runningFreqMin
       && peakFrequency <= params.runningFreqMax) {
       return 'running'
     }
 
-    // 行走：中等幅值 + 中等频率
-    if (magnitude > params.walkingThreshold
+    // 行走：中等方差 + 中等频率
+    if (variance > params.walkingThreshold
       && peakFrequency >= params.walkingFreqMin
       && peakFrequency <= params.walkingFreqMax) {
       return 'walking'
@@ -151,7 +150,7 @@ export function usePostureRecognition(
     const peakFrequency = calculateStepFrequency(peaks, timeWindow)
 
     // 分类姿态
-    const postureType = classifyPosture(avgMagnitude, variance, peakFrequency)
+    const postureType = classifyPosture(variance, peakFrequency)
 
     // 计算置信度
     const confidence = calculateConfidence(variance, peaks.length, postureType)

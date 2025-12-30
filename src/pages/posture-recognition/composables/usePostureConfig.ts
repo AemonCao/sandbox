@@ -3,9 +3,9 @@ import type { PostureParameters } from './types'
 /** 默认参数配置 */
 export const DEFAULT_PARAMETERS: PostureParameters = {
   movingAverageWindow: 10,
-  idleThreshold: 0.5,
-  walkingThreshold: 2.0,
-  runningThreshold: 8.0,
+  idleThreshold: 0.5, // 方差阈值
+  walkingThreshold: 1.5, // 方差阈值（不是幅值）
+  runningThreshold: 3.0, // 方差阈值（不是幅值）
   walkingFreqMin: 0.5,
   walkingFreqMax: 2.0,
   runningFreqMin: 2.0,

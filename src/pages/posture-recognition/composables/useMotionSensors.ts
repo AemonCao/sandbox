@@ -60,11 +60,11 @@ export function useMotionSensors() {
           return
         lastUpdateTime = now
 
-        // 处理加速度数据
-        if (event.acceleration) {
-          const x = event.acceleration.x || 0
-          const y = event.acceleration.y || 0
-          const z = event.acceleration.z || 0
+        // 处理加速度数据（使用包含重力的加速度）
+        if (event.accelerationIncludingGravity) {
+          const x = event.accelerationIncludingGravity.x || 0
+          const y = event.accelerationIncludingGravity.y || 0
+          const z = event.accelerationIncludingGravity.z || 0
 
           acceleration.value = { x, y, z }
 

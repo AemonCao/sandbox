@@ -5,7 +5,8 @@ import { MAX_HISTORY_POINTS, SAMPLE_INTERVAL } from './usePostureConfig'
  * 采集设备加速度和方位数据
  */
 export function useMotionSensors() {
-  let lastUpdateTime = 0
+  let lastMotionUpdateTime = 0
+  let lastOrientationUpdateTime = 0
 
   // 加速度数据
   const acceleration = ref({ x: 0, y: 0, z: 0 })
@@ -56,9 +57,9 @@ export function useMotionSensors() {
 
       motionHandler = (event: DeviceMotionEvent) => {
         const now = Date.now()
-        if (now - lastUpdateTime < SAMPLE_INTERVAL)
+        if (now - lastMotionUpdateTime < SAMPLE_INTERVAL)
           return
-        lastUpdateTime = now
+        lastMotionUpdateTime = now
 
         // 处理加速度数据（使用包含重力的加速度）
         if (event.accelerationIncludingGravity) {
@@ -89,8 +90,9 @@ export function useMotionSensors() {
     if ('ondeviceorientation' in window) {
       orientationHandler = (event: DeviceOrientationEvent) => {
         const now = Date.now()
-        if (now - lastUpdateTime < SAMPLE_INTERVAL)
+        if (now - lastOrientationUpdateTime < SAMPLE_INTERVAL)
           return
+        lastOrientationUpdateTime = now
 
         // 处理方位数据
         if (event.alpha !== null) {

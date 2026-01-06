@@ -12,24 +12,20 @@ const directions = [
   { angle: 270, name: '西', abbr: '西' },
 ]
 
-const rotation = ref(0)
+const rotation = ref(-props.heading)
 
-watch(() => props.heading, (newHeading, oldHeading) => {
-  if (oldHeading === undefined) {
-    rotation.value = -newHeading
-    return
-  }
-  const diff = newHeading - oldHeading
-  if (diff > 180) {
-    rotation.value -= 360 - diff
-  }
-  else if (diff < -180) {
-    rotation.value += 360 + diff
-  }
-  else {
-    rotation.value -= diff
-  }
-}, { immediate: true })
+watch(
+  () => props.heading,
+  (newHeading) => {
+    const target = -newHeading
+    let delta = target - rotation.value
+    if (delta > 180)
+      delta -= 360
+    else if (delta < -180)
+      delta += 360
+    rotation.value += delta
+  },
+)
 
 /**
  * 获取当前方向名称

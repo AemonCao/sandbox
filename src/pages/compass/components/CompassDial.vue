@@ -12,7 +12,22 @@ const directions = [
   { angle: 270, name: '西', abbr: '西' },
 ]
 
-const rotation = computed(() => -props.heading)
+const rotation = ref(0)
+const lastHeading = ref(0)
+
+watch(() => props.heading, (newHeading) => {
+  const diff = newHeading - lastHeading.value
+  if (diff > 180) {
+    rotation.value -= 360 - diff
+  }
+  else if (diff < -180) {
+    rotation.value += 360 + diff
+  }
+  else {
+    rotation.value -= diff
+  }
+  lastHeading.value = newHeading
+}, { immediate: true })
 
 /**
  * 获取当前方向名称

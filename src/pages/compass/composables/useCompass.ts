@@ -42,8 +42,8 @@ export function useCompass() {
           heading.value = (event as any).webkitCompassHeading
         }
         else if (event.alpha !== null) {
-          // Android: alpha 是顺时针旋转角度，需要反转
-          heading.value = 360 - event.alpha
+          // Android: alpha 是设备指向的方向（0° = 北，顺时针）
+          heading.value = event.alpha
         }
       }
 

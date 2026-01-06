@@ -6,31 +6,13 @@ interface Props {
 const props = defineProps<Props>()
 
 const directions = [
-  { angle: 0, name: '北', abbr: 'N' },
-  { angle: 90, name: '东', abbr: 'E' },
-  { angle: 180, name: '南', abbr: 'S' },
-  { angle: 270, name: '西', abbr: 'W' },
+  { angle: 0, name: '北', abbr: '北' },
+  { angle: 90, name: '东', abbr: '东' },
+  { angle: 180, name: '南', abbr: '南' },
+  { angle: 270, name: '西', abbr: '西' },
 ]
 
-const rotation = ref(0)
-const lastHeading = ref(0)
-
-/**
- * 处理跨越0°的旋转，避免反转
- */
-watch(() => props.heading, (newHeading) => {
-  const diff = newHeading - lastHeading.value
-  if (diff > 180) {
-    rotation.value -= 360 - diff
-  }
-  else if (diff < -180) {
-    rotation.value += 360 + diff
-  }
-  else {
-    rotation.value -= diff
-  }
-  lastHeading.value = newHeading
-}, { immediate: true })
+const rotation = computed(() => -props.heading)
 
 /**
  * 获取当前方向名称

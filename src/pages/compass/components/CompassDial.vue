@@ -13,10 +13,13 @@ const directions = [
 ]
 
 const rotation = ref(0)
-const lastHeading = ref(0)
 
-watch(() => props.heading, (newHeading) => {
-  const diff = newHeading - lastHeading.value
+watch(() => props.heading, (newHeading, oldHeading) => {
+  if (oldHeading === undefined) {
+    rotation.value = -newHeading
+    return
+  }
+  const diff = newHeading - oldHeading
   if (diff > 180) {
     rotation.value -= 360 - diff
   }
@@ -26,7 +29,6 @@ watch(() => props.heading, (newHeading) => {
   else {
     rotation.value -= diff
   }
-  lastHeading.value = newHeading
 }, { immediate: true })
 
 /**

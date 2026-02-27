@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { RouteRecordRaw } from 'vue-router'
-import { NCard, NSpace, NTag } from 'naive-ui'
+import { NCard, NSpace, NSwitch, NTag } from 'naive-ui'
 import { routes } from 'vue-router/auto-routes'
 
 defineOptions({
@@ -84,6 +84,9 @@ const allTags = computed(() => {
   return Array.from(tags).sort()
 })
 
+// 布局模式：true 为网格布局，false 为列表布局
+const isGridLayout = ref(true)
+
 // 选中的标签
 const selectedTags = ref<Set<string>>(new Set())
 
@@ -123,19 +126,29 @@ function toggleTag(tag: string) {
     </div>
 
     <!-- 标签过滤器 -->
-    <div v-if="allTags.length > 0" mb-6 flex justify-center>
-      <div flex flex-wrap gap-2 max-w-4xl>
-        <NTag
-          v-for="tag in allTags"
-          :key="tag"
-          :type="selectedTags.has(tag) ? 'primary' : 'default'"
-          :bordered="false"
-          cursor-pointer
-          @click="toggleTag(tag)"
-        >
-          {{ tag }}
-        </NTag>
-      </div>
+    <div v-if="allTags.length > 0" mb-4 flex flex-wrap gap-2 justify-center>
+      <NTag
+        v-for="tag in allTags"
+        :key="tag"
+        :type="selectedTags.has(tag) ? 'primary' : 'default'"
+        :bordered="false"
+        cursor-pointer
+        @click="toggleTag(tag)"
+      >
+        {{ tag }}
+      </NTag>
+    </div>
+
+    <!-- 布局切换 -->
+    <div mb-4 flex justify-end>
+      <NSwitch v-model:value="isGridLayout">
+        <template #checked>
+          网格
+        </template>
+        <template #unchecked>
+          列表
+        </template>
+      </NSwitch>
     </div>
 
     <NSpace vertical size="large">
@@ -155,7 +168,8 @@ function toggleTag(tag: string) {
         </NCard>
       </div>
 
-      <div v-else grid="~ cols-1 md:cols-2 lg:cols-3 xl:cols-4" gap="4">
+      <!-- 网格布局 -->
+      <div v-else-if="isGridLayout" grid="~ cols-1 md:cols-2 lg:cols-3 xl:cols-4" gap="4">
         <NCard
           v-for="route in filteredRoutes"
           :key="route.path"
@@ -182,6 +196,40 @@ function toggleTag(tag: string) {
             <p text="3 md:3.5" font="mono" p="2 md:1 2 md:2" rounded="1 md:1" text-gray-600 bg-gray-100 inline-block dark:text-gray-300 dark:bg-gray-800>
               {{ route.path }}
             </p>
+          </div>
+        </NCard>
+      </div>
+
+      <!-- 列表布局 -->
+      <div v-else flex flex-col gap-3>
+        <NCard
+          v-for="route in filteredRoutes"
+          :key="route.path"
+          cursor="pointer"
+          transition="all duration-300 ease"
+          rounded="2"
+          hover:shadow="[0_4px_12px_rgba(0,0,0,0.1)]"
+          @click="$router.push(route.path)"
+        >
+          <div flex gap-4 items-center p="2 md:3">
+            <div flex-1 min-w-0>
+              <div flex gap-3 items-center>
+                <h3 text="4.5" font="600" text-gray-800 m-0 dark:text-gray-100>
+                  {{ route.meta?.title || route.name }}
+                </h3>
+                <span text="3 md:3.5" font="mono" rounded="1" text-gray-500 px-2 py-0.5 bg-gray-100 dark:text-gray-400 dark:bg-gray-800>
+                  {{ route.path }}
+                </span>
+              </div>
+              <p v-if="route.meta?.description" m="1 0 0 0" text="3.5" text-gray-500 leading-relaxed dark:text-gray-400>
+                {{ route.meta.description }}
+              </p>
+            </div>
+            <div v-if="route.meta?.tags?.length" flex flex-shrink-0 flex-wrap gap-1>
+              <NTag v-for="tag in route.meta.tags" :key="tag" size="small" :bordered="false">
+                {{ tag }}
+              </NTag>
+            </div>
           </div>
         </NCard>
       </div>

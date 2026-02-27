@@ -37,7 +37,9 @@
       "Bash(done)",
       "Bash(lsof:*)",
       "Bash(xargs kill:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs"
     ],
     "deny": [],
     "ask": []

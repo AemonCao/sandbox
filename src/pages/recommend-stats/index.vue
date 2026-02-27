@@ -219,7 +219,7 @@ function handleClear() {
       <NDataTable
         :columns="tableColumns"
         :data="tableData"
-        :pagination="{ pageSize: 10 }"
+        :pagination="false"
         :bordered="false"
       />
     </NCard>

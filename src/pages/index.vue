@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { RouteRecordRaw } from 'vue-router'
-import { NCard, NSpace, NSwitch, NTag } from 'naive-ui'
+import { NCard, NSpace, NSwitch, NTag, useMessage } from 'naive-ui'
 import { routes } from 'vue-router/auto-routes'
 
 defineOptions({
@@ -90,7 +90,16 @@ const isGridLayout = ref(true)
 // 选中的标签
 const selectedTags = ref<Set<string>>(new Set())
 
-const { isRecommendMode, recordClick, sortByRecommend } = useRecommend()
+const { isRecommendMode, sortByRecommend } = useRecommend()
+
+const message = useMessage()
+
+// 监听推荐模式开关，开启时弹出提示
+watch(isRecommendMode, (val) => {
+  if (val) {
+    message.info('推荐模式已开启：根据你的点击频率和标签热度智能排序，常用页面会排在前面')
+  }
+})
 
 // 过滤并排序后的路由
 const filteredRoutes = computed(() => {
@@ -115,11 +124,11 @@ function toggleTag(tag: string) {
 const router = useRouter()
 
 /**
- * 处理路由点击：记录点击数据并导航
+ * 处理路由点击：导航到目标页面
+ * 点击记录已移至路由 afterEach 守卫中统一处理
  * @param route - 被点击的路由信息
  */
 function handleRouteClick(route: RouteInfo) {
-  recordClick(route)
   router.push(route.path)
 }
 </script>

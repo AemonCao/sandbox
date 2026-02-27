@@ -64,6 +64,15 @@ export function useRecommend(storagePrefix = 'sandbox') {
     })
   }
 
+  /**
+   * 清除所有推荐数据，重置为初始状态
+   */
+  function clearAll() {
+    isRecommendMode.value = false
+    clickCounts.value = {}
+    tagPopularity.value = {}
+  }
+
   return {
     isRecommendMode,
     clickCounts,
@@ -71,5 +80,6 @@ export function useRecommend(storagePrefix = 'sandbox') {
     recordClick,
     getTagScore,
     sortByRecommend,
+    clearAll,
   }
 }

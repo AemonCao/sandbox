@@ -240,6 +240,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/recommend-stats/': RouteRecordInfo<
+      '/recommend-stats/',
+      '/recommend-stats',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/sensor-dashboard/': RouteRecordInfo<
       '/sensor-dashboard/',
       '/sensor-dashboard',
@@ -485,6 +492,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/posture-recognition/components/ParameterControls.vue': {
       routes:
         | '/posture-recognition/components/ParameterControls'
+      views:
+        | never
+    }
+    'src/pages/recommend-stats/index.vue': {
+      routes:
+        | '/recommend-stats/'
       views:
         | never
     }

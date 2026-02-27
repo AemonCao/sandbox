@@ -90,13 +90,15 @@ const isGridLayout = ref(true)
 // 选中的标签
 const selectedTags = ref<Set<string>>(new Set())
 
-// 过滤后的路由
+const { isRecommendMode, recordClick, sortByRecommend } = useRecommend()
+
+// 过滤并排序后的路由
 const filteredRoutes = computed(() => {
-  if (selectedTags.value.size === 0)
-    return pageRoutes
-  return pageRoutes.filter((route) => {
-    return route.meta.tags?.some(tag => selectedTags.value.has(tag))
-  })
+  const result = selectedTags.value.size === 0
+    ? [...pageRoutes]
+    : pageRoutes.filter(route => route.meta.tags?.some(tag => selectedTags.value.has(tag)))
+
+  return isRecommendMode.value ? sortByRecommend(result) : result
 })
 
 /**
@@ -108,6 +110,17 @@ function toggleTag(tag: string) {
     selectedTags.value.delete(tag)
   else
     selectedTags.value.add(tag)
+}
+
+const router = useRouter()
+
+/**
+ * 处理路由点击：记录点击数据并导航
+ * @param route - 被点击的路由信息
+ */
+function handleRouteClick(route: RouteInfo) {
+  recordClick(route)
+  router.push(route.path)
 }
 </script>
 
@@ -139,8 +152,16 @@ function toggleTag(tag: string) {
       </NTag>
     </div>
 
-    <!-- 布局切换 -->
-    <div mb-4 flex justify-end>
+    <!-- 布局切换和推荐模式 -->
+    <div mb-4 flex gap-4 items-center justify-end>
+      <NSwitch v-model:value="isRecommendMode">
+        <template #checked>
+          推荐
+        </template>
+        <template #unchecked>
+          推荐
+        </template>
+      </NSwitch>
       <NSwitch v-model:value="isGridLayout">
         <template #checked>
           网格
@@ -179,7 +200,7 @@ function toggleTag(tag: string) {
           hover:shadow="[0_8px_16px_rgba(0,0,0,0.15)]"
           h="full"
           flex="~ col"
-          @click="$router.push(route.path)"
+          @click="handleRouteClick(route)"
         >
           <div p="4 md:2">
             <h3 text="5 md:5" font="600" text-gray-800 mb-2 dark:text-gray-100>
@@ -209,7 +230,7 @@ function toggleTag(tag: string) {
           transition="all duration-300 ease"
           rounded="2"
           hover:shadow="[0_4px_12px_rgba(0,0,0,0.1)]"
-          @click="$router.push(route.path)"
+          @click="handleRouteClick(route)"
         >
           <div flex gap-4 items-center p="2 md:3">
             <div flex-1 min-w-0>

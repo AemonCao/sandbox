@@ -352,6 +352,23 @@ This project has access to several Model Context Protocol (MCP) services that ex
 - **Usage**: Automated testing, web scraping, performance analysis
 - **Features**: Page navigation, screenshots, element interaction, network monitoring
 
+### context7
+
+- **Status**: ✓ Connected
+- **Purpose**: 获取组件库和框架的最新文档与代码示例
+- **Usage**: 在使用项目中的组件库（Vue、Naive UI、ECharts、Three.js、TensorFlow.js、VueUse、UnoCSS、Pinia 等）时，必须通过 context7 查询其最新文档，确保 API 用法正确
+- **调用流程**:
+  1. 先调用 `resolve-library-id` 根据库名获取 Context7 兼容的 library ID
+  2. 再调用 `query-docs` 传入 library ID 和具体问题，获取最新文档和代码示例
+- **适用场景**:
+  - 使用 Naive UI 组件时查询其 props、slots、events 的正确用法
+  - 使用 ECharts 配置图表时查询 option 配置项
+  - 使用 Vue 3 Composition API 时确认 API 签名和最佳实践
+  - 使用 Three.js 创建 3D 场景时查询类和方法的用法
+  - 使用 VueUse 组合式函数时查询参数和返回值
+  - 使用 UnoCSS 时查询预设规则和自定义配置
+  - 使用任何不确定用法的第三方库时，优先通过 context7 获取文档而非依赖记忆
+
 ## Demo Pages
 
 The project includes several fully functional demo pages showcasing different technologies:

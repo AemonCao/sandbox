@@ -1,9 +1,6 @@
 shellEmulator: true
 
 trustPolicy: no-downgrade
-# https://pnpm.io/blog/releases/10.22
-trustPolicyExclude:
-  - chokidar@4.0.3
 
 packages: []
 

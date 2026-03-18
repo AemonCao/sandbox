@@ -72,6 +72,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/collatz-conjecture/': RouteRecordInfo<
+      '/collatz-conjecture/',
+      '/collatz-conjecture',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/compass/': RouteRecordInfo<
       '/compass/',
       '/compass',
@@ -355,6 +362,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/boids-flocking/index.vue': {
       routes:
         | '/boids-flocking/'
+      views:
+        | never
+    }
+    'src/pages/collatz-conjecture/index.vue': {
+      routes:
+        | '/collatz-conjecture/'
       views:
         | never
     }

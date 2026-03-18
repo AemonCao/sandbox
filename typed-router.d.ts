@@ -93,6 +93,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/euler-gimbal-lock/': RouteRecordInfo<
+      '/euler-gimbal-lock/',
+      '/euler-gimbal-lock',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/ibeacon-simulator/': RouteRecordInfo<
       '/ibeacon-simulator/',
       '/ibeacon-simulator',
@@ -366,6 +373,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/conway-game/index.vue': {
       routes:
         | '/conway-game/'
+      views:
+        | never
+    }
+    'src/pages/euler-gimbal-lock/index.vue': {
+      routes:
+        | '/euler-gimbal-lock/'
       views:
         | never
     }
